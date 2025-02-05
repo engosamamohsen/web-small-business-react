@@ -1,0 +1,48 @@
+{
+  "name": "alelm-v2-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "clsx": "^2.1.1",
+    "firebase": "^11.2.0",
+    "jotai": "^2.11.3",
+    "lucide-react": "^0.446.0",
+    "next": "15.1.6",
+    "primeicons": "^6.0.1",
+    "primereact": "^10.3.3",
+    "react": "^19.0.0",
+    "react-cookie": "^7.2.2",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.54.2",
+    "react-toastify": "^11.0.3",
+    "react-use": "^17.6.0",
+    "swiper": "^11.2.1",
+    "tailwind-merge": "^2.6.0",
+    "zod": "^3.24.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20.17.16",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.6",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "postcss": "^8",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

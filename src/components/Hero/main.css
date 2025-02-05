@@ -1,0 +1,19 @@
+.heroSwiper .swiper-pagination {
+  width: 180px !important;
+  bottom: -20px !important;
+  padding: 40px 0;
+  background-color: var(--main-background);
+  width: fit-content;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-left-radius: 100% 100%;
+  border-top-right-radius: 100% 100%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.swiper-pagination-clickable {
+  @apply flex items-center justify-center;
+}

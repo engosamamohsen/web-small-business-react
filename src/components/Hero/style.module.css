@@ -1,0 +1,63 @@
+.heroContainer {
+  position: relative;
+  height: 500px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Swiper Pagination Styles */
+
+.heroSwiper :global(.swiper-pagination-bullet) {
+  width: 10px;
+  height: 10px;
+  transition: all 0.3s ease;
+  margin: 0 !important;
+  border-radius: 50%;
+  opacity: 0.4;
+
+  background-color: var(--main-color) !important;
+}
+
+.heroSwiper :global(.swiper-pagination-bullet-active) {
+  width: 10px;
+  height: 10px;
+  opacity: 1;
+}
+
+.slideContent {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.imageContainer {
+  position: absolute;
+  inset: 0;
+}
+
+.gradientOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+.title {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.description {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  max-width: 42rem;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 3rem;
+  }
+
+  .description {
+    font-size: 1.25rem;
+  }
+}

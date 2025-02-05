@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --main-background: white;
+  --second-background: #fff1ec;
+  --main-color: #fc7643;
+  --second-font-color: rgb(34, 34, 34);
+  --font-color: black;
+}
+.swiper {
+  height: 100%;
+}
+
+.boxFrom {
+  box-shadow:
+    rgba(17, 17, 26, 0.1) 0px 4px 16px,
+    rgba(17, 17, 26, 0.05) 0px 8px 32px;
+}
+
+.password .p-input-icon {
+  @apply left-[.75rem] right-auto;
+}
+
+.password div {
+  width: 100%;
+}
