@@ -7,14 +7,13 @@ import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import Link from "next/link";
-// import { loginWithGoogle } from "@/firebase/firebase-hooks";
+import { loginWithGoogle } from "@/firebase/firebase-hooks";
 import Image from "next/image";
 import GoogleIcon from "../../../../assets/icons/icons8-google.svg";
 import { SettingsType } from "@/lib/types";
 import { useHydrateAtoms } from "jotai/utils";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
 import { useAtom } from "jotai";
-import { updateServerSettings } from "@/app/actions/actions";
 
 const registerSchema = z
   .object({
@@ -40,12 +39,11 @@ export default function RegisterForm({
   initSettings: SettingsType;
 }) {
   useHydrateAtoms([[settingsDataAtom, initSettings]]);
-  const [settingsData, setSettingsData] = useAtom(settingsDataAtom);
-  console.log("settings-client-register", settingsData);
+  const [settingsData] = useAtom(settingsDataAtom);
   const {
     register,
     handleSubmit,
-    watch,
+    // watch,
     setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
@@ -209,11 +207,7 @@ export default function RegisterForm({
       </div>
       <Button
         type="button"
-        // onClick={loginWithGoogle}
-        onClick={() => {
-          updateServerSettings({ test_name: watch("name") });
-          setSettingsData({ test_name: watch("name") });
-        }}
+        onClick={loginWithGoogle}
         className="mx-auto flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[var(--second-background)] text-center !shadow-none !outline-none"
         icon={
           <Image

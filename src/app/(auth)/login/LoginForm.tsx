@@ -11,10 +11,9 @@ import { loginWithGoogle } from "@/firebase/firebase-hooks";
 import Image from "next/image";
 import GoogleIcon from "../../../../assets/icons/icons8-google.svg";
 import { useAtom } from "jotai";
-import { countAtom } from "@/lib/stores/settingsData";
+import { settingsDataAtom } from "@/lib/stores/settingsData";
 import { useHydrateAtoms } from "jotai/utils";
-// import { useCookies } from "react-cookie";
-// import { useLayoutEffect, useState } from "react";
+import { SettingsType } from "@/lib/types";
 
 const loginSchema = z.object({
   email: z.string().email("عنوان البريد الإلكتروني غير صالح"),
@@ -25,11 +24,13 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function RegisterForm({ initCount }: { initCount: number }) {
-  // const [cookies] = useCookies(["app_name", "app_data"]);
-  // const [isClient, setIsClient] = useState(false);
-  useHydrateAtoms([[countAtom, initCount]]);
-
+export default function RegisterForm({
+  initSettings,
+}: {
+  initSettings: SettingsType;
+}) {
+  useHydrateAtoms([[settingsDataAtom, initSettings]]);
+  const [settingsData] = useAtom(settingsDataAtom);
   const {
     register,
     handleSubmit,
@@ -38,11 +39,6 @@ export default function RegisterForm({ initCount }: { initCount: number }) {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
-
-  // run before component render
-  // useLayoutEffect(() => {
-  //   setIsClient(true);
-  // }, []);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
@@ -59,30 +55,28 @@ export default function RegisterForm({ initCount }: { initCount: number }) {
       className="my-8 w-[350px] max-w-full space-y-6"
       dir="rtl"
     >
-      {/* {isClient && (
-        <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
-          {cookies?.app_data?.logo && (
-            <Image
-              src={cookies?.app_data?.logo}
-              alt="logo app"
-              width={80}
-              height={80}
-              className="mr-[6px]"
-            />
-          )}
-          <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">
+      <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
+        {settingsData?.logo && (
+          <Image
+            src={settingsData?.logo}
+            alt="logo app"
+            width={80}
+            height={80}
+            className="mr-[6px]"
+          />
+        )}
+        <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">
+          {" "}
+          <div className="flex w-full items-center justify-center gap-1">
             {" "}
-            <div className="flex w-full items-center justify-center gap-1">
-              {" "}
-              <span> مرحبًا بك في </span>{" "}
-              <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
-                {cookies?.app_data?.name ? cookies?.app_data?.name : ""}
-              </h4>{" "}
-            </div>
-            يرجى تسجيل الدخول لإجراء الطلب{" "}
-          </div>{" "}
-        </div>
-      )} */}
+            <span> مرحبًا بك في </span>{" "}
+            <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
+              {settingsData?.name ? settingsData?.name : ""}
+            </h4>{" "}
+          </div>
+          يرجى تسجيل الدخول لإجراء الطلب{" "}
+        </div>{" "}
+      </div>
       <div className="space-y-4">
         <div>
           <label

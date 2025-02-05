@@ -31,13 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function Register() {
   const store = getDefaultStore();
 
-  store.set(settingsDataAtom, {
-    page: "register",
-    ...store.get(settingsDataAtom),
-  });
   const settings = store.get(settingsDataAtom);
 
-  console.log("settings-server-register", store.get(settingsDataAtom));
   return (
     <div className="flex h-full min-h-screen w-full items-center justify-center bg-[var(--second-background)] px-9 py-10">
       <div
