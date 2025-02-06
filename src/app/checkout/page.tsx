@@ -4,7 +4,7 @@ import { useCartStore } from "@/lib/store";
 import Image from "next/image";
 import { useState } from "react";
 import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/InputTextarea";
+import { InputTextarea } from "primereact/inputtextarea";
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
@@ -21,7 +21,7 @@ export default function CheckoutPage() {
 
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * (item.quantity || 0),
-    0
+    0,
   );
   const shipping = 30;
   const tax = 20;
@@ -37,7 +37,7 @@ export default function CheckoutPage() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setFormData({
       ...formData,
