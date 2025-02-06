@@ -42,7 +42,7 @@ const clearCartAtom = atom(null, (get, set) => {
 });
 
 export const useCartStore = () => {
-  const [items, setItems] = useAtom(cartAtom);
+  const [items] = useAtom(cartAtom);
   const [, addItem] = useAtom(addItemAtom);
   const [, removeItem] = useAtom(removeItemAtom);
   const [, updateQuantity] = useAtom(updateQuantityAtom);
