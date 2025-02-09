@@ -1,7 +1,7 @@
 import { ProductType } from "@/lib/types";
 import React from "react";
 import Image from "next/image";
-import ButtonAddToCart from "./ButtonAddToCart";
+import { Flame } from "lucide-react";
 
 interface ProductProps {
   product: ProductType;
@@ -10,25 +10,58 @@ interface ProductProps {
 export function Product({ product }: ProductProps) {
   return (
     <>
-      <div className="relative h-40 sm:h-48">
+      <div className="relative h-[300px] max-h-fit sm:h-48">
         <Image
-          src={product.image}
-          alt={product.title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-200"
+          src={product?.image}
+          alt={product?.name || ""}
+          width={321}
+          height={208}
+          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+          priority
+          className="max-h-52 !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
         />
+        {product?.price_after ? (
+          <div className="absolute right-4 top-4">
+            <Flame fill="red" className="h-8 w-8 text-transparent" />
+          </div>
+        ) : null}
       </div>
       <div className="p-4">
-        <h3 className="text-sm sm:text-base font-semibold mb-2 line-clamp-2">
-          {product.title}
+        <h3 className="my-2 line-clamp-2 text-sm font-semibold sm:text-base">
+          {product.name}
         </h3>
+
         <div className="flex items-center justify-between">
-          <span className="text-base sm:text-lg font-bold text-orange-500">
-            {product.price} ج.م
-          </span>
-          <ButtonAddToCart product={product} />
+          <div className="flex items-center gap-1">
+            <PriceContent product={product} />
+          </div>
         </div>
       </div>
     </>
+  );
+}
+
+function PriceContent({ product }: { product: ProductType }) {
+  return product?.price_after ? (
+    <>
+      <span className="ml-1 text-lg font-bold text-orange-500 sm:text-xl">
+        {product.price_after} ج.م
+      </span>
+
+      {product.price_after !== product.price && (
+        <span className="text-sm text-gray-500 line-through">
+          {product.price} ج.م
+        </span>
+      )}
+      {product?.discount && parseInt(product?.discount) > 0 && (
+        <span className="text-sm font-bold text-green-600">
+          {product.discount}%
+        </span>
+      )}
+    </>
+  ) : (
+    <span className="ml-1 text-lg font-bold text-orange-500 sm:text-xl">
+      {product.price} ج.م
+    </span>
   );
 }

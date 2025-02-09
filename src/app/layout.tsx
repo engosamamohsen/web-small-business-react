@@ -12,11 +12,10 @@ const cairo = Cairo({ subsets: ["arabic"] });
 import "./globals.css";
 import { getDefaultStore } from "jotai";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
-export const dynamic = "force-dynamic";
+
 // Generate dynamic metadata
 export async function generateMetadata(): Promise<Metadata> {
   const { data: settings } = await fetchSettings();
-  // console.log("settings", settings);
 
   return {
     title: settings?.name || "",

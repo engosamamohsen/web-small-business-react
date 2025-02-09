@@ -1,8 +1,8 @@
 "use client";
 
 import { ProductType } from "@/lib/types";
-import { HandleAddToCart } from "./ProductGrid";
 import { ShoppingCart } from "lucide-react";
+import { HandleAddToCart } from "./ProductModal";
 
 function ButtonAddToCart({ product }: { product: ProductType }) {
   const addToCart = HandleAddToCart();
@@ -10,7 +10,7 @@ function ButtonAddToCart({ product }: { product: ProductType }) {
   return (
     <button
       onClick={(e) => addToCart(product, e)}
-      className="p-2 text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
+      className="rounded-full p-2 text-orange-500 transition-colors hover:bg-orange-50"
       aria-label="Add to cart"
     >
       <ShoppingCart size={20} />

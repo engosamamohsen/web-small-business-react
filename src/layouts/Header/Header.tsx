@@ -14,7 +14,7 @@ export default function Header() {
     <div className="bg-[var(--main-background)]">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <Link href="/">
+          <Link href="/" aria-label="site home">
             <Image
               src={globalData.logo}
               alt="site logo"
@@ -29,7 +29,7 @@ export default function Header() {
               <SearchBar />
             </div> */}
             <LoginButton />
-            <Link href="/cart" className="relative">
+            <Link href="/cart" className="relative" aria-label="site cart">
               <ShoppingCart className="h-6 w-6 text-[var(--main-color)]" />
               {/* {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">

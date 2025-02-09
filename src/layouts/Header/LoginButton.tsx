@@ -9,7 +9,6 @@ const LoginButton = () => {
 
   return (
     <div>
-      {" "}
       {/* <button
         type="button"
         onClick={onOpen}
@@ -20,6 +19,7 @@ const LoginButton = () => {
       {pathname !== "/login" && (
         <Link
           href={"/register"}
+          aria-label="site register"
           className="text-sm font-medium text-[var(--main-color)] underline-offset-4 hover:underline"
         >
           تسجيل الدخول

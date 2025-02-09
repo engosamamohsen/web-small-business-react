@@ -8,6 +8,7 @@
   --main-color: #fc7643;
   --second-font-color: rgb(34, 34, 34);
   --font-color: black;
+  --second-color: black;
 }
 .swiper {
   height: 100%;
@@ -25,4 +26,8 @@
 
 .password div {
   width: 100%;
+}
+
+img {
+  user-select: none;
 }

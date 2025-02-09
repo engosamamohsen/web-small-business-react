@@ -11,7 +11,7 @@ const NotFoundPage = async () => {
           className="rounded-md border border-blue-400 px-2 py-1 text-blue-600"
         >
           Go home
-        </Link>{" "}
+        </Link>
       </div>
     </div>
   );

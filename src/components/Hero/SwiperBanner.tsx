@@ -66,14 +66,14 @@ export default function SwiperBanner({ response }: { response: any }) {
             <>
               <SwiperSlide>
                 <Skeleton width="100%" height="100%"></Skeleton>
-              </SwiperSlide>{" "}
+              </SwiperSlide>
               <SwiperSlide>
                 <Skeleton width="100%" height="100%"></Skeleton>
-              </SwiperSlide>{" "}
+              </SwiperSlide>
             </>
           )}
         </Swiper>
-      </div>{" "}
+      </div>
     </>
   );
 }

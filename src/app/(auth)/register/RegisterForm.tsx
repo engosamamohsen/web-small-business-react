@@ -76,16 +76,14 @@ export default function RegisterForm({
           />
         )}
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">
-          {" "}
           <div className="flex w-full items-center justify-center gap-1">
-            {" "}
-            <span> مرحبًا بك في </span>{" "}
+            <span> مرحبًا بك في </span>
             <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
               {settingsData?.name ? settingsData?.name : ""}
-            </h4>{" "}
+            </h4>
           </div>
-          يرجى تسجيل الدخول لإجراء الطلب{" "}
-        </div>{" "}
+          يرجى تسجيل الدخول لإجراء الطلب
+        </div>
       </div>
       <div className="space-y-4">
         <div>
@@ -200,8 +198,7 @@ export default function RegisterForm({
         <div className="text-sm text-black">
           هل لديك حساب بالفعل ؟
           <Link href="/login" className="text-[var(--main-color)]">
-            {" "}
-            تسجيل الدخول{" "}
+            تسجيل الدخول
           </Link>
         </div>
       </div>

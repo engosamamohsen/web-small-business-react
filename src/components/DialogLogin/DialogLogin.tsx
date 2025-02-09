@@ -20,12 +20,11 @@ export default function DialogLogin({ globalData }: { globalData: any }) {
         <div className="relative flex h-[280px] w-full max-w-[350px] flex-col items-center justify-center gap-2 rounded-sm bg-[var(--main-background)] p-4">
           <div className="absolute top-2 flex w-full items-center justify-between gap-2 px-4 text-[var(--second-font-color)]">
             <div className="flex w-full items-center gap-1">
-              {" "}
-              <span> مرحبًا بك في </span>{" "}
+              <span> مرحبًا بك في </span>
               <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
                 {globalData?.app_name}
-              </h4>{" "}
-            </div>{" "}
+              </h4>
+            </div>
             <Button
               icon={<CircleX />}
               rounded

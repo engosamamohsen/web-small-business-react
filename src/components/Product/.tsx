@@ -12,7 +12,7 @@ export default function ProductGrid() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ProductType[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
@@ -39,31 +39,30 @@ export default function ProductGrid() {
       setFilteredProducts(products);
     } else {
       setFilteredProducts(
-        products.filter((product) => product.category === activeFilter)
+        products.filter((product) => product.category === activeFilter),
       );
     }
   }, [activeFilter, products]);
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center">
+    <section className="bg-gray-50 py-8 sm:py-12">
+      <div className="mx-auto max-w-7xl px-4">
+        <h2 className="mb-6 text-center text-2xl font-bold sm:mb-8 sm:text-3xl">
           العروض
         </h2>
 
         {/* Filter Navigation */}
-        <div className="w-full flex justify-between items-center max-sm:flex-col max-sm:gap-4 max-sm:justify-center">
+        <div className="flex w-full items-center justify-between max-sm:flex-col max-sm:justify-center max-sm:gap-4">
           {" "}
-          <div className="flex justify-center mb-8 overflow-x-auto">
-            <div className="flex space-x-4 space-x-reverse rtl:space-x-reverse border-b">
+          <div className="mb-8 flex justify-center overflow-x-auto">
+            <div className="flex space-x-4 space-x-reverse border-b rtl:space-x-reverse">
               {filters.map((filter) => (
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
-                  className={`px-4 py-2 text-sm font-medium transition-colors relative
-                  ${
+                  className={`relative px-4 py-2 text-sm font-medium transition-colors ${
                     activeFilter === filter.id
-                      ? "text-orange-500 border-b-2 border-orange-500 -mb-[2px]"
+                      ? "-mb-[2px] border-b-2 border-orange-500 text-orange-500"
                       : "text-gray-600 hover:text-orange-500"
                   }`}
                 >
@@ -75,11 +74,11 @@ export default function ProductGrid() {
           <Link href="/products">تصفح كل العروض</Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-white group rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+              className="group cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
               onClick={() => {
                 setSelectedProduct(product);
                 setIsModalOpen(true);

@@ -37,7 +37,10 @@ function ColorHandler({ globalData }: { globalData: any }) {
       "--main-color",
       globalData?.data?.mainColor || "#FC7643",
     );
-
+    root.style.setProperty(
+      "--second-color",
+      globalData?.data?.main_font_color || "#FC7643",
+    );
     // handle function set cookie
     setCookie("app_data", { ...globalData?.data });
 
@@ -61,7 +64,7 @@ function LoadingBox() {
         animationDuration=".5s"
         aria-label="Loading"
       />
-      <bdi className="flex text-3xl text-gray-700"> loading ...</bdi>{" "}
+      <bdi className="flex text-3xl text-gray-700"> loading ...</bdi>
     </div>
   );
 }

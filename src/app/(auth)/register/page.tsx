@@ -1,14 +1,13 @@
 import { Metadata } from "next";
 import RegisterForm from "./RegisterForm";
 import styles from "./style.module.css";
-import { fetchSettings } from "@/hooks/fetchSettings";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
 import { getDefaultStore } from "jotai";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
-  const { data: settings } = await fetchSettings();
-
+  const store = getDefaultStore();
+  const settings = store.get(settingsDataAtom);
   return {
     title: `إنشاء حساب جديد | ${settings?.name || ""}`,
     description:

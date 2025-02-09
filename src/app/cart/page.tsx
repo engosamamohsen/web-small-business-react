@@ -9,16 +9,16 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity } = useCartStore();
   const total = items.reduce(
     (acc, item) => acc + item.price * (item.quantity || 0),
-    0
+    0,
   );
 
   if (items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-        <h2 className="text-2xl font-bold mb-4">عربة التسوق فارغة</h2>
+      <div className="mx-auto max-w-7xl px-4 py-12 text-center">
+        <h2 className="mb-4 text-2xl font-bold">عربة التسوق فارغة</h2>
         <Link
           href="/"
-          className="text-orange-500 hover:text-orange-600 font-semibold"
+          className="font-semibold text-orange-500 hover:text-orange-600"
         >
           العودة للتسوق
         </Link>
@@ -27,40 +27,42 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8">عربة التسوق</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="mx-auto max-w-7xl px-4 py-12">
+      <h1 className="mb-8 text-3xl font-bold">عربة التسوق</h1>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           {items.map((item: any) => (
             <div
               key={item.id}
-              className="flex items-center gap-4 bg-white p-4 rounded-lg mb-4 "
+              className="mb-4 flex items-center gap-4 rounded-lg bg-white p-4"
             >
-              <div className="relative w-24 h-24">
+              <div className="relative h-24 w-24">
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
-                  className="object-cover rounded"
+                  className="rounded object-cover"
                 />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">{item.name}</h3>
-                <p className="text-orange-500 font-bold">{item.price} ج.م</p>
+                <p className="font-bold text-orange-500">{item.price} ج.م</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() =>
                     updateQuantity(item.id, Math.max(0, item.quantity - 1))
                   }
-                  className="p-1 rounded-full hover:bg-gray-100"
+                  className="rounded-full p-1 hover:bg-gray-100"
+                  aria-label={`Decrease quantity of ${item.name}`}
                 >
                   <Minus size={16} />
                 </button>
                 <span className="w-8 text-center">{item.quantity}</span>
                 <button
                   onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  className="p-1 rounded-full hover:bg-gray-100"
+                  className="rounded-full p-1 hover:bg-gray-100"
+                  aria-label={`Increase quantity of ${item.name}`}
                 >
                   <Plus size={16} />
                 </button>
@@ -68,15 +70,16 @@ export default function CartPage() {
               <button
                 onClick={() => removeItem(item.id)}
                 className="text-gray-400 hover:text-red-500"
+                aria-label={`Remove ${item.name} from cart`}
               >
                 <X size={20} />
               </button>
             </div>
           ))}
         </div>
-        <div className="bg-white p-6 rounded-lg h-fit">
-          <h2 className="text-xl font-bold mb-4">ملخص الطلب</h2>
-          <div className="space-y-2 mb-4">
+        <div className="h-fit rounded-lg bg-white p-6">
+          <h2 className="mb-4 text-xl font-bold">ملخص الطلب</h2>
+          <div className="mb-4 space-y-2">
             <div className="flex justify-between">
               <span>إجمالي المنتجات</span>
               <span>{total} ج.م</span>
@@ -89,7 +92,7 @@ export default function CartPage() {
               <span>الضريبة</span>
               <span>20 ج.م</span>
             </div>
-            <div className="border-t pt-2 mt-2">
+            <div className="mt-2 border-t pt-2">
               <div className="flex justify-between font-bold">
                 <span>الإجمالي</span>
                 <span>{total + 50} ج.م</span>
@@ -98,7 +101,7 @@ export default function CartPage() {
           </div>
           <Link
             href="/checkout"
-            className="block w-full bg-orange-500 text-white text-center py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+            className="block w-full rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
           >
             إتمام الشراء
           </Link>

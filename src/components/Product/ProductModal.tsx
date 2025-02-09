@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import Image from "next/image";
 import { ProductType } from "@/lib/types";
-import { HandleAddToCart } from "./ProductGrid";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductModalProps {
   product: ProductType | null;
@@ -20,38 +20,38 @@ export default function ProductModal({
   const addToCart = HandleAddToCart();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white w-full max-w-2xl mx-4 rounded-lg overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-bold text-right">معلومات للمنتج</h2>
+      <div className="mx-4 w-full max-w-2xl overflow-hidden rounded-lg bg-white">
+        <div className="flex items-center justify-between border-b p-4">
+          <h2 className="text-right text-xl font-bold">معلومات للمنتج</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-gray-500 transition-colors hover:text-gray-700"
           >
             <X size={24} />
           </button>
         </div>
 
         <div className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="relative w-full md:w-1/2 aspect-square">
+          <div className="flex flex-col gap-6 md:flex-row">
+            <div className="relative aspect-square w-full md:w-1/2">
               <Image
                 src={product.image}
                 alt={product.title}
                 fill
-                className="object-cover rounded-lg"
+                className="rounded-lg object-cover"
               />
             </div>
-            <div className="flex flex-col justify-between w-full md:w-1/2">
+            <div className="flex w-full flex-col justify-between md:w-1/2">
               <div>
-                <h3 className="text-xl font-bold mb-4 text-right">
+                <h3 className="mb-4 text-right text-xl font-bold">
                   {product.title}
                 </h3>
-                <p className="text-gray-600 mb-6 text-right">
+                <p className="mb-6 text-right text-gray-600">
                   {product.description}
                 </p>
               </div>
               <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-orange-500">
                     {product.price} ج.م
                   </span>
@@ -61,7 +61,7 @@ export default function ProductModal({
                     addToCart(product, e);
                     onClose();
                   }}
-                  className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-6 py-3 text-white transition-colors hover:bg-orange-600"
                 >
                   إضافة لعربة التسوق
                 </button>
@@ -72,4 +72,17 @@ export default function ProductModal({
       </div>
     </div>
   );
+}
+
+export function HandleAddToCart() {
+  // const { addItem } = useCartStore((state) => state);
+  const { toastAddToCart } = useToast();
+
+  const addToCart = (product: ProductType, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    // addItem(product);
+    toastAddToCart(product);
+  };
+
+  return addToCart;
 }
