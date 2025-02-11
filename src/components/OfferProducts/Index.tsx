@@ -10,7 +10,7 @@ async function OfferProducts() {
   });
   if (response?.isSuccess) {
     return (
-      <div className="container py-20">
+      <div className="container py-10">
         <h2 className="mb-8 text-2xl font-bold">العروض</h2>
         <SwiperOffer response={response} />
       </div>

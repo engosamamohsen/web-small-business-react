@@ -44,7 +44,7 @@ export default async function RootLayout({
   });
   return (
     <html lang="ar" dir="rtl">
-      <body className={`${cairo.className} relative`}>
+      <body className={`relative ${cairo.className}`}>
         <ColorHandler globalData={settingResponse} />
         <Header />
 

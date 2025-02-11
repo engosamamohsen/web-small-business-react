@@ -2,18 +2,23 @@
 
 import { ProductType } from "@/lib/types";
 import { ShoppingCart } from "lucide-react";
-import { HandleAddToCart } from "./ProductModal";
+import { useRouter } from "next/navigation";
 
 function ButtonAddToCart({ product }: { product: ProductType }) {
-  const addToCart = HandleAddToCart();
-
+  const router = useRouter();
   return (
     <button
-      onClick={(e) => addToCart(product, e)}
-      className="rounded-full p-2 text-orange-500 transition-colors hover:bg-orange-50"
-      aria-label="Add to cart"
+      onClick={() => {
+        if (product?.is_variation) {
+          router.push(`/products/${product?.id}`);
+        } else {
+          // HandleAddToCart(product);
+          console.log("add to cart", product);
+        }
+      }}
+      className="absolute bottom-2 left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white"
     >
-      <ShoppingCart size={20} />
+      <ShoppingCart className="h-6 w-6 text-[var(--main-color)]" />
     </button>
   );
 }

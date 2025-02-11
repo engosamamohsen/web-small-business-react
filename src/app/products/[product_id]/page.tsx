@@ -35,7 +35,6 @@ async function page({ params }: PageProps) {
     url: `/product-details?product_id=${productId}`,
     type: { next: { revalidate: revalidateTime } },
   });
-
   if (response?.isSuccess && response.data) {
     const product: ProductType = response?.data?.data;
     return <DetailPage product={product} />;

@@ -19,6 +19,7 @@ export default function SwiperBanner({ response }: { response: any }) {
           modules={[Pagination, Autoplay]}
           pagination={{
             clickable: true,
+            dynamicBullets: true,
           }}
           autoplay={{
             delay: 5000,

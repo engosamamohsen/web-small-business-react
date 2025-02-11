@@ -10,6 +10,8 @@ import { useState } from "react";
 import styles from "./style.module.css";
 import { useUpdateEffect } from "react-use";
 import { currency } from "@/constants/constansts";
+import { Button } from "primereact/button";
+import { ProductType } from "@/lib/types";
 
 function getDiscountedPrice(price: number, discount: number): number {
   const discountedPrice = price - (price * discount) / 100;
@@ -37,7 +39,7 @@ export default function DetailPage({ product }: { product: any }) {
   };
 
   return (
-    <div className="container flex h-screen items-center justify-center">
+    <div className="container flex min-h-screen items-center justify-center py-10">
       <div className="grid grid-cols-1 gap-8 bg-gray-100 p-8 md:grid-cols-2">
         {/* معرض الصور */}
         <div>
@@ -48,6 +50,21 @@ export default function DetailPage({ product }: { product: any }) {
             autoplay
             className={`${styles["product-swiper"]} max-md:h-80`}
           >
+            <SwiperSlide>
+              {" "}
+              <div className="relative aspect-square w-full">
+                <Image
+                  src={product?.image}
+                  alt={product?.name}
+                  width={321}
+                  height={400}
+                  // sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                  priority
+                  className="h-[608px] !w-full !max-w-full object-fill transition-all duration-200 group-hover:brightness-90 max-md:max-h-80"
+                />
+              </div>
+            </SwiperSlide>
+
             {product?.gallery?.map((data: any) => (
               <SwiperSlide key={data?.id}>
                 <div className="relative aspect-square w-full">
@@ -68,9 +85,11 @@ export default function DetailPage({ product }: { product: any }) {
 
         <div>
           <h1 className="mb-4 text-2xl font-semibold">{product.name}</h1>
-
+          <h5 className="my-2 w-fit rounded-lg bg-white px-6 py-2">
+            <>الفئة : </> <span>{product?.category?.name}</span>
+          </h5>
           <PriceContent product={product} currentPrice={currentPrice} />
-          <div className="mt-4">{parse(product?.description)}</div>
+          <div className="mt-4">{parse(product?.description || "")}</div>
 
           {product.sizes && product.sizes.length > 0 && (
             <div className="mt-6">
@@ -114,13 +133,7 @@ export default function DetailPage({ product }: { product: any }) {
               </div>
             </div>
           )}
-
-          <button
-            className="mt-6 w-full rounded-md bg-[var(--main-color)] py-3 text-white transition-colors hover:bg-gray-800"
-            aria-label="Add product to cart"
-          >
-            أضف إلى السلة
-          </button>
+          <CartActions product={product} />
         </div>
       </div>
     </div>
@@ -185,6 +198,41 @@ function PriceContent({
   }
 }
 
+const CartActions = ({ product }: { product: ProductType }) => {
+  const [count, setCount] = useState(1);
+
+  return (
+    <div className="mt-6 flex items-center justify-between gap-3 max-sm:flex-col-reverse">
+      <button
+        onClick={() => {
+          console.log("add to cart count", count, product);
+        }}
+        className="w-fit rounded-md bg-[var(--main-color)] px-6 py-4 text-white transition-colors hover:bg-gray-800 max-sm:w-full"
+        aria-label="Add product to cart"
+      >
+        أضف إلى السلة
+      </button>
+      <div className="flex w-40 items-center justify-between gap-1 rounded-lg border bg-white p-4 max-sm:w-full">
+        <Button
+          icon="pi pi-plus"
+          className="p-button-text mx-0 !shadow-none !outline-none hover:text-[var(--second-color)]"
+          onClick={() => setCount((prev) => prev + 1)}
+        />
+
+        <span className="text-xl font-semibold">{count}</span>
+        <Button
+          icon="pi pi-minus"
+          className="p-button-text mx-0 !shadow-none !outline-none hover:text-[var(--second-color)]"
+          onClick={() => {
+            if (count > 1) {
+              setCount((prev) => Math.max(prev - 1, 0));
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 //  const options: HTMLReactParserOptions = {
 //   replace: (domNode) => {
 //     // Ensure that the node is an HTML element

@@ -8,7 +8,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import Sticky from "react-sticky-el";
 import { cn } from "@/utils/utils";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface CategoryType {
   id: number;
@@ -18,26 +18,51 @@ interface CategoryType {
 
 export default function CategorySwiper({ categories }: { categories: any }) {
   const searchParams = useSearchParams();
-  const onCategoryClick = (categoryId: number) => {
-    const searchParamsUrl = new URLSearchParams(window.location.search);
-    searchParamsUrl.set("category", categoryId.toString());
-    window.history.replaceState(
-      {},
-      "",
-      `${window.location.pathname}?${searchParamsUrl}`,
-    );
+  const router = useRouter();
 
-    scrollToProducts({ elementId: "products", top: 150 });
+  const onCategoryClick = (category: any) => {
+    const searchParams = new URLSearchParams(window.location.search);
+    console.log(category, "category");
+    if (category.id.toString() === searchParams.get("category")) {
+      searchParams.delete("category"); // Clear the category
+      router.push(`${window.location.pathname}?${searchParams}`, {
+        scroll: false,
+      });
+    } else {
+      searchParams.set("category", category.id.toString()); // Set the new category
+      if (category?.categories?.length > 0) {
+        searchParams.set("sub_category", ""); // Set the new category
+      } else {
+        searchParams.delete("sub_category");
+      }
+      router.push(`${window.location.pathname}?${searchParams}`, {
+        scroll: false,
+      });
+      scrollToProducts({ elementId: "products", top: 270 }); // Scroll to products section
+    }
+
+    // Update the URL without reloading the page
+    // const newPathname = `${window.location.pathname}?${searchParams}`;
+    // window.history.replaceState({}, "", newPathname);
   };
+
   return (
     <Sticky topOffset={0} stickyClassName="z-[400] bg-gray-50">
       <div className="container">
         <Swiper
           modules={[Navigation, Autoplay]}
           navigation
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
+          autoplay={
+            searchParams.get("category")
+              ? false
+              : {
+                  delay: 3000,
+                  disableOnInteraction: true,
+                  pauseOnMouseEnter: true,
+                }
+          }
+          onClick={(swiper) => {
+            swiper.autoplay.stop();
           }}
           breakpoints={{
             320: {
@@ -48,34 +73,37 @@ export default function CategorySwiper({ categories }: { categories: any }) {
               slidesPerView: 4.4,
               spaceBetween: 10,
             },
-            768: {
+            640: {
               slidesPerView: 5.4,
+              spaceBetween: 15,
+            },
+            768: {
+              slidesPerView: 8.5,
               spaceBetween: 20,
             },
             1024: {
-              slidesPerView: 6.5,
+              slidesPerView: 10.5,
               spaceBetween: 15,
             },
             1280: {
-              slidesPerView: 7.5,
+              slidesPerView: 14.5,
               spaceBetween: 15,
             },
           }}
           loop={true}
-          className={`${styles["categories-swiper"]} min-h-fit !py-6`}
+          className={`${styles["categories-swiper"]} min-h-fit !py-4`}
         >
           {categories?.data?.data?.categories?.map((category: CategoryType) => (
             <SwiperSlide
               key={category.id}
-              className={cn(
-                searchParams.get("category") == category.id.toString() &&
-                  "!border-[2px] border-[var(--main-color)] !shadow-lg",
-                "group cursor-pointer overflow-hidden rounded-lg border bg-white py-4 shadow-md transition-shadow hover:shadow-lg",
-              )}
+              className={cn("group cursor-pointer overflow-hidden py-4")}
             >
               <CategoryBox
+                isActive={
+                  searchParams.get("category") == category.id.toString()
+                }
                 category={category}
-                onClick={() => onCategoryClick(category.id)}
+                onClick={() => onCategoryClick(category)}
               />
             </SwiperSlide>
           ))}
@@ -88,9 +116,11 @@ export default function CategorySwiper({ categories }: { categories: any }) {
 function CategoryBox({
   category,
   onClick,
+  isActive,
 }: {
   category: CategoryType;
   onClick: () => void;
+  isActive: boolean;
 }) {
   return (
     <div
@@ -98,19 +128,26 @@ function CategoryBox({
       onClick={onClick}
     >
       <div
-        className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-gray-200 shadow-md transition-all duration-200 group-hover:border-gray-300"
-        style={{ backgroundColor: "#f8f4e5" }}
+        className={cn(
+          "relative h-16 w-16 overflow-hidden rounded-full border-2 bg-white p-1 shadow-md transition-all duration-200",
+          isActive && "border-[var(--main-color)]",
+        )}
       >
         <Image
           src={category?.icon}
           alt={category?.name}
           width={60}
           height={60}
-          className="object-cover transition-all duration-200 group-hover:brightness-90"
+          className="rounded-full object-cover transition-all duration-200 group-hover:brightness-90"
           priority={category.id === 1}
         />
       </div>
-      <span className="mt-3 text-sm font-semibold text-gray-700 group-hover:text-gray-900 sm:text-base">
+      <span
+        className={cn(
+          "mt-3 text-center text-[14px] font-semibold text-gray-700",
+          isActive && "text-[var(--main-color)]",
+        )}
+      >
         {category.name}
       </span>
     </div>

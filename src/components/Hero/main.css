@@ -1,13 +1,11 @@
 .heroSwiper .swiper-pagination {
-  width: 180px !important;
-  bottom: -20px !important;
-  padding: 40px 0;
+  width: 100px !important;
+  padding: 10px 0;
   background-color: var(--main-background);
   width: fit-content;
   left: 50%;
   transform: translateX(-50%);
-  border-top-left-radius: 100% 100%;
-  border-top-right-radius: 100% 100%;
+  border-radius: 20px;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;

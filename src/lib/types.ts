@@ -8,6 +8,7 @@ export interface ProductType {
   image: string;
   discount?: string;
   price_after?: number;
+  is_variation?: boolean;
 }
 
 export interface CartItem extends ProductType {

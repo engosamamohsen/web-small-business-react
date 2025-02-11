@@ -2,15 +2,19 @@ import { ProductType } from "@/lib/types";
 import React from "react";
 import Image from "next/image";
 import { Flame } from "lucide-react";
+import ButtonAddToCart from "./ButtonAddToCart";
+import Link from "next/link";
 
 interface ProductProps {
   product: ProductType;
 }
 
 export function Product({ product }: ProductProps) {
+  const descount = product?.discount || "0";
+
   return (
-    <>
-      <div className="relative h-[300px] max-h-fit sm:h-48">
+    <div className="min-h-[350px]">
+      <div className="relative h-[208px] max-sm:h-48">
         <Image
           src={product?.image}
           alt={product?.name || ""}
@@ -20,13 +24,14 @@ export function Product({ product }: ProductProps) {
           priority
           className="max-h-52 !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
         />
-        {product?.price_after ? (
+        {+descount > 0 ? (
           <div className="absolute right-4 top-4">
             <Flame fill="red" className="h-8 w-8 text-transparent" />
           </div>
         ) : null}
+        <ButtonAddToCart product={product} />
       </div>
-      <div className="p-4">
+      <div className="flex flex-col items-start justify-start gap-2 px-4 pb-6 pt-4">
         <h3 className="my-2 line-clamp-2 text-sm font-semibold sm:text-base">
           {product.name}
         </h3>
@@ -36,13 +41,21 @@ export function Product({ product }: ProductProps) {
             <PriceContent product={product} />
           </div>
         </div>
+        <Link
+          href={`/products/${product?.id}`}
+          className="text-sm hover:text-[var(--second-color)] hover:underline"
+        >
+          {" "}
+          عرض المزيد
+        </Link>
       </div>
-    </>
+    </div>
   );
 }
 
 function PriceContent({ product }: { product: ProductType }) {
-  return product?.price_after ? (
+  const descount = product?.discount || "0";
+  return +descount > 0 ? (
     <>
       <span className="ml-1 text-lg font-bold text-orange-500 sm:text-xl">
         {product.price_after} ج.م

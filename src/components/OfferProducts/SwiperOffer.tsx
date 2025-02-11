@@ -7,7 +7,6 @@ import "swiper/css/navigation";
 import "swiper/css/autoplay";
 import styles from "./style.module.css";
 import { Product } from "../Product/Product";
-import Link from "next/link";
 
 export default function SwiperBanner({ response }: { response: any }) {
   return (
@@ -43,13 +42,10 @@ export default function SwiperBanner({ response }: { response: any }) {
         {response?.data?.data?.length ? (
           response?.data?.data?.map((product: any) => {
             return (
-              <SwiperSlide key={product.id}>
-                <Link
-                  href={`/products/${product.id}`}
-                  className="group block cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
-                >
+              <SwiperSlide key={product.id} className="py-4">
+                <div className="group block overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg">
                   <Product product={product} />
-                </Link>
+                </div>
               </SwiperSlide>
             );
           })
