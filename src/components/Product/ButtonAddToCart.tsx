@@ -8,6 +8,7 @@ function ButtonAddToCart({ product }: { product: ProductType }) {
   const router = useRouter();
   return (
     <button
+      aria-label="Add product to cart"
       onClick={() => {
         if (product?.is_variation) {
           router.push(`/products/${product?.id}`);

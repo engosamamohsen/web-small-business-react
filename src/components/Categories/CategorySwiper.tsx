@@ -22,19 +22,19 @@ export default function CategorySwiper({ categories }: { categories: any }) {
 
   const onCategoryClick = (category: any) => {
     const searchParams = new URLSearchParams(window.location.search);
-    console.log(category, "category");
     if (category.id.toString() === searchParams.get("category")) {
       searchParams.delete("category"); // Clear the category
+      searchParams.delete("sub_category"); // Clear the sub-category
+      searchParams.set("page", "1");
+
       router.push(`${window.location.pathname}?${searchParams}`, {
         scroll: false,
       });
     } else {
+      searchParams.delete("sub_category"); // Clear the category
+      searchParams.set("page", "1");
+
       searchParams.set("category", category.id.toString()); // Set the new category
-      if (category?.categories?.length > 0) {
-        searchParams.set("sub_category", ""); // Set the new category
-      } else {
-        searchParams.delete("sub_category");
-      }
       router.push(`${window.location.pathname}?${searchParams}`, {
         scroll: false,
       });
@@ -91,7 +91,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
             },
           }}
           loop={true}
-          className={`${styles["categories-swiper"]} min-h-fit !py-4`}
+          className={`${styles["categories-swiper"]} min-h-fit`}
         >
           {categories?.data?.data?.categories?.map((category: CategoryType) => (
             <SwiperSlide
@@ -154,7 +154,7 @@ function CategoryBox({
   );
 }
 
-const scrollToProducts = ({
+export const scrollToProducts = ({
   elementId,
   top = 0,
 }: {
