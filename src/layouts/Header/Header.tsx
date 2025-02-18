@@ -1,11 +1,13 @@
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { getGlobalData } from "../../lib/global";
 import Image from "next/image";
 import LoginButton from "./LoginButton";
+import { getDefaultStore } from "jotai";
+import { settingsDataAtom } from "@/lib/stores/settingsData";
 
 export default function Header() {
-  const globalData = getGlobalData();
+  const store = getDefaultStore();
+  const settings = store.get(settingsDataAtom);
 
   // const items = useCartStore((state) => state.items);
   // const itemCount = items.reduce((acc, item) => acc + (item?.quantity || 0), 0);
@@ -16,7 +18,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           <Link href="/" aria-label="site home">
             <Image
-              src={globalData.logo}
+              src={settings.logo}
               alt="site logo"
               width={100}
               height={50}

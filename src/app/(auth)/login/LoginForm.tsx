@@ -29,7 +29,9 @@ export default function RegisterForm({
 }: {
   initSettings: SettingsType;
 }) {
-  useHydrateAtoms([[settingsDataAtom, initSettings]]);
+  useHydrateAtoms([[settingsDataAtom, initSettings]], {
+    dangerouslyForceHydrate: true,
+  });
   const [settingsData] = useAtom(settingsDataAtom);
   const {
     register,
@@ -68,9 +70,9 @@ export default function RegisterForm({
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">
           <div className="flex w-full items-center justify-center gap-1">
             <span> مرحبًا بك في </span>
-            <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
+            <div className="text-[15px] font-semibold text-[var(--main-color)]">
               {settingsData?.name ? settingsData?.name : ""}
-            </h4>
+            </div>
           </div>
           يرجى تسجيل الدخول لإجراء الطلب
         </div>

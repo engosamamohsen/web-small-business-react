@@ -2,6 +2,7 @@ import { revalidateTime } from "@/constants/constansts";
 import { fetchingData } from "@/hooks/fetching";
 import ProductsGrid from "./ProductsGrid";
 import Pagination from "../Pagination/Pagination";
+import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
 // import Link from "next/link";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -28,6 +29,7 @@ export default async function Products({
     "response?.data?.pagination?.last_page",
     response?.data?.pagination?.last_page,
   );
+  console.log("response?.data", response?.data);
   if (response?.isSuccess) {
     return (
       <section className="py-10" id="products">
@@ -40,15 +42,25 @@ export default async function Products({
               تصفح كل العروض
             </Link> */}
           </div>
-          {/* Filter Navigation */}
           <ProductsGrid products={response} />
           {response?.data?.pagination?.last_page > 1 && (
             <Pagination totalPages={response?.data?.pagination?.last_page} />
           )}
+          {response?.data?.data?.length == 0 && <NotFoundProducts />}
         </div>
       </section>
     );
   } else {
-    return <></>;
+    return (
+      <>
+        {" "}
+        <section className="py-10" id="products">
+          <div className="container">
+            <div className="flex w-full items-center justify-between max-sm:flex-col max-sm:justify-center max-sm:gap-4"></div>
+            <NotFoundProducts />
+          </div>
+        </section>
+      </>
+    );
   }
 }

@@ -42,6 +42,7 @@ export default async function RootLayout({
     ...store.get(settingsDataAtom),
     ...settingResponse.data,
   });
+  console.log("store", store.get(settingsDataAtom));
   return (
     <html lang="ar" dir="rtl">
       <body className={`relative ${cairo.className}`}>

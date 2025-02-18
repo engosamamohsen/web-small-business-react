@@ -38,7 +38,9 @@ export default function RegisterForm({
 }: {
   initSettings: SettingsType;
 }) {
-  useHydrateAtoms([[settingsDataAtom, initSettings]]);
+  useHydrateAtoms([[settingsDataAtom, initSettings]], {
+    dangerouslyForceHydrate: true,
+  });
   const [settingsData] = useAtom(settingsDataAtom);
   const {
     register,

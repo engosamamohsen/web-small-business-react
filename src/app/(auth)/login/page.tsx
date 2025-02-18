@@ -1,9 +1,8 @@
 import { Metadata } from "next";
-import RegisterForm from "./LoginForm";
 import styles from "./style.module.css";
 import { getDefaultStore } from "jotai";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
-export const dynamic = "force-dynamic";
+import LoginForm from "./LoginForm";
 
 export async function generateMetadata(): Promise<Metadata> {
   const store = getDefaultStore();
@@ -31,13 +30,12 @@ export default function Login() {
   const store = getDefaultStore();
 
   const settings = store.get(settingsDataAtom);
-
   return (
     <div className="flex h-full min-h-screen w-full items-center justify-center bg-[var(--second-background)] px-9 py-10">
       <div
         className={`flex h-fit w-full max-w-fit flex-col items-center justify-center gap-4 rounded-md bg-[var(--main-background)] px-10 ${styles["boxFrom"]}`}
       >
-        <RegisterForm initSettings={settings} />
+        <LoginForm initSettings={settings} />
       </div>
     </div>
   );
