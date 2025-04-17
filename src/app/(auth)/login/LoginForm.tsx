@@ -2,7 +2,6 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
@@ -14,17 +13,16 @@ import { useAtom } from "jotai";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
 import { useHydrateAtoms } from "jotai/utils";
 import { SettingsType } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import {
+  formSchema,
+  formSchemaDefaultValues,
+  FormSchemaType,
+} from "./formSchema";
+import { useLoginHook } from "@/hooks/auth/login";
+import Cookies from "js-cookie";
 
-const loginSchema = z.object({
-  email: z.string().email("عنوان البريد الإلكتروني غير صالح"),
-  password: z
-    .string()
-    .min(6, "يجب أن تكون كلمة المرور مكونة من 6 أحرف على الأقل"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-export default function RegisterForm({
+export default function LoginForm({
   initSettings,
 }: {
   initSettings: SettingsType;
@@ -32,25 +30,28 @@ export default function RegisterForm({
   useHydrateAtoms([[settingsDataAtom, initSettings]], {
     dangerouslyForceHydrate: true,
   });
+
   const [settingsData] = useAtom(settingsDataAtom);
+  const router = useRouter();
   const {
-    register,
     handleSubmit,
+    register,
     setValue,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<FormSchemaType>({
+    mode: "all",
+    defaultValues: formSchemaDefaultValues,
+    resolver: zodResolver(formSchema),
   });
-
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      // TODO: Implement registration logic with Supabase
-      console.log("Registration data:", data);
-    } catch (error) {
-      console.error("Registration error:", error);
-    }
+  const { loading, login } = useLoginHook();
+  const onSubmit = async (inputs: any) => {
+    await login(inputs);
   };
 
+  const token = Cookies.get("app_token");
+  if (token) {
+    router.push("/");
+  }
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -134,8 +135,9 @@ export default function RegisterForm({
       <div>
         <Button
           type="submit"
-          label="إنشاء حساب"
-          className="w-full bg-[var(--main-color)] py-4 text-white"
+          label="تسجيل الدخول"
+          className="w-full bg-[var(--main-color)] px-3 py-4 text-white"
+          loading={loading}
         />
       </div>
       <div className="text-center">
@@ -148,7 +150,7 @@ export default function RegisterForm({
       </div>
       <Button
         type="button"
-        onClick={loginWithGoogle}
+        onClick={() => loginWithGoogle({ action: () => router.push("/") })}
         className="mx-auto flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[var(--second-background)] text-center !shadow-none !outline-none"
         icon={
           <Image

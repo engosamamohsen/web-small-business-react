@@ -5,17 +5,21 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.js",
     "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
+    "@types/nprogress": "^0.2.1",
+    "axios": "^1.7.9",
     "clsx": "^2.1.1",
     "firebase": "^11.2.0",
     "html-react-parser": "^5.2.2",
     "jotai": "^2.11.3",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.446.0",
     "next": "15.1.6",
+    "nprogress": "^0.2.0",
     "primeicons": "^6.0.1",
     "primereact": "^10.3.3",
     "react": "^19.0.0",

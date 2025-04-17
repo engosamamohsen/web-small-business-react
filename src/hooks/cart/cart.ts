@@ -1,0 +1,101 @@
+import { $api } from "@/client";
+import { toast } from "react-toastify";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export const useCartHook = () => {
+  const [loading, setLoading] = useState(false);
+  const routes = useRouter();
+
+  /**
+   * On Share Project action
+   */
+  const addToCart = async (product: any) => {
+    try {
+      setLoading(true);
+
+      const {} = await $api.post(`/basket/add`, transformData(product));
+
+      toast.success(`تمت إضافة ${product.name} إلى سلة التسوق`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      // routes.push(`/`);
+    } catch (error: any) {
+      toast.error(`  فشل اضافة للسلة : ${error?.response?.data?.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+  const updateCount = async (product: any) => {
+    try {
+      setLoading(true);
+
+      const {} = await $api.post(`/basket/add`, transformUpdateData(product));
+
+      routes.refresh();
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+  const removeFromCart = async (product: any) => {
+    try {
+      setLoading(true);
+
+      const {} = await $api.delete(`/basket/delete/${product.id}`);
+      routes.push(`/cart`);
+
+      toast.success(`تم حذف ${product.name} من السلة`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+    } catch (error: any) {
+      toast.error(`  فشل حذف من السلة  : ${error?.response?.data?.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+  return {
+    loading,
+    addToCart,
+    removeFromCart,
+    updateCount,
+  };
+};
+
+const transformData = (product: any) => {
+  const formData = new FormData();
+  formData.append("product_id", product?.id);
+  formData.append("count", product?.count || 1);
+  if (product?.currentSize) {
+    formData.append("size_id", product?.currentSize?.id);
+  }
+  if (product?.currentColor) {
+    formData.append("color_id", product?.currentColor?.id);
+  }
+  return formData;
+};
+
+const transformUpdateData = (product: any) => {
+  console.log("product", product);
+  const formData = new FormData();
+  formData.append("product_id", product?.product_id);
+  formData.append("count", product?.count || 1);
+
+  return formData;
+};

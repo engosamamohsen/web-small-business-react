@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
-import { ToastContainer } from "react-toastify";
+import "nprogress/nprogress.css";
 import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
 import Header from "@/layouts/Header/Header";
 import Footer from "@/layouts/Footer";
 import ColorHandler from "@/layouts/ColorHandler";
@@ -44,7 +46,7 @@ export default async function RootLayout({
   });
   console.log("store", store.get(settingsDataAtom));
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`relative ${cairo.className}`}>
         <ColorHandler globalData={settingResponse} />
         <Header />

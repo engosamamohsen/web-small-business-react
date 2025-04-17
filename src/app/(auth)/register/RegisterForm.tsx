@@ -14,6 +14,8 @@ import { SettingsType } from "@/lib/types";
 import { useHydrateAtoms } from "jotai/utils";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
 import { useAtom } from "jotai";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const registerSchema = z
   .object({
@@ -42,6 +44,7 @@ export default function RegisterForm({
     dangerouslyForceHydrate: true,
   });
   const [settingsData] = useAtom(settingsDataAtom);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -61,6 +64,10 @@ export default function RegisterForm({
     }
   };
 
+  const token = Cookies.get("app_token");
+  if (token) {
+    router.push("/");
+  }
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -206,7 +213,7 @@ export default function RegisterForm({
       </div>
       <Button
         type="button"
-        onClick={loginWithGoogle}
+        onClick={() => loginWithGoogle({ action: () => router.push("/") })}
         className="mx-auto flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[var(--second-background)] text-center !shadow-none !outline-none"
         icon={
           <Image

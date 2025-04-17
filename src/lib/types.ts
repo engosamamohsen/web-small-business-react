@@ -13,6 +13,7 @@ export interface ProductType {
 
 export interface CartItem extends ProductType {
   quantity?: number;
+  count?: number;
 }
 
 export type SettingsType = Record<string, any>;

@@ -1,0 +1,117 @@
+import { $api } from "@/client";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+
+export const addUserToDatabase = async (data: any, action: () => void) => {
+  try {
+    const { data: response }: any = await $api.post(
+      "/login",
+      transformUserData(data),
+    );
+    console.log("response", response);
+    if (response.status !== 200) {
+      toast.error(` فشل تسجيل الدخول : ${response?.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      throw new Error(response?.message);
+    } else {
+      Cookies.set("app_token", response?.data?.jwt_token, {
+        expires: 1,
+        path: "/",
+      }); // Expires in 1 day
+
+      toast.success("تم تسجيل الدخول بنجاح!", {
+        position: "top-right",
+        autoClose: 1500,
+        rtl: true,
+      });
+
+      if (action) {
+        action();
+      }
+    }
+  } catch (err: any) {
+    console.log(err.response?.data?.message);
+
+    toast.error(` فشل تسجيل الدخول : ${err?.response?.data?.message}`, {
+      position: "top-right",
+      autoClose: 2000,
+      rtl: true,
+    });
+  }
+};
+
+function transformUserData(data: any) {
+  console.log("transformUserData", data);
+  const formData = new FormData();
+  formData.append("type", "3");
+  formData.append("key", data?.uid);
+  if (data?.displayName) {
+    formData.append("name", data?.displayName);
+  }
+  if (data?.email) {
+    formData.append("email", data?.email);
+  }
+  if (data?.photoURL) {
+    formData.append("image", data?.photoURL);
+  }
+  return formData;
+}
+
+import { useState } from "react";
+
+export const useLoginHook = () => {
+  const [loading, setLoading] = useState(false);
+  const routes = useRouter();
+
+  /**
+   * On Share Project action
+   */
+  const login = async (inputs: any) => {
+    try {
+      setLoading(true);
+
+      const { data: response } = await $api.post(
+        `/login`,
+        transformInput(inputs),
+      );
+
+      toast.success("تم تسجيل الدخول بنجاح!", {
+        position: "top-right",
+        autoClose: 1500,
+        rtl: true,
+      });
+      Cookies.set("app_token", response?.data?.jwt_token, {
+        expires: 1,
+        path: "/",
+      }); // Expires in 1 day
+      routes.push(`/`);
+    } catch (error: any) {
+      toast.error(` فشل تسجيل الدخول : ${error?.response?.data?.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    loading,
+    login,
+  };
+};
+
+const transformInput = (inputs: any) => {
+  const formData = new FormData();
+  formData.append("type", "1");
+  formData.append("key", inputs?.email);
+  formData.append("password", inputs?.password);
+
+  return formData;
+};

@@ -1,0 +1,10 @@
+.selectInput:global(.p-inputwrapper-focus) {
+  @apply border-transparent ring-2 ring-orange-500;
+}
+
+.selectInput :global(.p-dropdown-label) {
+  @apply p-2;
+}
+.selectInput :global(.p-dropdown-clear-icon) {
+  @apply left-16 right-auto;
+}

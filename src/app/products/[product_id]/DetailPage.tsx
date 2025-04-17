@@ -12,6 +12,9 @@ import { useUpdateEffect } from "react-use";
 import { currency } from "@/constants/constansts";
 import { Button } from "primereact/button";
 import { ProductType } from "@/lib/types";
+import Cookies from "js-cookie";
+import { useCartHook } from "@/hooks/cart/cart";
+import { useRouter } from "next/navigation";
 
 function getDiscountedPrice(price: number, discount: number): number {
   const discountedPrice = price - (price * discount) / 100;
@@ -22,7 +25,9 @@ export default function DetailPage({ product }: { product: any }) {
   const [selectedSize, setSelectedSize] = useState<any | null>(
     product?.sizes[0],
   );
-  const [selectedColor, setSelectedColor] = useState<any | null>(null);
+  const [selectedColor, setSelectedColor] = useState<any | null>(
+    product?.colors[0],
+  );
   const [currentPrice, setCurrentPrice] = useState<number>(
     product?.price_after || product.price,
   );
@@ -133,7 +138,11 @@ export default function DetailPage({ product }: { product: any }) {
               </div>
             </div>
           )}
-          <CartActions product={product} />
+          <CartActions
+            product={product}
+            currentColor={selectedColor}
+            currentSize={selectedSize}
+          />
         </div>
       </div>
     </div>
@@ -198,20 +207,37 @@ function PriceContent({
   }
 }
 
-const CartActions = ({ product }: { product: ProductType }) => {
+const CartActions = ({
+  product,
+  currentColor,
+  currentSize,
+}: {
+  product: ProductType;
+  currentColor: any;
+  currentSize: any;
+}) => {
+  const router = useRouter();
   const [count, setCount] = useState(1);
-
+  const token = Cookies.get("app_token");
+  const { loading, addToCart } = useCartHook();
   return (
     <div className="mt-6 flex items-center justify-between gap-3 max-sm:flex-col-reverse">
-      <button
+      <Button
+        loading={loading}
+        disabled={loading}
         onClick={() => {
-          console.log("add to cart count", count, product);
+          if (!token) router.push("/login");
+          else {
+            console.log("add to cart,", product, "token", token);
+            addToCart({ ...product, count, currentColor, currentSize });
+          }
         }}
+        loadingIcon="pi pi-spin pi-spinner absolute"
         className="w-fit rounded-md bg-[var(--main-color)] px-6 py-4 text-white transition-colors hover:bg-gray-800 max-sm:w-full"
         aria-label="Add product to cart"
       >
         أضف إلى السلة
-      </button>
+      </Button>
       <div className="flex w-40 items-center justify-between gap-1 rounded-lg border bg-white p-4 max-sm:w-full">
         <Button
           icon="pi pi-plus"

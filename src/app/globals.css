@@ -61,3 +61,23 @@ img {
   height: 100%;
   object-fit: cover;
 }
+
+#nprogress {
+  @apply fixed start-0 top-0 w-full;
+}
+
+#nprogress {
+  z-index: 1000000 !important;
+}
+
+#nprogress .bar {
+  @apply bg-blue-500;
+}
+
+#nprogress .spinner {
+  @apply right-auto start-2 top-2 lg:start-4 lg:top-4;
+}
+
+#nprogress .spinner-icon {
+  @apply h-6 w-6 border-l-blue-500 border-t-blue-500;
+}

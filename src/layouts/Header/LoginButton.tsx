@@ -1,12 +1,13 @@
 "use client";
 
+import Cookies from "js-cookie";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LoginButton = () => {
   // const { onOpen, isOpen } = useDialogStore((state) => state);
   const pathname = usePathname();
-
+  const token = Cookies.get("app_token");
   return (
     <div>
       {/* <button
@@ -16,10 +17,10 @@ const LoginButton = () => {
       >
         تسجيل الدخول
       </button> */}
-      {pathname !== "/login" && (
+      {!token && pathname !== "/login" && pathname !== "/register" && (
         <Link
-          href={"/register"}
-          aria-label="site register"
+          href={"/login"}
+          aria-label="site login"
           className="text-sm font-medium text-[var(--main-color)] underline-offset-4 hover:underline"
         >
           تسجيل الدخول
