@@ -5,21 +5,11 @@ async function CartPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("app_token")?.value;
   const response = await fetchingData({
-    url: `/basket`,
-    type: { cache: "no-store" },
-    token,
-  });
-  const addressResponse = await fetchingData({
-    url: `/customers/address`,
+    url: `v1/basket`,
     type: { cache: "no-store" },
     token,
   });
 
-  return (
-    <CheckoutPage
-      items={response?.data?.data || []}
-      address={addressResponse?.data?.data || []}
-    />
-  );
+  return <CheckoutPage items={response?.data?.data || []} />;
 }
 export default CartPage;

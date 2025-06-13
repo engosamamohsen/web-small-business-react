@@ -32,7 +32,7 @@ async function page({ params }: PageProps) {
   const productId = resolvedParams.product_id;
 
   const response = await fetchingData({
-    url: `/product-details?product_id=${productId}`,
+    url: `v1/product-details?product_id=${productId}`,
     type: { next: { revalidate: revalidateTime } },
   });
   if (response?.isSuccess && response.data) {

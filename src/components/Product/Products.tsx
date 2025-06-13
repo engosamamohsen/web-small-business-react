@@ -16,20 +16,15 @@ export default async function Products({
   const currentPage = Number(searchParamsUrl?.page) || 1;
   const limit = Number(searchParamsUrl?.limit) || 10;
 
-  const url = `/product${
+  const url = `v1/product${
     searchParamsUrl?.category ? `?category_id=${searchParamsUrl?.category}` : ""
   }${searchParamsUrl?.sub_category ? `&sub_category_id=${searchParamsUrl?.sub_category}` : ""}${searchParamsUrl?.sub_category || searchParamsUrl?.category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
-  console.log("url", url);
 
   const response = await fetchingData({
     url: url,
     type: { next: { revalidate: revalidateTime } },
   });
-  console.log(
-    "response?.data?.pagination?.last_page",
-    response?.data?.pagination?.last_page,
-  );
-  console.log("response?.data", response?.data);
+
   if (response?.isSuccess) {
     return (
       <section className="py-10" id="products">

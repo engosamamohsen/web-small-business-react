@@ -5,20 +5,20 @@ const url = process.env.NEXT_PUBLIC_API_URL as string;
 const axiosInstance = (baseUrl: string) => {
   const instance = axios.create({
     baseURL: baseUrl,
-    headers: {
-      platform: 3,
-      lang: "en",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "Origin, Content-Type, X-Auth-Token ,X-Requested-With",
-    },
+    // headers: {
+    //   platform: 3,
+    //   lang: "en",
+    //   "Access-Control-Allow-Origin": "*",
+    //   "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
+    //   "Content-Type": "multipart/form-data",
+    //   "Access-Control-Allow-Headers":
+    //     "Origin, Content-Type, X-Auth-Token ,X-Requested-With",
+    // },
   });
 
   instance.interceptors.request.use((config) => {
     NProgress.start();
     const token = Cookies.get("app_token");
-    console.log("appToken", token);
     if (token) config.headers.Authorization = "Bearer " + token;
     return config;
   });

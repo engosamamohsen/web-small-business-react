@@ -11,16 +11,16 @@ import { loginWithGoogle } from "@/firebase/firebase-hooks";
 import Image from "next/image";
 import GoogleIcon from "../../../../assets/icons/icons8-google.svg";
 import { SettingsType } from "@/lib/types";
-import { useHydrateAtoms } from "jotai/utils";
-import { settingsDataAtom } from "@/lib/stores/settingsData";
-import { useAtom } from "jotai";
+
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { useLoginHook } from "@/hooks/auth/login";
 
 const registerSchema = z
   .object({
     name: z.string().min(2, "يجب أن يكون الاسم مكونًا من حرفين على الأقل"),
     email: z.string().email("عنوان البريد الإلكتروني غير صالح"),
+    phone: z.string().min(11, "يجب أن يكون رقم الهاتف مكونًا من 11 رقمًا"),
     password: z
       .string()
       .min(6, "يجب أن تكون كلمة المرور مكونة من 6 أحرف على الأقل"),
@@ -40,10 +40,6 @@ export default function RegisterForm({
 }: {
   initSettings: SettingsType;
 }) {
-  useHydrateAtoms([[settingsDataAtom, initSettings]], {
-    dangerouslyForceHydrate: true,
-  });
-  const [settingsData] = useAtom(settingsDataAtom);
   const router = useRouter();
   const {
     register,
@@ -55,13 +51,9 @@ export default function RegisterForm({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
-    try {
-      // TODO: Implement registration logic with Supabase
-      console.log("Registration data:", data);
-    } catch (error) {
-      console.error("Registration error:", error);
-    }
+  const { loading, register: registerUser } = useLoginHook();
+  const onSubmit = async (inputs: any) => {
+    await registerUser(inputs);
   };
 
   const token = Cookies.get("app_token");
@@ -75,9 +67,9 @@ export default function RegisterForm({
       dir="rtl"
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
-        {settingsData?.logo && (
+        {initSettings?.logo && (
           <Image
-            src={settingsData?.logo}
+            src={initSettings?.logo}
             alt="logo app"
             width={80}
             height={80}
@@ -88,7 +80,7 @@ export default function RegisterForm({
           <div className="flex w-full items-center justify-center gap-1">
             <span> مرحبًا بك في </span>
             <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
-              {settingsData?.name ? settingsData?.name : ""}
+              {initSettings?.name ? initSettings?.name : ""}
             </h4>
           </div>
           يرجى تسجيل الدخول لإجراء الطلب
@@ -135,7 +127,27 @@ export default function RegisterForm({
             )}
           </div>
         </div>
-
+        <div>
+          <label
+            htmlFor="phone"
+            className="mb-3 block text-sm font-medium text-black"
+          >
+            رقم الهاتف
+          </label>
+          <div className="mt-1">
+            <InputText
+              id="phone"
+              type="text"
+              {...register("phone")}
+              className="w-full rounded-md border border-gray-400 px-2 py-3"
+            />
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.phone.message}
+              </p>
+            )}
+          </div>
+        </div>
         <div>
           <label
             htmlFor="password"
@@ -213,6 +225,8 @@ export default function RegisterForm({
       </div>
       <Button
         type="button"
+        disabled={loading}
+        loading={loading}
         onClick={() => loginWithGoogle({ action: () => router.push("/") })}
         className="mx-auto flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[var(--second-background)] text-center !shadow-none !outline-none"
         icon={

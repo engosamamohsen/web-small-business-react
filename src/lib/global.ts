@@ -51,3 +51,24 @@ export function handleStringifyResponse(
     return null;
   }
 }
+
+export function transformSelectData({
+  data,
+  idKey,
+  valueKey,
+}: {
+  data: any[];
+  idKey: string;
+  valueKey: string;
+}): { value: number; name: string }[] {
+  const TargetData = data.map((item) => ({
+    value: item[idKey],
+    name: item[valueKey],
+  }));
+  return TargetData;
+}
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toISOString().split("T")[0]; // Returns YYYY-MM-DD format
+};

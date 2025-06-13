@@ -24,6 +24,17 @@ const addressFormSchema = z.object({
         message: "يرجى اختيار المدينة",
       },
     ),
+  branch_id: z
+    .any({
+      required_error: "يرجى اختيار الفرع",
+    })
+    .refine(
+      (val: any) =>
+        val?.value !== "" && val?.value !== null && val?.value !== undefined,
+      {
+        message: "يرجى اختيار الفرع",
+      },
+    ),
   name: z
     .string({
       required_error: "يرجى إدخال الاسم",
@@ -38,7 +49,11 @@ const addressFormSchema = z.object({
     .string({
       required_error: "يرجى إدخال رقم الهاتف",
     })
-    .min(11, "رقم الهاتف يجب أن يتكون من 11 رقم على الأقل"),
+    .length(11, "رقم الهاتف يجب أن يتكون من 11 رقم بالضبط")
+    .refine(
+      (val) => /^\d+$/.test(val),
+      "رقم الهاتف يجب أن يحتوي على أرقام فقط"
+    ),
   address: z
     .string({
       required_error: "يرجى إدخال العنوان",

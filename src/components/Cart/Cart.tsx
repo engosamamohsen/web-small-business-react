@@ -65,7 +65,7 @@ export default function Cart({ items }: { items: CartItem[] }) {
                   <button
                     disabled={loading}
                     onClick={() =>
-                      updateCount({ ...item, count: item.count - 1 })
+                      updateCount({ ...item, count: Number(item.count) - 1 })
                     }
                     className={cn(
                       "rounded-full p-1 hover:bg-gray-100",
@@ -81,7 +81,7 @@ export default function Cart({ items }: { items: CartItem[] }) {
                   <button
                     disabled={loading}
                     onClick={() =>
-                      updateCount({ ...item, count: item.count + 1 })
+                      updateCount({ ...item, count: Number(item.count) + 1 })
                     }
                     className={cn(
                       "rounded-full p-1 hover:bg-gray-100",

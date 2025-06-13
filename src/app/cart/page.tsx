@@ -5,11 +5,10 @@ async function CartPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("app_token")?.value;
   const response = await fetchingData({
-    url: `/basket`,
+    url: `v1/basket`,
     type: { cache: "no-store" },
     token,
   });
-  console.log("response", response);
   return <Cart items={response.data?.data || []} />;
 }
 export default CartPage;

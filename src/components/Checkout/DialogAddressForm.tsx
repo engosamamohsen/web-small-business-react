@@ -1,5 +1,4 @@
 import { InputText } from "primereact/inputtext";
-import React from "react";
 import SelectInput from "../SelectInput/SelectInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog } from "primereact/dialog";
@@ -12,23 +11,28 @@ import {
 } from "./addressFormSchema";
 import { useForm } from "react-hook-form";
 import { CircleX } from "lucide-react";
-import { useAddress, useGovernorate } from "@/hooks/addressHook";
+import {
+  useAddress,
+  useBranchesWithCity,
+  useCities,
+  useGovernorate,
+} from "@/hooks/addressHook";
 import { useUpdateEffect } from "react-use";
 
 function DialogAddressForm({
   showDialog,
   setShowDialog,
+  retryAddress,
 }: {
   showDialog: boolean;
   setShowDialog: any;
+  retryAddress: () => void;
 }) {
-  const { value: governorates } = useGovernorate();
   const {
     handleSubmit,
     setValue,
     watch,
     register,
-
     setError,
     formState: { errors },
   } = useForm<AddressFormSchemaType>({
@@ -36,21 +40,27 @@ function DialogAddressForm({
     defaultValues: AddressFormSchemaDefaultValues,
     resolver: zodResolver(addressFormSchema),
   });
-  const citiesValueFromGovernorate =
-    watch("governorate")?.cities?.length > 0
-      ? watch("governorate")?.cities
-      : [];
+  const { loading: governoratesLoading, value: governorates } =
+    useGovernorate();
+  const { loading: citiesLoading, value: cities } = useCities(
+    watch("governorate")?.value || "",
+  );
+  const { loading: branchesLoading, value: branches } = useBranchesWithCity(
+    watch("city")?.value || "",
+  );
   useUpdateEffect(() => {
     if (watch("governorate")?.length == 0) {
       setValue("city", "");
     }
   }, [watch("governorate")]);
 
-  console.log("watch", watch());
   const { createAddress, loading } = useAddress();
   const onSubmit = async (inputs: any) => {
-    console.log(inputs);
-    await createAddress(inputs);
+    const data = await createAddress(inputs);
+    if (data?.status === 201) {
+      setShowDialog(false);
+      retryAddress();
+    }
   };
   return (
     <>
@@ -160,11 +170,12 @@ function DialogAddressForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="mb-1 block text-sm font-medium text-gray-700">
-                        المحافظة{" "}
+                        المدينة{" "}
                       </label>
                       <SelectInput
                         name="governorate"
-                        options={governorates?.length > 0 ? governorates : []}
+                        loading={governoratesLoading}
+                        options={governorates || []}
                         className="w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                         value={watch("governorate") || ""}
                         setValue={setValue}
@@ -180,21 +191,14 @@ function DialogAddressForm({
                     </div>
                     <div>
                       <label className="mb-1 block text-sm font-medium text-gray-700">
-                        المدينة او المنطقه{" "}
+                        المنطقه{" "}
                       </label>
                       <SelectInput
                         name="city"
                         optionLabel="name"
-                        disabled={
-                          citiesValueFromGovernorate?.length === 0
-                            ? false
-                            : true
-                        }
-                        options={
-                          citiesValueFromGovernorate?.length > 0
-                            ? citiesValueFromGovernorate
-                            : []
-                        }
+                        disabled={watch("governorate")?.length === 0}
+                        options={cities || []}
+                        loading={citiesLoading}
                         className="w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500"
                         value={watch("city") || ""}
                         setValue={setValue}
@@ -207,6 +211,28 @@ function DialogAddressForm({
                         </p>
                       )}
                     </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      الفرع
+                    </label>
+                    <SelectInput
+                      name="branch_id"
+                      optionLabel="name"
+                      disabled={watch("governorate")?.length === 0}
+                      options={branches || []}
+                      loading={branchesLoading}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500"
+                      value={watch("branch_id") || ""}
+                      setValue={setValue}
+                      placeholder="اختر الفرع"
+                      setError={setError}
+                    />
+                    {errors.branch_id && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.branch_id.message as any}
+                      </p>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -247,7 +273,7 @@ function DialogAddressForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="mb-1 block text-sm font-medium text-gray-700">
-                        رقم المبنى
+                        رقم / اسم المبنى
                       </label>
                       <InputText
                         type="number"

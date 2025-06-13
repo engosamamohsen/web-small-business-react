@@ -11,7 +11,7 @@ export default async function Categories({
 }) {
   const searchParamsUrl = await searchParams;
   const response = await fetchingData({
-    url: "/categories",
+    url: "v1/categories",
     type: { next: { revalidate: revalidateTime } },
   });
   const targetFilterCategory = await handleSubCategories({

@@ -17,7 +17,6 @@ const SubCategories = ({ categories }: { categories: any }) => {
 
   const onCategoryClick = (category: any) => {
     const searchParams = new URLSearchParams(window.location.search);
-    console.log(category, "sub_category");
     if (category.id.toString() === searchParams.get("sub_category")) {
       searchParams.set("page", "1");
       searchParams.delete("sub_category"); // Clear the category

@@ -30,15 +30,10 @@ export default function Header() {
             {/* <div className="hidden md:block relative">
               <SearchBar />
             </div> */}
-            <LoginButton />
             <Link href="/cart" className="relative" aria-label="site cart">
-              <ShoppingCart className="h-6 w-6 text-[var(--main-color)]" />
-              {/* {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {itemCount}
-                </span>
-              )} */}
+              <ShoppingCart className="h-5 w-5 text-[var(--second-font-color)]" />
             </Link>
+            <LoginButton />
 
             {/* <button
               className="md:hidden"

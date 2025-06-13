@@ -228,7 +228,6 @@ const CartActions = ({
         onClick={() => {
           if (!token) router.push("/login");
           else {
-            console.log("add to cart,", product, "token", token);
             addToCart({ ...product, count, currentColor, currentSize });
           }
         }}

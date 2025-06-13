@@ -8,8 +8,7 @@ const formSchema = z.object({
     })
 
     .refine(
-      (val: any) =>
-        val?.value !== "" && val?.value !== null && val?.value !== undefined,
+      (val: any) => val?.id !== "" && val?.id !== null && val?.id !== undefined,
       {
         message: "يرجى اختيار عنوان",
       },

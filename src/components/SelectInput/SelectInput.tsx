@@ -4,7 +4,7 @@ import Styles from "./style.module.css";
 import { cn } from "@/utils/utils";
 
 interface Item {
-  label: string;
+  name: string;
   value: number;
 }
 
@@ -18,6 +18,7 @@ interface SelectInputProps {
   setError: any;
   disabled?: boolean;
   optionLabel?: string;
+  loading?: boolean;
 }
 export default function SelectInput({
   className,
@@ -27,12 +28,14 @@ export default function SelectInput({
   setValue,
   value,
   setError,
+  loading = false,
   disabled = false,
-  optionLabel = "label",
+  optionLabel = "name",
 }: SelectInputProps) {
   return (
     <Dropdown
       name={name}
+      loading={loading}
       value={value.value}
       onChange={(e: any) => {
         const targetValue = options.filter((op) => op.value == e.target.value);

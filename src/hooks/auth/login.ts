@@ -6,11 +6,10 @@ import { useRouter } from "next/navigation";
 export const addUserToDatabase = async (data: any, action: () => void) => {
   try {
     const { data: response }: any = await $api.post(
-      "/login",
+      "register-social",
       transformUserData(data),
     );
-    console.log("response", response);
-    if (response.status !== 200) {
+    if (response?.data?.status !== 200) {
       toast.error(` فشل تسجيل الدخول : ${response?.message}`, {
         position: "top-right",
         autoClose: 2000,
@@ -18,7 +17,7 @@ export const addUserToDatabase = async (data: any, action: () => void) => {
       });
       throw new Error(response?.message);
     } else {
-      Cookies.set("app_token", response?.data?.jwt_token, {
+      Cookies.set("app_token", response?.data?.api_token, {
         expires: 1,
         path: "/",
       }); // Expires in 1 day
@@ -47,8 +46,8 @@ export const addUserToDatabase = async (data: any, action: () => void) => {
 function transformUserData(data: any) {
   console.log("transformUserData", data);
   const formData = new FormData();
-  formData.append("type", "3");
-  formData.append("key", data?.uid);
+  formData.append("register_type", "2");
+  formData.append("social_id", data?.uid);
   if (data?.displayName) {
     formData.append("name", data?.displayName);
   }
@@ -75,7 +74,7 @@ export const useLoginHook = () => {
       setLoading(true);
 
       const { data: response } = await $api.post(
-        `/login`,
+        `login-user`,
         transformInput(inputs),
       );
 
@@ -101,9 +100,49 @@ export const useLoginHook = () => {
     }
   };
 
+  const register = async (inputs: any) => {
+    try {
+      setLoading(true);
+
+      const { data: response } = await $api.post(
+        `register-user`,
+        transformRegisterInput(inputs),
+      );
+
+      toast.success("تم التسجيل بنجاح!", {
+        position: "top-right",
+        autoClose: 1500,
+        rtl: true,
+      });
+      Cookies.set("app_token", response?.data?.jwt_token, {
+        expires: 1,
+        path: "/",
+      }); // Expires in 1 day
+      routes.push(`/`);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        routes.push("/verify");
+        toast.success(error?.response?.data?.message, {
+          position: "top-right",
+          autoClose: 1500,
+          rtl: true,
+        });
+      }
+      toast.error(` فشل التسجيل : ${error?.response?.data?.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     login,
+    register,
   };
 };
 
@@ -112,6 +151,18 @@ const transformInput = (inputs: any) => {
   formData.append("type", "1");
   formData.append("key", inputs?.email);
   formData.append("password", inputs?.password);
+
+  return formData;
+};
+
+const transformRegisterInput = (inputs: any) => {
+  const formData = new FormData();
+  formData.append("name", inputs?.name);
+  formData.append("email", inputs?.email);
+  formData.append("password", inputs?.password);
+  formData.append("password_confirmation", inputs?.confirmPassword);
+  formData.append("register_type", "1");
+  formData.append("phone", inputs?.phone);
 
   return formData;
 };

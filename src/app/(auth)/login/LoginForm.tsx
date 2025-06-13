@@ -9,9 +9,7 @@ import Link from "next/link";
 import { loginWithGoogle } from "@/firebase/firebase-hooks";
 import Image from "next/image";
 import GoogleIcon from "../../../../assets/icons/icons8-google.svg";
-import { useAtom } from "jotai";
-import { settingsDataAtom } from "@/lib/stores/settingsData";
-import { useHydrateAtoms } from "jotai/utils";
+
 import { SettingsType } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import {
@@ -27,11 +25,7 @@ export default function LoginForm({
 }: {
   initSettings: SettingsType;
 }) {
-  useHydrateAtoms([[settingsDataAtom, initSettings]], {
-    dangerouslyForceHydrate: true,
-  });
-
-  const [settingsData] = useAtom(settingsDataAtom);
+  console.log("initSettings", initSettings);
   const router = useRouter();
   const {
     handleSubmit,
@@ -59,9 +53,9 @@ export default function LoginForm({
       dir="rtl"
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
-        {settingsData?.logo && (
+        {initSettings?.logo && (
           <Image
-            src={settingsData?.logo}
+            src={initSettings?.logo}
             alt="logo app"
             width={80}
             height={80}
@@ -72,7 +66,7 @@ export default function LoginForm({
           <div className="flex w-full items-center justify-center gap-1">
             <span> مرحبًا بك في </span>
             <div className="text-[15px] font-semibold text-[var(--main-color)]">
-              {settingsData?.name ? settingsData?.name : ""}
+              {initSettings?.name ? initSettings?.name : ""}
             </div>
           </div>
           يرجى تسجيل الدخول لإجراء الطلب

@@ -6,7 +6,7 @@ import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
 
 async function OfferProducts() {
   const response = await fetchingData({
-    url: "/product?offer=1",
+    url: "v1/product?offer=1",
     type: { next: { revalidate: revalidateTime } },
   });
   if (response?.isSuccess) {

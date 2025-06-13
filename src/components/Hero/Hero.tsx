@@ -4,7 +4,7 @@ import { revalidateTime } from "@/constants/constansts";
 
 export default async function Hero() {
   const response = await fetchingData({
-    url: "/banner",
+    url: "v1/banner",
     type: { next: { revalidate: revalidateTime } },
   });
   if (response?.isSuccess) {

@@ -15,7 +15,7 @@ export const useCartHook = () => {
     try {
       setLoading(true);
 
-      const {} = await $api.post(`/basket/add`, transformData(product));
+      const {} = await $api.post(`v1/basket/add`, transformData(product));
 
       toast.success(`تمت إضافة ${product.name} إلى سلة التسوق`, {
         position: "top-right",
@@ -38,7 +38,7 @@ export const useCartHook = () => {
     try {
       setLoading(true);
 
-      const {} = await $api.post(`/basket/add`, transformUpdateData(product));
+      const {} = await $api.post(`v1/basket/add`, transformUpdateData(product));
 
       routes.refresh();
     } catch (error: any) {
@@ -51,7 +51,7 @@ export const useCartHook = () => {
     try {
       setLoading(true);
 
-      const {} = await $api.delete(`/basket/delete/${product.id}`);
+      const {} = await $api.delete(`v1/basket/delete/${product.id}`);
       routes.push(`/cart`);
 
       toast.success(`تم حذف ${product.name} من السلة`, {
@@ -92,7 +92,6 @@ const transformData = (product: any) => {
 };
 
 const transformUpdateData = (product: any) => {
-  console.log("product", product);
   const formData = new FormData();
   formData.append("product_id", product?.product_id);
   formData.append("count", product?.count || 1);

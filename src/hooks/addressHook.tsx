@@ -1,35 +1,21 @@
 // get ALL expense
 
 import { $api } from "@/client";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { useAsyncRetry } from "react-use";
+import { useAsync, useAsyncRetry } from "react-use";
+import { transformSelectData } from "@/lib/global";
 
 export const useGovernorate = () => {
   const { value, loading, retry } = useAsyncRetry(async () => {
-    const data = await $api.get(`/governorates`);
-    function convertIdToValue(data: any) {
-      return data.map((item: any) => ({
-        value: item.id,
-        name: item.name,
-        cities:
-          item.cities?.map((city: any) => ({
-            value: city.id,
-            name: city.name,
-            regions:
-              city?.regions?.map((region: any) => ({
-                value: region.id,
-                name: region.name,
-              })) || [],
-          })) || [],
-      }));
-    }
-    const targetData =
-      data?.data?.data?.length > 0 ? convertIdToValue(data?.data?.data) : [];
-    console.log("targetData", targetData);
-    return targetData;
+    const { data } = await $api.get(`/city`);
+    const transformData = transformSelectData({
+      data: data.data,
+      idKey: "id",
+      valueKey: "name",
+    });
+    return transformData;
   }, []);
   return {
     loading,
@@ -38,8 +24,57 @@ export const useGovernorate = () => {
   };
 };
 
+export const useCities = (governorateId?: number) => {
+  const { value, loading } = useAsync(async () => {
+    if (!governorateId) {
+      return [];
+    }
+    const { data } = await $api.get(`/city/${governorateId}/cities`);
+    const transformData = transformSelectData({
+      data: data.data,
+      idKey: "city_id",
+      valueKey: "name",
+    });
+    return transformData;
+  }, [governorateId]);
+  return {
+    loading,
+    value,
+  };
+};
+export const useGetAddress = () => {
+  const { value, loading, retry } = useAsyncRetry(async () => {
+    const { data } = await $api.get(`/customer-addresses/view`);
+    return data?.data;
+  }, []);
+  return {
+    loading,
+    value,
+    retry,
+  };
+};
+
+export const useBranchesWithCity = (cityId?: number) => {
+  const { value, loading } = useAsync(async () => {
+    if (!cityId) {
+      return [];
+    }
+    const { data } = await $api.get(`/branches/by-city/${cityId}`);
+    const transformData = transformSelectData({
+      data: data.branches,
+      idKey: "id",
+      valueKey: "address",
+    });
+
+    return transformData;
+  }, [cityId]);
+  return {
+    loading,
+    value,
+  };
+};
+
 export const useAddress = () => {
-  const routes = useRouter();
   const [loading, setLoading] = useState(false);
 
   // create a new expense
@@ -48,7 +83,7 @@ export const useAddress = () => {
       setLoading(true);
 
       const data = await $api.post(
-        `/customers/create_update_address`,
+        `/customer-address`,
         transformCreateAddressInputs({ ...inputs }),
       );
       toast.success(`تمت إضافة العنوان الخاص بك`, {
@@ -67,11 +102,7 @@ export const useAddress = () => {
           rtl: true,
         },
       );
-      if (err?.response?.status === 403) {
-        Cookies.remove("app_token");
-        routes.push("/login");
-      }
-      throw err;
+      return err?.response;
     } finally {
       setLoading(false);
     }
@@ -83,14 +114,50 @@ export const useAddress = () => {
   };
 };
 
+export const useCheckout = () => {
+  const [loading, setLoading] = useState(false);
+
+  // create a new expense
+  const createOrder = async (inputs: any) => {
+    try {
+      setLoading(true);
+
+      const data = await $api.post(`/v1/basket/buy`, {
+        address_id: inputs.address?.id,
+        shipping: 0,
+        notes: inputs.desc,
+      });
+      toast.success(`تمت إضافة الطلب بنجاح`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+
+      return data;
+    } catch (err: any) {
+      toast.error(`  فشل اضافة الطلب : ${err?.response?.data?.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      return err?.response;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    createOrder,
+    loading,
+  };
+};
 const transformCreateAddressInputs = (inputs: any) => {
-  console.log("transformCreateAddressInputs", inputs);
   return {
     name: inputs?.name,
     phone: inputs?.phone,
     email: inputs?.email,
     address: inputs?.address,
-    governorate_id: inputs?.governorate?.value,
+    area_id: inputs?.governorate?.value,
     city_id: inputs?.city?.value,
     shipping: 0,
     street: inputs?.street,
@@ -98,5 +165,6 @@ const transformCreateAddressInputs = (inputs: any) => {
     floor: inputs?.floor,
     building: inputs?.building,
     flat: inputs?.flat,
+    branch_id: inputs?.branch_id?.value,
   };
 };
