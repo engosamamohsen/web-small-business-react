@@ -12,11 +12,13 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
   const branchNames = React.useMemo(() => {
     if (!order.branches) return "-";
     if (!Array.isArray(order.branches)) return "غير محدد";
-    
-    return order.branches
-      .filter(branch => branch && branch.name)
-      .map(branch => branch.name)
-      .join(", ") || "غير محدد";
+
+    return (
+      order.branches
+        .filter((branch) => branch && branch.name)
+        .map((branch) => branch.name)
+        .join(", ") || "غير محدد"
+    );
   }, [order.branches]);
 
   return (
@@ -54,7 +56,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
 
           <div>
             <p className="text-sm text-gray-500"> رقم الهاتف</p>
-            <p>{order?.address?.phone || "-"} </p>
+            <p>{order?.customer?.phone || "-"} </p>
           </div>
         </div>
       </div>

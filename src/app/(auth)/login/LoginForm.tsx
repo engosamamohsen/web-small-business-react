@@ -25,7 +25,6 @@ export default function LoginForm({
 }: {
   initSettings: SettingsType;
 }) {
-  console.log("initSettings", initSettings);
   const router = useRouter();
   const {
     handleSubmit,
@@ -134,11 +133,15 @@ export default function LoginForm({
           loading={loading}
         />
       </div>
-      <div className="text-center">
-        <div className="text-sm text-black">
-          ليس لديك حساب ؟
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-1 text-sm text-black">
           <Link href="/register" className="text-[var(--main-color)]">
             أنشاء حساب جديد
+          </Link>
+        </div>
+        <div className="text-sm text-black">
+          <Link href="/forgot-password" className="text-[var(--second-color)]">
+            نسيت كلمة المرور ؟
           </Link>
         </div>
       </div>

@@ -81,3 +81,11 @@ img {
 #nprogress .spinner-icon {
   @apply h-6 w-6 border-l-blue-500 border-t-blue-500;
 }
+
+.boxFrom {
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+.container_input_otp input {
+  padding: 10px;
+}

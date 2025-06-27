@@ -31,12 +31,12 @@ async function page({ params }: PageProps) {
   const resolvedParams = await params;
   const productId = resolvedParams.product_id;
 
-  const response = await fetchingData({
-    url: `v1/product-details?product_id=${productId}`,
-    type: { next: { revalidate: revalidateTime } },
+  const { productData } = await getProductDetailServices({
+    productId,
   });
-  if (response?.isSuccess && response.data) {
-    const product: ProductType = response?.data?.data;
+  console.log(productData);
+  if (productData) {
+    const product: ProductType = productData;
     return <DetailPage product={product} />;
   } else {
     notFound();
@@ -44,3 +44,34 @@ async function page({ params }: PageProps) {
 }
 
 export default page;
+
+async function getProductDetailServices({
+  productId,
+}: {
+  productId: string;
+}): Promise<{
+  productData: any;
+}> {
+  try {
+    const response = await fetchingData({
+      url: `v1/product-details?product_id=${productId}`,
+      type: { next: { revalidate: revalidateTime } },
+    });
+
+    const productData = response?.data?.data;
+    if (!productData) {
+      return {
+        productData: {},
+      };
+    }
+
+    return {
+      productData,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      productData: {},
+    };
+  }
+}

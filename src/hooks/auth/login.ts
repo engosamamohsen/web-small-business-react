@@ -83,7 +83,7 @@ export const useLoginHook = () => {
         autoClose: 1500,
         rtl: true,
       });
-      Cookies.set("app_token", response?.data?.jwt_token, {
+      Cookies.set("app_token", response?.data?.api_token, {
         expires: 1,
         path: "/",
       }); // Expires in 1 day
@@ -108,26 +108,8 @@ export const useLoginHook = () => {
         `register-user`,
         transformRegisterInput(inputs),
       );
-
-      toast.success("تم التسجيل بنجاح!", {
-        position: "top-right",
-        autoClose: 1500,
-        rtl: true,
-      });
-      Cookies.set("app_token", response?.data?.jwt_token, {
-        expires: 1,
-        path: "/",
-      }); // Expires in 1 day
-      routes.push(`/`);
+      routes.push(`/verify/${response?.data?.email}`);
     } catch (error: any) {
-      if (error?.response?.status === 403) {
-        routes.push("/verify");
-        toast.success(error?.response?.data?.message, {
-          position: "top-right",
-          autoClose: 1500,
-          rtl: true,
-        });
-      }
       toast.error(` فشل التسجيل : ${error?.response?.data?.message}`, {
         position: "top-right",
         autoClose: 2000,
@@ -149,7 +131,7 @@ export const useLoginHook = () => {
 const transformInput = (inputs: any) => {
   const formData = new FormData();
   formData.append("type", "1");
-  formData.append("key", inputs?.email);
+  formData.append("email", inputs?.email);
   formData.append("password", inputs?.password);
 
   return formData;

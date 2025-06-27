@@ -15,20 +15,6 @@ export default function Cart({ items }: { items: CartItem[] }) {
     0,
   );
 
-  if (items.length === 0) {
-    return (
-      <div className="mx-auto flex min-h-[700px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center">
-        <h2 className="mb-4 text-2xl font-bold">عربة التسوق فارغة</h2>
-        <Link
-          href="/"
-          className="font-semibold text-orange-500 hover:text-orange-600"
-        >
-          العودة للتسوق
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto my-10 min-h-[1000px] max-w-7xl px-4 py-12">
       <h1 className="mb-8 text-3xl font-bold">عربة التسوق</h1>

@@ -20,9 +20,8 @@ export function Product({ product }: ProductProps) {
           alt={product?.name || ""}
           width={321}
           height={208}
-          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
           quality={80}
-          className="max-h-52 !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
+          className="h-52 !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
         />
         {+descount > 0 ? (
           <div className="absolute right-4 top-4">

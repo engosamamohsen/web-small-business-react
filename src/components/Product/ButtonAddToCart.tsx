@@ -35,7 +35,9 @@ function ButtonAddToCart({ product }: { product: ProductType }) {
         loading && "!cursor-not-allowed",
       )}
     >
-      <ShoppingCart className="h-6 w-6 text-[var(--main-color)]" />
+      {!loading && (
+        <ShoppingCart className="h-6 w-6 text-[var(--main-color)]" />
+      )}
     </Button>
   );
 }

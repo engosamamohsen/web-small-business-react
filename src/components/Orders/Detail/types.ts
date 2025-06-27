@@ -49,6 +49,7 @@ export interface Order {
   notes: string | null;
   customer: {
     name: string;
+    phone: string;
   };
   delivery: any;
   address: Address;

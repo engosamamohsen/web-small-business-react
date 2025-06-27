@@ -40,6 +40,11 @@ export const useCartHook = () => {
 
       const {} = await $api.post(`v1/basket/add`, transformUpdateData(product));
 
+      toast.success(`تمت تحديث ${product.name} في سلة التسوق`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
       routes.refresh();
     } catch (error: any) {
       throw error;

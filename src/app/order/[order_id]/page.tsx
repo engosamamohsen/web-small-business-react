@@ -7,17 +7,9 @@ type PageProps = {
 async function page({ params }: PageProps) {
   const resolvedParams = await params;
   const orderId = resolvedParams.order_id;
-  const cookieStore = await cookies();
-  const token = cookieStore.get("app_token")?.value;
-
-  const response = await fetchingData({
-    url: `v1/orders/details?order_id=${orderId}`,
-    type: { cache: "no-store" },
-    token,
-  });
-
+  const { ordersData } = await getOrdersServices({ orderId });
   // Check if response has data property and it contains order information
-  const orderData = response?.data?.data || response;
+  const orderData = ordersData || {};
   if (!orderData) {
     return (
       <div className="container mt-20 flex min-h-[calc(100vh-300px)] items-center justify-center text-lg font-semibold">
@@ -29,3 +21,33 @@ async function page({ params }: PageProps) {
 }
 
 export default page;
+
+async function getOrdersServices({ orderId }: { orderId: string }): Promise<{
+  ordersData: any;
+}> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("app_token")?.value;
+    const response = await fetchingData({
+      url: `v1/orders/details?order_id=${orderId}`,
+      type: { cache: "no-store" },
+      token,
+    });
+
+    const ordersData = response?.data?.data;
+    if (!ordersData) {
+      return {
+        ordersData: {},
+      };
+    }
+
+    return {
+      ordersData,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      ordersData: {},
+    };
+  }
+}
