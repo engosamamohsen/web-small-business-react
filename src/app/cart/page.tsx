@@ -2,6 +2,10 @@ import Cart from "@/components/Cart/Cart";
 import { fetchingData } from "@/hooks/fetching";
 import { cookies } from "next/headers";
 import Link from "next/link";
+
+// Force dynamic rendering since this page uses cookies
+export const dynamic = "force-dynamic";
+
 async function CartPage() {
   const { basketData } = await getCartServices();
   if (basketData.length === 0) {

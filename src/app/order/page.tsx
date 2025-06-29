@@ -2,6 +2,9 @@ import OrderList from "@/components/Orders/OrderList/OrderList";
 import { cookies } from "next/headers";
 import { fetchingData } from "@/hooks/fetching";
 
+// Force dynamic rendering since this page uses cookies
+export const dynamic = "force-dynamic";
+
 async function page() {
   const { ordersData } = await getOrdersServices();
   return <OrderList orders={ordersData || []} />;

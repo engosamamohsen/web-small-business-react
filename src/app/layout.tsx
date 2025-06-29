@@ -24,11 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description: settings?.about_us || "",
     icons: settings?.logo ? [settings.logo] : [],
     keywords: settings?.keywords || [],
-    // openGraph: {
-    //   title: settings?.name || "",
-    //   description: settings?.about_us || "",
-    //   images: settings?.logo ? [settings.logo] : [],
-    // },
+    openGraph: {
+      title: settings?.name || "",
+      description: settings?.about_us || "",
+      images: settings?.logo ? [settings.logo] : [],
+    },
   };
 }
 
@@ -42,7 +42,7 @@ export default async function RootLayout({
 
   store.set(settingsDataAtom, {
     ...store.get(settingsDataAtom),
-    ...settingResponse.data,
+    ...settingResponse?.data,
   });
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import React from "react";
 
+// Force dynamic rendering since this page uses cookies
+
 const NotFoundPage = async () => {
   return (
     <div className="fixed left-0 top-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50">

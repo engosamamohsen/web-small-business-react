@@ -34,7 +34,6 @@ async function page({ params }: PageProps) {
   const { productData } = await getProductDetailServices({
     productId,
   });
-  console.log(productData);
   if (productData) {
     const product: ProductType = productData;
     return <DetailPage product={product} />;

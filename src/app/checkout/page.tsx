@@ -1,6 +1,7 @@
 import CheckoutPage from "@/components/Checkout/Checkout";
 import { fetchingData } from "@/hooks/fetching";
 import { cookies } from "next/headers";
+export const dynamic = "force-dynamic";
 async function CartPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("app_token")?.value;
