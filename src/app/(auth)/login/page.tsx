@@ -6,22 +6,22 @@ export async function generateMetadata(): Promise<Metadata> {
   const settingResponse = await fetchSettings();
 
   return {
-    title: `إنشاء حساب جديد | ${settingResponse.data?.name || ""}`,
+    title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
     description:
-      settingResponse.data?.about_us ||
+      settingResponse?.data?.about_us ||
       "أنشئ حساب جديد للوصول إلى جميع ميزات موقعنا",
-    icons: settingResponse.data?.logo ? [settingResponse.data.logo] : [],
+    icons: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
     keywords: [
-      ...(settingResponse.data?.keywords || []),
+      ...(settingResponse?.data?.keywords || []),
       "تسجيل",
       "حساب جديد",
       "إنشاء حساب",
     ],
     openGraph: {
-      title: `إنشاء حساب جديد | ${settingResponse.data?.name || ""}`,
+      title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
       description:
-        settingResponse.data?.about_us || "انضم إلينا واحصل على تجربة مميزة",
-      images: settingResponse.data?.logo ? [settingResponse.data.logo] : [],
+        settingResponse?.data?.about_us || "انضم إلينا واحصل على تجربة مميزة",
+      images: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
     },
   };
 }
@@ -29,5 +29,5 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Login() {
   const settingResponse = await fetchSettings();
 
-  return <LoginForm initSettings={settingResponse.data} />;
+  return <LoginForm initSettings={settingResponse?.data} />;
 }

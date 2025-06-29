@@ -6,21 +6,20 @@ export async function generateMetadata(): Promise<Metadata> {
   const settingResponse = await fetchSettings();
 
   return {
-    title: `استعادة كلمة المرور | ${settingResponse.data?.name || ""}`,
+    title: `استعادة كلمة المرور | ${settingResponse?.data?.name || ""}`,
     description:
-      settingResponse.data?.about_us ||
-      "استعادة كلمة المرور للوصول إلى حسابك",
-    icons: settingResponse.data?.logo ? [settingResponse.data.logo] : [],
+      settingResponse?.data?.about_us || "استعادة كلمة المرور للوصول إلى حسابك",
+    icons: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
     keywords: [
-      ...(settingResponse.data?.keywords || []),
+      ...(settingResponse?.data?.keywords || []),
       "استعادة كلمة المرور",
       "نسيت كلمة المرور",
     ],
     openGraph: {
-      title: `استعادة كلمة المرور | ${settingResponse.data?.name || ""}`,
+      title: `استعادة كلمة المرور | ${settingResponse?.data?.name || ""}`,
       description:
-        settingResponse.data?.about_us || "استعادة كلمة المرور بسهولة",
-      images: settingResponse.data?.logo ? [settingResponse.data.logo] : [],
+        settingResponse?.data?.about_us || "استعادة كلمة المرور بسهولة",
+      images: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
     },
   };
 }
@@ -28,5 +27,5 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ForgotPassword() {
   const settingResponse = await fetchSettings();
 
-  return <ForgotPasswordForm initSettings={settingResponse.data} />;
+  return <ForgotPasswordForm initSettings={settingResponse?.data} />;
 }

@@ -3,6 +3,15 @@ import { toast } from "react-toastify";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAsync } from "react-use";
+import { CartItem } from "@/lib/types";
+
+export const useCartServices = () => {
+  const { value, loading } = useAsync(async () => {
+    return $api.get("v1/basket");
+  }, []);
+  return { data: value?.data?.data as CartItem[], loading };
+};
 
 export const useCartHook = () => {
   const [loading, setLoading] = useState(false);

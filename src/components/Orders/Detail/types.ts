@@ -34,7 +34,7 @@ export interface OrderProduct {
   name?: string;
 }
 
-export interface Order {
+export interface OrderDetailType {
   id: number;
   table_id: number | null;
   order_type: string;
@@ -64,7 +64,7 @@ export interface OrderStatusState {
 }
 
 export interface OrderDetailProps {
-  order: Order;
+  order: OrderDetailType;
 }
 
 export interface OrderStatusTrackerProps {
@@ -72,9 +72,9 @@ export interface OrderStatusTrackerProps {
 }
 
 export interface OrderSummaryProps {
-  order: Order;
+  order: OrderDetailType;
 }
 
 export interface OrderItemsProps {
-  order: Order;
+  order: OrderDetailType;
 }

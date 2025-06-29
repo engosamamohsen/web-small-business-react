@@ -19,14 +19,15 @@ import AddressList from "./AddressList";
 import DialogAddressForm from "./DialogAddressForm";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
+import { useCartServices } from "@/hooks/cart/cart";
+import PageLoader from "../PageLoader/PageLoader";
 
-type CheckoutPageProps = {
-  items: CartItem[];
-};
+export default function CheckoutPage() {
+  const { loading: cartLoading, data: items } = useCartServices();
 
-export default function CheckoutPage({ items }: CheckoutPageProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
+
   const router = useRouter();
   const {
     handleSubmit,
@@ -43,10 +44,6 @@ export default function CheckoutPage({ items }: CheckoutPageProps) {
 
   const { loading: addressLoading, value: address, retry } = useGetAddress();
 
-  const total = items.reduce(
-    (acc, item) => acc + (item?.price_after || 0) * (item.count || 1),
-    0,
-  );
   const { createOrder } = useCheckout();
   const onSubmit = async (inputs: any) => {
     setLoading(true);
@@ -56,10 +53,17 @@ export default function CheckoutPage({ items }: CheckoutPageProps) {
     }
     setLoading(false);
   };
-
+  if (cartLoading) {
+    return <PageLoader text={"جاري تحميل عربة التسوق"} />;
+  }
   if (!items?.length) {
     return <EmptyCart />;
   }
+
+  const total = items?.reduce(
+    (acc, item) => acc + (item?.price_after || 0) * (item.count || 1),
+    0,
+  );
   return (
     <>
       <div className="mx-auto min-h-screen max-w-7xl px-4 py-12">

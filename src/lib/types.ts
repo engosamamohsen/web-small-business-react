@@ -17,3 +17,18 @@ export interface CartItem extends ProductType {
 }
 
 export type SettingsType = Record<string, any>;
+
+export interface OrderType {
+  id: number;
+  order_type: number;
+  order_status: number;
+  sub_total: string;
+  shipping: string;
+  total: string;
+  customer: string;
+  phone: string;
+  delivery_id: number;
+  delivery: number;
+  table_id: number;
+  date: string;
+}

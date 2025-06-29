@@ -3,28 +3,26 @@ import React, { useState } from "react";
 import { cn } from "@/utils/utils";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/global";
+import { useOrderServices } from "@/hooks/order";
+import PageLoader from "@/components/PageLoader/PageLoader";
+import EmptyOrderList from "./EmptyOrderList";
 
-interface Order {
-  id: number;
-  order_type: number;
-  order_status: number;
-  sub_total: string;
-  shipping: string;
-  total: string;
-  customer: string;
-  phone: string;
-  delivery_id: number;
-  delivery: number;
-  table_id: number;
-  date: string;
-}
+function OrderList() {
+  const { loading, data: orders } = useOrderServices();
 
-function OrderList({ orders }: { orders: Order[] }) {
   const [activeTab] = useState<string>("All");
   const router = useRouter();
 
+  if (loading) {
+    return <PageLoader text="جاري تحميل الطلبات" />;
+  }
+
+  if (!orders?.length) {
+    return <EmptyOrderList />;
+  }
+
   // Filter orders based on the active tab
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = orders?.filter((order) => {
     if (activeTab === "All") return true;
     if (activeTab === "Open" && order.order_status === 1) return true;
     if (activeTab === "Shipped" && order.order_status === 2) return true;
