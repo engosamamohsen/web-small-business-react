@@ -15,8 +15,6 @@ export default async function Home({
       <OfferProducts />
       <Categories searchParams={searchParams} />
       <Products searchParams={searchParams} />
-      <OfferProducts />
-      <OfferProducts />
     </main>
   );
 }

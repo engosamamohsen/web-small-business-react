@@ -18,16 +18,21 @@ function ButtonAddToCart({ product }: { product: ProductType }) {
       disabled={loading}
       loading={loading}
       loadingIcon="pi pi-spin pi-spinner absolute"
-      onClick={() => {
+      onClick={async () => {
         if (product?.is_variation) {
           router.push(`/products/${product?.id}`);
         } else {
           if (!token) router.push("/login");
           else {
-            console.log("add to cart,", product, "token", token);
-            addToCart(product);
+            // console.log("add to cart,", product, "token", token);
+            try {
+              await addToCart(product);
+            } catch (error: any) {
+              if (error?.status === 403) {
+                router.push("/login");
+              }
+            }
           }
-          // HandleAddToCart(product);
         }
       }}
       className={cn(

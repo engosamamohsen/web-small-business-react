@@ -93,7 +93,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
           loop={true}
           className={`${styles["categories-swiper"]} min-h-fit`}
         >
-          {categories?.data?.data?.categories?.map((category: CategoryType) => (
+          {categories?.categoriesData?.map((category: CategoryType) => (
             <SwiperSlide
               key={category.id}
               className={cn("group cursor-pointer overflow-hidden py-4")}

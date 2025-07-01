@@ -28,8 +28,8 @@ export default function SwiperBanner({ response }: { response: any }) {
           loop={true}
           className={`heroSwiper ${styles.heroSwiper} `}
         >
-          {response?.data?.data?.length ? (
-            response?.data?.data?.map((slide: any, index: number) => {
+          {response?.bannerData?.length ? (
+            response?.bannerData?.map((slide: any, index: number) => {
               return (
                 <SwiperSlide key={slide.id}>
                   <div className={styles.slideContent}>

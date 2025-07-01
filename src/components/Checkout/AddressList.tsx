@@ -2,6 +2,7 @@
 
 import { cn } from "@/utils/utils";
 import React from "react";
+import { useUpdateEffect } from "react-use";
 
 interface AddressData {
   id: number;
@@ -32,6 +33,13 @@ export default function AddressList({
   selectedAddressId,
   onSelectAddress,
 }: AddressListProps) {
+  // Auto select first address if no selected address
+  useUpdateEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) {
+      onSelectAddress(addresses[0]);
+    }
+  }, [addresses, selectedAddressId]);
+
   if (!addresses || addresses.length === 0) {
     return null;
   }

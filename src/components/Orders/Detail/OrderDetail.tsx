@@ -1,11 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, Suspense } from "react";
 import { OrderStatusTracker } from "./OrderStatusTracker";
 import { OrderSummary } from "./OrderSummary";
 import { OrderItems } from "./OrderItems";
 import { useOrderDetailServices } from "@/hooks/order";
 import PageLoader from "@/components/PageLoader/PageLoader";
+
+// Memoized sub-components to prevent unnecessary re-renders
+const MemoizedOrderStatusTracker = React.memo(OrderStatusTracker);
+const MemoizedOrderSummary = React.memo(OrderSummary);
+const MemoizedOrderItems = React.memo(OrderItems);
 
 /**
  * Main OrderDetail component that displays complete order information
@@ -17,30 +22,41 @@ const OrderDetail = ({
   orderId: string | number;
 }): React.ReactNode => {
   const { loading, data: order } = useOrderDetailServices(orderId);
-  if (loading) {
-    return <PageLoader text="جاري تحميل التفاصيل" />;
-  }
+  
+  // Using useMemo to prevent unnecessary recalculations
+  const content = useMemo(() => {
+    if (loading) {
+      return <PageLoader text="جاري تحميل التفاصيل" />;
+    }
 
-  if (!order) {
+    if (!order) {
+      return (
+        <div className="container mt-20 flex min-h-[calc(100vh-300px)] items-center justify-center text-lg font-semibold">
+          ليس لديك أي طلبات
+        </div>
+      );
+    }
+    
     return (
-      <div className="container mt-20 flex min-h-[calc(100vh-300px)] items-center justify-center text-lg font-semibold">
-        ليس لديك أي طلبات
+      <div className="container mt-20 min-h-[calc(100vh-300px)]">
+        <MemoizedOrderStatusTracker orderStatus={order.order_status} />
+
+        <div className="overflow-x-auto">
+          <Suspense fallback={<div className="animate-pulse h-32 bg-gray-100 rounded"></div>}>
+            <MemoizedOrderSummary order={order} />
+          </Suspense>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Suspense fallback={<div className="animate-pulse h-64 bg-gray-100 rounded mt-4"></div>}>
+            <MemoizedOrderItems order={order} />
+          </Suspense>
+        </div>
       </div>
     );
-  }
-  return (
-    <div className="container mt-20 min-h-[calc(100vh-300px)]">
-      <OrderStatusTracker orderStatus={order.order_status} />
-
-      <div className="overflow-x-auto">
-        <OrderSummary order={order} />
-      </div>
-
-      <div className="overflow-x-auto">
-        <OrderItems order={order} />
-      </div>
-    </div>
-  );
+  }, [loading, order]);
+  
+  return content;
 };
 
 export default OrderDetail;

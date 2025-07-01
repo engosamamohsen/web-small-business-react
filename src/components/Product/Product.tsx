@@ -15,14 +15,19 @@ export function Product({ product }: ProductProps) {
   return (
     <div className="min-h-[350px]">
       <div className="relative h-[208px] max-sm:h-48">
-        <Image
-          src={product?.image}
-          alt={product?.name || ""}
-          width={321}
-          height={208}
-          quality={80}
-          className="h-52 !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
-        />
+        <Link
+          href={`/products/${product?.id}`}
+          className="relative h-[208px] max-sm:h-48"
+        >
+          <Image
+            src={product?.image}
+            alt={product?.name || ""}
+            width={321}
+            height={208}
+            quality={80}
+            className="h-52 !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
+          />
+        </Link>
         {+descount > 0 ? (
           <div className="absolute right-4 top-4">
             <Flame fill="red" className="h-8 w-8 text-transparent" />

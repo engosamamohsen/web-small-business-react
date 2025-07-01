@@ -9,18 +9,18 @@ import { formatDate } from "@/lib/global";
  */
 export const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
   // Safely handle branches display
-  const branchNames = React.useMemo(() => {
-    if (!order.branches) return "-";
-    if (!Array.isArray(order.branches)) return "غير محدد";
+  // const branchNames = React.useMemo(() => {
+  //   if (!order.branches) return "-";
+  //   if (!Array.isArray(order.branches)) return "غير محدد";
 
-    return (
-      order.branches
-        .filter((branch) => branch && branch.name)
-        .map((branch) => branch.name)
-        .join(", ") || "غير محدد"
-    );
-  }, [order.branches]);
-
+  //   return (
+  //     order.branches
+  //       .filter((branch) => branch && branch.name)
+  //       .map((branch) => branch.name)
+  //       .join(", ") || "غير محدد"
+  //   );
+  // }, [order.branches]);
+  console.log("order", order);
   return (
     <div className="mb-4 min-w-[500px] rounded-lg bg-gray-50 p-5 shadow-md">
       <h2 className="border-b pb-2 text-lg font-semibold">ملخص الطلب</h2>
@@ -32,10 +32,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
             <p>{order.id}</p>
           </div>
 
-          <div className="mb-3">
+          {/* <div className="mb-3">
             <p className="text-sm text-gray-500">مطعم</p>
             <p>{branchNames}</p>
-          </div>
+          </div> */}
 
           <div className="mb-3">
             <p className="text-sm text-gray-500">الوقت</p>

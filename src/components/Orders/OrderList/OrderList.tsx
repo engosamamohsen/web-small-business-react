@@ -48,7 +48,7 @@ function OrderList() {
 
   return (
     <div className="container mt-20 min-h-[calc(100vh-300px)]">
-      <h1 className="text-3xl font-semibold">الطلبات السابقه</h1>
+      <h1 className="text-3xl font-semibold">الطلبات </h1>
       <div className="mt-10 h-full overflow-x-auto">
         {" "}
         <div className="h-full bg-gray-100 p-4">
@@ -78,14 +78,16 @@ function OrderList() {
             {filteredOrders.map((order) => (
               <div
                 key={order.id}
-                className="flex items-center justify-between rounded-md bg-white p-4 shadow-md"
+                className="flex cursor-pointer items-center justify-between rounded-md bg-white p-4 shadow-md"
                 onClick={() => {
                   router.push(`/order/${order.id}`);
                 }}
               >
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col gap-3">
-                    <bdi className="text-end text-gray-500">{order.id} #</bdi>
+                    <bdi className="text-end text-gray-500">
+                      رقم الطلب {order.id}
+                    </bdi>
                     <h6 className="text-gray-500">{formatDate(order.date)}</h6>
                   </div>
                 </div>

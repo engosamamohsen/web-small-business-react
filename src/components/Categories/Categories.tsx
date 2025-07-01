@@ -1,7 +1,8 @@
 import { fetchingData } from "@/hooks/fetching";
 import CategorySwiper from "./CategorySwiper";
-import { revalidateTime } from "@/constants/constansts";
 import SubCategories from "./SubCategories";
+import { cookies } from "next/headers";
+import { revalidateTime } from "@/constants/constansts";
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function Categories({
@@ -10,12 +11,9 @@ export default async function Categories({
   searchParams: SearchParams;
 }) {
   const searchParamsUrl = await searchParams;
-  const response = await fetchingData({
-    url: "v1/categories",
-    type: { next: { revalidate: revalidateTime } },
-  });
+  const response = await getCategoriesServer();
   const targetFilterCategory = await handleSubCategories({
-    categories: response,
+    categories: response?.categoriesData,
     category_id: searchParamsUrl.category,
   });
   if (response?.isSuccess) {
@@ -61,12 +59,44 @@ const handleSubCategories = async ({
   categories: any;
   category_id: any;
 }) => {
-  const category = categories?.data?.data?.categories.filter(
-    (item: any) => item.id == category_id,
-  );
+  const category = categories?.filter((item: any) => item.id == category_id);
   return {
     ...category[0],
     isFilterCategory: category_id ? true : false,
     isSubCategory: category[0]?.categories?.length > 0 ? true : false,
   };
 };
+
+async function getCategoriesServer(): Promise<{
+  categoriesData: any[];
+  isSuccess: boolean;
+}> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("app_token")?.value;
+    const response = await fetchingData({
+      url: `v1/orders`,
+      type: { next: { revalidate: revalidateTime } },
+      token,
+    });
+
+    const categoriesData = response?.data?.data?.categories;
+    if (!categoriesData) {
+      return {
+        categoriesData: [],
+        isSuccess: true,
+      };
+    }
+
+    return {
+      categoriesData,
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      categoriesData: [],
+      isSuccess: false,
+    };
+  }
+}

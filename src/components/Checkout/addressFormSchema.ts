@@ -52,7 +52,7 @@ const addressFormSchema = z.object({
     .length(11, "رقم الهاتف يجب أن يتكون من 11 رقم بالضبط")
     .refine(
       (val) => /^\d+$/.test(val),
-      "رقم الهاتف يجب أن يحتوي على أرقام فقط"
+      "رقم الهاتف يجب أن يحتوي على أرقام فقط",
     ),
   address: z
     .string({
@@ -70,14 +70,9 @@ const addressFormSchema = z.object({
       required_error: "يرجى إدخال اسم الشارع",
     })
     .min(2, "اسم الشارع يجب أن يحتوي على حرفين على الأقل"),
-  building: z
-    .string({
-      required_error: "يرجى إدخال رقم المبنى",
-    })
-    .refine(
-      (val) => /^\d+$/.test(val),
-      "رقم المبنى يجب أن يتكون من رقم على الأقل",
-    ),
+  building: z.string({
+    required_error: "يرجى إدخال رقم المبنى",
+  }),
   floor: z
     .string({
       required_error: "يرجى إدخال رقم الدور",

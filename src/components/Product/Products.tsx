@@ -20,11 +20,7 @@ export default async function Products({
     searchParamsUrl?.category ? `?category_id=${searchParamsUrl?.category}` : ""
   }${searchParamsUrl?.sub_category ? `&sub_category_id=${searchParamsUrl?.sub_category}` : ""}${searchParamsUrl?.sub_category || searchParamsUrl?.category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
 
-  const response = await fetchingData({
-    url: url,
-    type: { next: { revalidate: revalidateTime } },
-  });
-
+  const response = await getProductsServer(url);
   if (response?.isSuccess) {
     return (
       <section className="py-10" id="products">
@@ -38,10 +34,10 @@ export default async function Products({
             </Link> */}
           </div>
           <ProductsGrid products={response} />
-          {response?.data?.pagination?.last_page > 1 && (
-            <Pagination totalPages={response?.data?.pagination?.last_page} />
+          {response?.pagination?.last_page > 1 && (
+            <Pagination totalPages={response?.pagination?.last_page} />
           )}
-          {response?.data?.data?.length == 0 && <NotFoundProducts />}
+          {response?.data?.length == 0 && <NotFoundProducts />}
         </div>
       </section>
     );
@@ -57,5 +53,40 @@ export default async function Products({
         </section>
       </>
     );
+  }
+}
+
+async function getProductsServer(url: string) {
+  try {
+    const response = await fetchingData({
+      url: url,
+      type: { next: { revalidate: revalidateTime } },
+    });
+
+    const data = response?.data?.data;
+    if (!data) {
+      return {
+        data: [],
+        isSuccess: true,
+        pagination: {
+          last_page: 1,
+        },
+      };
+    }
+
+    return {
+      data,
+      isSuccess: true,
+      pagination: response?.data?.pagination,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      data: [],
+      isSuccess: false,
+      pagination: {
+        last_page: 1,
+      },
+    };
   }
 }
