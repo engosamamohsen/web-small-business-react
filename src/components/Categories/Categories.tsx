@@ -41,7 +41,7 @@ export default async function Categories({
                 {" "}
                 اختر الفئة الفرعية :
               </bdi>
-              <SubCategories categories={targetFilterCategory?.categories} />
+              <SubCategories categories={targetFilterCategory?.subcategories} />
             </div>
           )}
         </div>
@@ -63,7 +63,7 @@ const handleSubCategories = async ({
   return {
     ...category[0],
     isFilterCategory: category_id ? true : false,
-    isSubCategory: category[0]?.categories?.length > 0 ? true : false,
+    isSubCategory: category[0]?.subcategories?.length > 0 ? true : false,
   };
 };
 
@@ -75,12 +75,12 @@ async function getCategoriesServer(): Promise<{
     const cookieStore = await cookies();
     const token = cookieStore.get("app_token")?.value;
     const response = await fetchingData({
-      url: `v1/orders`,
+      url: `v1/categories`,
       type: { next: { revalidate: revalidateTime } },
       token,
     });
 
-    const categoriesData = response?.data?.data?.categories;
+    const categoriesData = response?.data?.data;
     if (!categoriesData) {
       return {
         categoriesData: [],
