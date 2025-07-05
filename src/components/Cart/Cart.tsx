@@ -36,7 +36,7 @@ const CartItem: React.FC<CartItemProps> = ({
   return (
     <div
       key={item.id}
-      className="mb-4 flex w-full items-center justify-between gap-4 rounded-lg bg-white p-4 text-start"
+      className="mb-4 flex w-full items-center justify-between gap-4 rounded-lg bg-white p-4 text-start max-sm:flex-col-reverse"
     >
       <div
         onClick={() => onProductClick(item.product_id)}
@@ -55,7 +55,7 @@ const CartItem: React.FC<CartItemProps> = ({
           <p className="font-bold text-orange-500">{item.price_after} ج.م</p>
         </div>
       </div>
-      <div className="flex w-fit cursor-pointer items-center justify-start gap-8">
+      <div className="flex w-fit cursor-pointer items-center justify-start gap-8 max-sm:w-full max-sm:justify-between">
         <div className="flex items-center gap-2">
           <button
             disabled={loading}
@@ -175,7 +175,7 @@ export default function Cart() {
     return <PageLoader text="جاري تحميل عربة التسوق" />;
   }
 
-  if (!cartItems || cartItems.length === 0) {
+  if (!cartItems || cartItems?.length === 0) {
     return <EmptyCart />;
   }
 

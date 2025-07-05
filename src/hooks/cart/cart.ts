@@ -5,11 +5,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAsync } from "react-use";
 import { CartItem } from "@/lib/types";
+import Cookies from "js-cookie";
 
 export const useCartServices = () => {
-  const { value, loading } = useAsync(async () => {
+  const router = useRouter();
+  const { value, loading, error } = useAsync(async () => {
     return $api.get("v1/basket");
   }, []);
+  const errorStatus = (error as any)?.status;
+  if (errorStatus === 403) {
+    Cookies.remove("app_token");
+    router.push("/login");
+  }
   return { data: value?.data?.data as CartItem[], loading };
 };
 
@@ -24,15 +31,17 @@ export const useCartHook = () => {
     try {
       setLoading(true);
 
-      const {} = await $api.post(`v1/basket/add`, transformData(product));
-
+      await $api.post(`v1/basket/add`, transformData(product));
       toast.success(`تمت إضافة ${product.name} إلى سلة التسوق`, {
         position: "top-right",
         autoClose: 2000,
         rtl: true,
       });
-      // routes.push(`/`);
     } catch (error: any) {
+      if (error?.status === 403) {
+        Cookies.remove("app_token");
+        routes.push("/login");
+      }
       toast.error(`  فشل اضافة للسلة : ${error?.response?.data?.message}`, {
         position: "top-right",
         autoClose: 2000,

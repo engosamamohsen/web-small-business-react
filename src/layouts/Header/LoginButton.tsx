@@ -14,13 +14,16 @@ const LoginButton = () => {
   const router = useRouter();
   const op = useRef<OverlayPanel>(null);
 
+  const switchToggle = (e: any) => {
+    op?.current?.toggle(e);
+  };
   return (
     <div>
       {token && (
         <button
           className="text-sm font-medium text-[var(--main-color)]"
           aria-label="User Menu"
-          onClick={(e) => op?.current?.toggle(e)}
+          onClick={switchToggle}
         >
           <i className="pi pi-ellipsis-v"></i>
         </button>
