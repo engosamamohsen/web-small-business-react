@@ -8,15 +8,17 @@ import dynamic from "next/dynamic";
 // Use dynamic imports for layout components
 const Header = dynamic(() => import("@/layouts/Header/Header"), {
   ssr: true,
-  loading: () => <div className="h-16 bg-gray-50 animate-pulse"></div>
+  loading: () => <div className="h-16 animate-pulse bg-gray-50"></div>,
 });
 
 const Footer = dynamic(() => import("@/layouts/Footer"), {
   ssr: true,
-  loading: () => <div className="h-40 bg-gray-50 animate-pulse"></div>
+  loading: () => <div className="h-40 animate-pulse bg-gray-50"></div>,
 });
 
-const ColorHandler = dynamic(() => import("@/layouts/ColorHandler"), { ssr: true });
+const ColorHandler = dynamic(() => import("@/layouts/ColorHandler"), {
+  ssr: true,
+});
 
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import "primeicons/primeicons.css";
@@ -30,13 +32,18 @@ import { settingsDataAtom } from "@/lib/stores/settingsData";
 export async function generateMetadata(): Promise<Metadata> {
   const { data: settings } = await fetchSettings();
   const siteName = settings?.name || "Business Platform";
-  const description = settings?.about_us || "Small business management platform";
+  const description =
+    settings?.about_us || "Small business management platform";
 
   return {
     title: siteName,
     description: description,
     icons: settings?.logo ? [settings.logo] : [],
-    keywords: settings?.keywords || ["small business", "online store", "ecommerce"],
+    keywords: settings?.keywords || [
+      "small business",
+      "online store",
+      "ecommerce",
+    ],
     alternates: {
       canonical: settings?.website_url || "/",
     },
@@ -70,6 +77,10 @@ export default async function RootLayout({
     ...store.get(settingsDataAtom),
     ...settingResponse?.data,
   });
+
+  // if (!settingResponse?.data.isLogin !== true) {
+  //   Cookies.remove("app_token");
+  // }
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`relative ${cairo.className}`}>

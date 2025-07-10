@@ -4,6 +4,7 @@ import Image from "next/image";
 import LoginButton from "./LoginButton";
 import { getDefaultStore } from "jotai";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
+import Cookies from "js-cookie";
 
 export default function Header() {
   const store = getDefaultStore();
@@ -30,9 +31,11 @@ export default function Header() {
             {/* <div className="hidden md:block relative">
               <SearchBar />
             </div> */}
-            <Link href="/cart" className="relative" aria-label="site cart">
-              <ShoppingCart className="h-5 w-5 text-[var(--second-font-color)]" />
-            </Link>
+            {Cookies.get("app_token") && (
+              <Link href="/cart" className="relative" aria-label="site cart">
+                <ShoppingCart className="h-5 w-5 text-[var(--second-font-color)]" />
+              </Link>
+            )}
             <LoginButton />
 
             {/* <button

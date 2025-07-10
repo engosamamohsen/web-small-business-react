@@ -71,6 +71,26 @@ export default function LoginForm({
           يرجى تسجيل الدخول لإجراء الطلب
         </div>
       </div>
+      <div className="flex flex-col items-stretch justify-center gap-4">
+        <Button
+          type="button"
+          loading={loading}
+          onClick={() => loginWithGoogle({ action: () => router.push("/") })}
+          className="mx-auto flex h-12 w-full flex-row-reverse items-center justify-center gap-2 rounded-full bg-orange-700 text-center text-white !shadow-none !outline-none"
+          icon={
+            <Image
+              src={GoogleIcon}
+              alt="Google Icon"
+              width={28}
+              height={28}
+              className="mr-[6px]"
+            />
+          }
+        >
+          Sign In with Google
+        </Button>
+        <h6 className="text-center text-[18px] font-semibold text-black">أو</h6>
+      </div>
       <div className="space-y-4">
         <div>
           <label
@@ -145,20 +165,6 @@ export default function LoginForm({
           </Link>
         </div>
       </div>
-      <Button
-        type="button"
-        onClick={() => loginWithGoogle({ action: () => router.push("/") })}
-        className="mx-auto flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[var(--second-background)] text-center !shadow-none !outline-none"
-        icon={
-          <Image
-            src={GoogleIcon}
-            alt="Google Icon"
-            width={28}
-            height={28}
-            className="mr-[6px]"
-          />
-        }
-      />
     </form>
   );
 }
