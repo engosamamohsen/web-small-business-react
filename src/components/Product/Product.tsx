@@ -3,7 +3,7 @@ import React from "react";
 import Image from "next/image";
 import { Flame } from "lucide-react";
 import Link from "next/link";
-import ButtonAddToCart from "./ButtonAddToCart";
+import { ButtonAddToCart } from "./ButtonAddToCart";
 
 interface ProductProps {
   product: ProductType;

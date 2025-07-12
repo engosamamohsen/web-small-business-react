@@ -8,7 +8,7 @@ import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 
-function ButtonAddToCart({ product }: { product: ProductType }) {
+export function ButtonAddToCart({ product }: { product: ProductType }) {
   const router = useRouter();
   const token = Cookies.get("app_token");
   const { loading, addToCart } = useCartHook();
@@ -44,4 +44,3 @@ function ButtonAddToCart({ product }: { product: ProductType }) {
     </Button>
   );
 }
-export default ButtonAddToCart;
