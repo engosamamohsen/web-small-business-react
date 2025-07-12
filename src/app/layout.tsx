@@ -27,6 +27,7 @@ const cairo = Cairo({ subsets: ["arabic"] });
 import "./globals.css";
 import { getDefaultStore } from "jotai";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
+import Cookies from "js-cookie";
 
 // Generate dynamic metadata with enhanced SEO
 export async function generateMetadata(): Promise<Metadata> {
@@ -72,15 +73,14 @@ export default async function RootLayout({
 }) {
   const settingResponse = await fetchSettings();
   const store = getDefaultStore();
-
   store.set(settingsDataAtom, {
     ...store.get(settingsDataAtom),
     ...settingResponse?.data,
   });
 
-  // if (!settingResponse?.data.isLogin !== true) {
-  //   Cookies.remove("app_token");
-  // }
+  if (!settingResponse?.data.isLogin !== true) {
+    Cookies.remove("app_token");
+  }
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`relative ${cairo.className}`}>

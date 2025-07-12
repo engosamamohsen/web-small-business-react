@@ -2,8 +2,8 @@ import { ProductType } from "@/lib/types";
 import React from "react";
 import Image from "next/image";
 import { Flame } from "lucide-react";
-import ButtonAddToCart from "./ButtonAddToCart";
 import Link from "next/link";
+import ButtonAddToCart from "./ButtonAddToCart";
 
 interface ProductProps {
   product: ProductType;

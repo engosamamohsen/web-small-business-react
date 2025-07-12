@@ -6,7 +6,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/autoplay";
 import styles from "./style.module.css";
-import { Product } from "../Product/Product";
+import { Product } from "../product/Product";
 
 export default function SwiperBanner({ response }: { response: any }) {
   return (
