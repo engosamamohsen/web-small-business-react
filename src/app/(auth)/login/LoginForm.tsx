@@ -19,6 +19,7 @@ import {
 } from "./formSchema";
 import { useLoginHook } from "@/hooks/auth/login";
 import Cookies from "js-cookie";
+import { useEffect } from "react";
 
 export default function LoginForm({
   initSettings,
@@ -41,10 +42,12 @@ export default function LoginForm({
     await login(inputs);
   };
 
-  const token = Cookies.get("app_token");
-  if (token) {
-    router.push("/");
-  }
+  useEffect(() => {
+    const token = Cookies.get("app_token");
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}

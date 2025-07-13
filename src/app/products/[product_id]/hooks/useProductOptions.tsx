@@ -28,12 +28,8 @@ export function useProductOptions(
   product: ProductType,
 ): UseProductOptionsReturn {
   // Initialize state at the top level as per React Hook rules
-  const [selectedSize, setSelectedSize] = useState<SizeOption | null>(
-    product?.sizes?.[0] || null,
-  );
-  const [selectedColor, setSelectedColor] = useState<ColorOption | null>(
-    product?.colors?.[0] || null,
-  );
+  const [selectedSize, setSelectedSize] = useState<SizeOption | null>(null);
+  const [selectedColor, setSelectedColor] = useState<ColorOption | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [basePrice] = useState<number>(product?.price_after || product.price);
   const [currentPrice, setCurrentPrice] = useState<number>(
@@ -47,22 +43,14 @@ export function useProductOptions(
       variations: [],
     });
 
-  // Initialize selected variations with required choices if available
+  // Initialize selected variations without default selections
   useUpdateEffect(() => {
     if (product?.variations) {
       const initialVariations: Record<string, string[]> = {};
       product.variations.forEach((variation) => {
         if (variation.enable && variation.choices?.length > 0) {
-          if (variation.is_required) {
-            // For required variations, select a default option
-            const defaultChoice =
-              variation.choices.find((c) => c.enable && c.price === 0) ||
-              variation.choices[0];
-            initialVariations[variation.id] = [defaultChoice.id];
-          } else {
-            // For optional variations, initialize with empty array
-            initialVariations[variation.id] = [];
-          }
+          // Initialize all variations with empty arrays (no default selection)
+          initialVariations[variation.id] = [];
         }
       });
       setRawSelectedVariations(initialVariations);

@@ -4,6 +4,8 @@ import { useCartHook } from "@/hooks/cart/cart";
 import { ProductType, SizeOption, ColorOption } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { useUpdateEffect } from "react-use";
+import { cn } from "@/utils/utils";
 
 interface FormattedVariation {
   main_variation_id: string;
@@ -20,18 +22,21 @@ interface CartActionsProps {
   currentColor: ColorOption | null;
   currentSize: SizeOption | null;
   selectedVariations: FormattedVariations;
+  productVariations: { is_required?: boolean; id?: string }[];
 }
 
 export const CartActions = ({
   product,
-  totalPrice,
   currentColor,
   currentSize,
   selectedVariations,
+  productVariations,
+  totalPrice,
 }: CartActionsProps) => {
   const router = useRouter();
   const [count, setCount] = useState(1);
   const token = Cookies.get("app_token");
+  const [isAvailable, setIsAvailable] = useState(true);
   const { loading, addToCart } = useCartHook();
 
   const handleAddToCart = () => {
@@ -52,17 +57,39 @@ export const CartActions = ({
     }
   };
 
+  /**
+   * Updates the availability state of the product based on selected variations.
+   *
+   * This function checks if all required variations have been selected. If so, it sets the availability state to true. Otherwise, it sets it to false.
+   */
+  useUpdateEffect(() => {
+    const requiredVariations = productVariations.filter(
+      (variation) => variation.is_required,
+    );
+    const isAvailable = requiredVariations.every((main_variation) => {
+      return selectedVariations.variations.some(
+        (variation) => variation.main_variation_id == main_variation.id,
+      );
+    });
+    setIsAvailable(isAvailable);
+  }, [productVariations, selectedVariations]);
   return (
     <div className="mt-4 flex items-center justify-between gap-3 max-sm:flex-col-reverse">
       <Button
         loading={loading}
-        disabled={loading}
+        disabled={loading || !isAvailable}
         onClick={handleAddToCart}
         loadingIcon="pi pi-spin pi-spinner absolute"
-        className="w-fit rounded-md bg-[var(--main-color)] px-6 py-4 text-white transition-colors hover:bg-gray-800 max-sm:w-full"
+        className={cn(
+          "flex w-fit items-center justify-center gap-4 rounded-md bg-[var(--main-color)] px-6 py-4 text-white transition-colors hover:bg-gray-800 max-sm:w-full",
+          !isAvailable && "bg-gray-500",
+        )}
         aria-label="Add product to cart"
       >
-        أضف إلى السلة
+        <span>أضف إلى السلة</span>{" "}
+        <span>
+          {totalPrice * count} <span>جنية</span>
+        </span>
       </Button>
       <div className="flex w-40 items-center justify-between gap-1 rounded-lg border bg-white p-4 max-sm:w-full">
         <Button

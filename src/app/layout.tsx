@@ -27,7 +27,7 @@ const cairo = Cairo({ subsets: ["arabic"] });
 import "./globals.css";
 import { getDefaultStore } from "jotai";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
-import Cookies from "js-cookie";
+import CookieHandler from "@/components/CookieHandler";
 
 // Generate dynamic metadata with enhanced SEO
 export async function generateMetadata(): Promise<Metadata> {
@@ -78,12 +78,11 @@ export default async function RootLayout({
     ...settingResponse?.data,
   });
 
-  if (!settingResponse?.data.isLogin !== true) {
-    Cookies.remove("app_token");
-  }
+  // Cookie handling moved to client component
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`relative ${cairo.className}`}>
+        <CookieHandler isLogin={settingResponse?.data.isLogin} />
         <ColorHandler globalData={settingResponse} />
         <Header />
 
