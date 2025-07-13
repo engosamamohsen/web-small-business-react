@@ -7,11 +7,11 @@ import { Button } from "primereact/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card } from "primereact/card";
 import { FileUpload } from "primereact/fileupload";
-import { Image } from "primereact/image";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { classNames } from "primereact/utils";
 import PageLoader from "@/components/PageLoader/PageLoader";
+import Image from "next/image";
 import { z } from "zod";
 
 const ProfileFormSchema = z.object({
@@ -87,7 +87,6 @@ function ProfileEditPage() {
     if (e.files && e.files.length > 0) {
       const file = e.files[0];
       setImage(file);
-
       // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -162,7 +161,7 @@ function ProfileEditPage() {
                       src={imagePreview}
                       alt="معاينة الصورة الشخصية"
                       width="200"
-                      preview
+                      height="200"
                       className="h-[200px] w-[200px] rounded-full border"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 opacity-0 transition-opacity hover:opacity-100">
