@@ -2,6 +2,7 @@
 import parse from "html-react-parser";
 import { ProductType } from "@/lib/types";
 import { useProductOptions } from "./hooks/useProductOptions";
+import type { FormattedVariations } from "./hooks/useProductOptions";
 
 // Import all components
 import {
@@ -19,14 +20,15 @@ export default function DetailPage({ product }: { product: ProductType }) {
     setSelectedSize,
     selectedColor,
     setSelectedColor,
-    currentPrice,
     selectedVariations,
     handleRadioChange,
     handleCheckboxChange,
     isChoiceSelected,
+    totalPrice,
   } = useProductOptions(product);
+  // Instead, use it in event handlers or useEffect with proper dependencies
+  console.log("product", product);
 
-  console.log("selectedVariations", selectedVariations);
   return (
     <div className="container flex min-h-screen items-center justify-center py-10">
       <div className="grid grid-cols-1 gap-8 bg-gray-100 p-8 lg:grid-cols-2">
@@ -42,7 +44,7 @@ export default function DetailPage({ product }: { product: ProductType }) {
           </h5>
 
           {/* Price display */}
-          <PriceDisplay product={product} currentPrice={currentPrice} />
+          <PriceDisplay product={product} currentPrice={product?.price || 0} />
 
           {/* Product description */}
           <div className="mt-4">{parse(product?.description || "")}</div>
@@ -66,13 +68,21 @@ export default function DetailPage({ product }: { product: ProductType }) {
             onSizeSelect={setSelectedSize}
             onColorSelect={setSelectedColor}
           />
-
+          <div className="mt-10 flex items-center justify-between font-semibold">
+            <h6> اجمالي السعر </h6>
+            <h5 className="flex items-center gap-1">
+              {" "}
+              {totalPrice}
+              <span>جنية</span>
+            </h5>
+          </div>
           {/* Cart actions */}
           <CartActions
             product={product}
+            totalPrice={totalPrice}
             currentColor={selectedColor}
             currentSize={selectedSize}
-            selectedVariations={selectedVariations}
+            selectedVariations={selectedVariations as FormattedVariations}
           />
         </div>
       </div>

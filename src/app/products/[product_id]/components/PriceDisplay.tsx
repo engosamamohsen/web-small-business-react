@@ -14,7 +14,7 @@ function getDiscountedPrice(price: number, discount: number): number {
 
 export const PriceDisplay = ({ product, currentPrice }: PriceDisplayProps) => {
   const discount = product.discount ? parseInt(product.discount, 10) : 0;
-  
+
   if (discount > 0) {
     const priceDiscount = getDiscountedPrice(currentPrice, discount);
     return (
@@ -47,11 +47,11 @@ export const PriceDisplay = ({ product, currentPrice }: PriceDisplayProps) => {
         </bdi>
       </div>
     );
-  } 
-  
+  }
+
   return (
     <div className="flex flex-col items-start justify-start gap-1">
-      <bdi className="mb-2 text-xl font-bold text-gray-900">
+      <bdi className="mb-2 text-lg font-normal text-[var(--second-color)]">
         <bdi>السعر</bdi> <span> : </span>
         <span>
           {currentPrice} {currency}{" "}

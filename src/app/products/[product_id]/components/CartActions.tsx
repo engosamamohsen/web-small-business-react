@@ -5,15 +5,26 @@ import { ProductType, SizeOption, ColorOption } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
+interface FormattedVariation {
+  main_variation_id: string;
+  choices: string[];
+}
+
+interface FormattedVariations {
+  variations: FormattedVariation[];
+}
+
 interface CartActionsProps {
   product: ProductType;
+  totalPrice: number;
   currentColor: ColorOption | null;
   currentSize: SizeOption | null;
-  selectedVariations: Record<string, string[]>;
+  selectedVariations: FormattedVariations;
 }
 
 export const CartActions = ({
   product,
+  totalPrice,
   currentColor,
   currentSize,
   selectedVariations,
@@ -22,18 +33,13 @@ export const CartActions = ({
   const [count, setCount] = useState(1);
   const token = Cookies.get("app_token");
   const { loading, addToCart } = useCartHook();
-  
+
   const handleAddToCart = () => {
     if (!token) {
       router.push("/login");
     } else {
-      // Transform selected variations to match the required cart model structure
-      const variations = Object.entries(selectedVariations).map(
-        ([main_variation_id, choices]) => ({
-          main_variation_id,
-          choices,
-        }),
-      );
+      // The variations are already in the required format
+      const { variations } = selectedVariations;
 
       addToCart({
         ...product,
@@ -47,7 +53,7 @@ export const CartActions = ({
   };
 
   return (
-    <div className="mt-6 flex items-center justify-between gap-3 max-sm:flex-col-reverse">
+    <div className="mt-4 flex items-center justify-between gap-3 max-sm:flex-col-reverse">
       <Button
         loading={loading}
         disabled={loading}

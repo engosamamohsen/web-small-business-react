@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useUpdateEffect } from "react-use";
-import { ProductType, SizeOption, ColorOption, Variation } from "@/lib/types";
+import { ProductType, SizeOption, ColorOption } from "@/lib/types";
+
+export interface FormattedVariation {
+  main_variation_id: string;
+  choices: string[];
+}
+
+export interface FormattedVariations {
+  variations: FormattedVariation[];
+}
 
 interface UseProductOptionsReturn {
   selectedSize: SizeOption | null;
@@ -8,28 +17,35 @@ interface UseProductOptionsReturn {
   selectedColor: ColorOption | null;
   setSelectedColor: (color: ColorOption) => void;
   currentPrice: number;
-  selectedVariations: Record<string, string[]>;
+  selectedVariations: FormattedVariations;
   handleRadioChange: (variationId: string, choiceId: string) => void;
   handleCheckboxChange: (variationId: string, choiceId: string) => void;
   isChoiceSelected: (variationId: string, choiceId: string) => boolean;
-  calculateTotalPrice: () => void;
+  totalPrice: number;
 }
 
-export function useProductOptions(product: ProductType): UseProductOptionsReturn {
+export function useProductOptions(
+  product: ProductType,
+): UseProductOptionsReturn {
   // Initialize state at the top level as per React Hook rules
   const [selectedSize, setSelectedSize] = useState<SizeOption | null>(
-    product?.sizes?.[0] || null
+    product?.sizes?.[0] || null,
   );
   const [selectedColor, setSelectedColor] = useState<ColorOption | null>(
-    product?.colors?.[0] || null
+    product?.colors?.[0] || null,
   );
+  const [totalPrice, setTotalPrice] = useState<number>(0);
   const [basePrice] = useState<number>(product?.price_after || product.price);
   const [currentPrice, setCurrentPrice] = useState<number>(
-    product?.price_after || product.price
+    product?.price_after || product.price,
   );
-  const [selectedVariations, setSelectedVariations] = useState<
+  const [rawSelectedVariations, setRawSelectedVariations] = useState<
     Record<string, string[]>
   >({});
+  const [selectedVariations, setSelectedVariations] =
+    useState<FormattedVariations>({
+      variations: [],
+    });
 
   // Initialize selected variations with required choices if available
   useUpdateEffect(() => {
@@ -49,7 +65,7 @@ export function useProductOptions(product: ProductType): UseProductOptionsReturn
           }
         }
       });
-      setSelectedVariations(initialVariations);
+      setRawSelectedVariations(initialVariations);
     }
     calculateTotalPrice();
   }, [product]);
@@ -58,26 +74,38 @@ export function useProductOptions(product: ProductType): UseProductOptionsReturn
   const calculateTotalPrice = () => {
     // Ensure basePrice is a number
     let total =
-      typeof basePrice === "number" ? basePrice : parseFloat(String(basePrice)) || 0;
+      typeof basePrice === "number"
+        ? basePrice
+        : parseFloat(String(basePrice)) || 0;
 
     // Add price from selected variations
     if (product?.variations) {
-      Object.entries(selectedVariations).forEach(([variationId, choiceIds]) => {
-        const variation = product.variations?.find((v) => v.id === variationId);
-        if (variation) {
-          choiceIds.forEach((choiceId) => {
-            const choice = variation.choices.find((c) => c.id === choiceId);
-            if (choice && choice.enable) {
-              // Ensure price is a number
-              const choicePrice =
-                typeof choice.price === "number"
-                  ? choice.price
-                  : parseFloat(String(choice.price)) || 0;
-              total += choicePrice;
-            }
-          });
-        }
-      });
+      // Debug the product variations and rawSelectedVariations to see what we're working with
+      Object.entries(rawSelectedVariations).forEach(
+        ([variationId, choiceIds]) => {
+          // Add type coercion as a precaution in case ID types don't match
+          const variation = product.variations?.find(
+            (v) => String(v.id) === String(variationId),
+          );
+
+          if (variation) {
+            choiceIds.forEach((choiceId) => {
+              const choice = variation.choices.find((c) => c.id === choiceId);
+              if (choice) {
+                // Ensure price is a number
+                const choicePrice =
+                  typeof choice.price === "number"
+                    ? choice.price
+                    : parseFloat(String(choice.price)) || 0;
+
+                // Add the choice price to the total
+                total += choicePrice;
+                setTotalPrice(total);
+              }
+            });
+          }
+        },
+      );
     }
 
     // Add price from selected size if applicable
@@ -103,18 +131,37 @@ export function useProductOptions(product: ProductType): UseProductOptionsReturn
       setCurrentPrice(
         typeof fallbackPrice === "number"
           ? fallbackPrice
-          : parseFloat(String(fallbackPrice)) || 0
+          : parseFloat(String(fallbackPrice)) || 0,
       );
     }
   };
 
+  // Format selected variations in the required structure
+  const formatSelectedVariations = () => {
+    const formatted: FormattedVariation[] = Object?.entries(
+      rawSelectedVariations,
+    )
+      .filter(([, choices]) => choices.length > 0) // Only include variations with selected choices
+      .map(([variationId, choices]) => ({
+        main_variation_id: variationId,
+        choices,
+      }));
+
+    setSelectedVariations({ variations: formatted });
+  };
+
+  useUpdateEffect(() => {
+    formatSelectedVariations();
+    calculateTotalPrice();
+  }, [rawSelectedVariations]);
+
   useUpdateEffect(() => {
     calculateTotalPrice();
-  }, [selectedVariations, selectedSize]);
+  }, [selectedSize]);
 
   // Handle radio button selection (required variations)
   const handleRadioChange = (variationId: string, choiceId: string) => {
-    setSelectedVariations((prev) => ({
+    setRawSelectedVariations((prev) => ({
       ...prev,
       [variationId]: [choiceId],
     }));
@@ -122,7 +169,7 @@ export function useProductOptions(product: ProductType): UseProductOptionsReturn
 
   // Handle checkbox selection (optional variations)
   const handleCheckboxChange = (variationId: string, choiceId: string) => {
-    setSelectedVariations((prev) => {
+    setRawSelectedVariations((prev) => {
       const currentSelections = prev[variationId] || [];
       let newSelections: string[];
 
@@ -143,7 +190,7 @@ export function useProductOptions(product: ProductType): UseProductOptionsReturn
 
   // Check if a choice is selected
   const isChoiceSelected = (variationId: string, choiceId: string): boolean => {
-    return selectedVariations[variationId]?.includes(choiceId) || false;
+    return rawSelectedVariations[variationId]?.includes(choiceId) || false;
   };
 
   return {
@@ -156,6 +203,6 @@ export function useProductOptions(product: ProductType): UseProductOptionsReturn
     handleRadioChange,
     handleCheckboxChange,
     isChoiceSelected,
-    calculateTotalPrice
+    totalPrice,
   };
 }
