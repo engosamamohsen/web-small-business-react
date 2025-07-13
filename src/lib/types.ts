@@ -45,6 +45,14 @@ export interface ProductType {
   sizes?: SizeOption[];
   colors?: ColorOption[];
   count?: number;
+  technical_information?: Array<{
+    id: number;
+    product_id: string;
+    key: string;
+    value: string | number;
+    created_at: string;
+    updated_at: string;
+  }>;
 }
 
 export interface CartItem extends ProductType {

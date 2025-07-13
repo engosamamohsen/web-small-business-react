@@ -11,6 +11,7 @@ import {
   VariationsSelector,
   ProductOptions,
   CartActions,
+  ProductSpecifications,
 } from "./components";
 
 export default function DetailPage({ product }: { product: ProductType }) {
@@ -27,10 +28,9 @@ export default function DetailPage({ product }: { product: ProductType }) {
     currentPrice,
   } = useProductOptions(product);
   console.log("product", product);
-  console.log("selectedVariations", selectedVariations);
 
   return (
-    <div className="container flex min-h-screen items-center justify-center py-10">
+    <div className="container flex min-h-screen flex-col items-center justify-center py-10">
       <div className="grid grid-cols-1 gap-8 bg-gray-100 p-8 lg:grid-cols-2">
         {/* Product gallery */}
         <div>
@@ -79,6 +79,16 @@ export default function DetailPage({ product }: { product: ProductType }) {
             selectedVariations={selectedVariations as FormattedVariations}
           />
         </div>
+      </div>
+      {/* Product specifications table */}
+      <div className="flex w-full items-center justify-between">
+        {product.technical_information &&
+          product.technical_information.length > 0 && (
+            <ProductSpecifications
+              specifications={product.technical_information}
+              className="w-full flex-1"
+            />
+          )}
       </div>
     </div>
   );
