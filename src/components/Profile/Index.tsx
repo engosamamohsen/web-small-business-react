@@ -10,7 +10,6 @@ import Image from "next/image";
 function Profile() {
   const { data, loading } = useProfileServices();
   const router = useRouter();
-  console.log("data", data);
   if (loading) {
     return <PageLoader text="جاري تحميل الملف الشخصي" />;
   }

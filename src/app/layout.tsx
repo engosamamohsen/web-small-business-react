@@ -77,14 +77,14 @@ export default async function RootLayout({
     ...store.get(settingsDataAtom),
     ...settingResponse?.data,
   });
-
+  console.log("settingResponse", settingResponse);
   // Cookie handling moved to client component
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`relative ${cairo.className}`} suppressHydrationWarning>
         <CookieHandler isLogin={settingResponse?.data.isLogin} />
         <ColorHandler globalData={settingResponse} />
-        <Header />
+        <Header settingsData={settingResponse?.data} />
 
         {children}
 

@@ -43,8 +43,7 @@ export default function LoginForm({
   };
 
   useEffect(() => {
-    const token = Cookies.get("app_token");
-    if (token) {
+    if (Cookies.get("app_token")) {
       router.push("/");
     }
   }, [router]);

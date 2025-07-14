@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAsync } from "react-use";
 import { CartItem } from "@/lib/types";
 import Cookies from "js-cookie";
+import { useCartStore } from "@/Store/cart";
 
 export const useCartServices = () => {
   const router = useRouter();
@@ -20,10 +21,33 @@ export const useCartServices = () => {
   return { data: value?.data?.data as CartItem[], loading };
 };
 
+// export const useCartServices = () => {
+//   const router = useRouter();
+//   const [, setCartCount] = useAtom(cartCountAtom);
+
+//   const { value, loading, error } = useAsync(async () => {
+//     const response = await $api.get("v1/basket");
+//     // Update cart count when fetching cart data
+//     if (response?.data?.data) {
+//       // Ensure we're setting a numeric value
+//       const count = response.data.data.length || 0;
+//       setCartCount(count);
+//     }
+//     return response;
+//   }, [setCartCount]);
+
+//   const errorStatus = (error as any)?.status;
+//   if (errorStatus === 403) {
+//     Cookies.remove("app_token");
+//     router.push("/login");
+//   }
+//   return { data: value?.data?.data as CartItem[], loading };
+// };
+
 export const useCartHook = () => {
   const [loading, setLoading] = useState(false);
   const routes = useRouter();
-
+  const { incrementCartCount } = useCartStore();
   /**
    * On Share Project action
    */
@@ -31,18 +55,24 @@ export const useCartHook = () => {
     try {
       setLoading(true);
 
-      await $api.post(`v1/basket/add`, transformData(product));
+      const response = await $api.post(`v1/basket/add`, transformData(product));
+
+      // Update cart count on successful addition
+      incrementCartCount();
+
       toast.success(`تمت إضافة ${product.name} إلى سلة التسوق`, {
         position: "top-right",
         autoClose: 2000,
         rtl: true,
       });
+
+      return response.data;
     } catch (error: any) {
       if (error?.status === 403) {
         Cookies.remove("app_token");
         routes.push("/login");
       }
-      toast.error(`  فشل اضافة للسلة : ${error?.response?.data?.message}`, {
+      toast.error(`فشل اضافة للسلة : ${error?.response?.data?.message}`, {
         position: "top-right",
         autoClose: 2000,
         rtl: true,
@@ -102,16 +132,33 @@ export const useCartHook = () => {
 };
 
 const transformData = (product: any) => {
-  const formData = new FormData();
-  formData.append("product_id", product?.id);
-  formData.append("count", product?.count || 1);
+  const data: Record<string, any> = {
+    product_id: product?.id,
+    count: product?.count || 1,
+  };
+
+  // Add product note if provided
+  if (product?.product_note) {
+    data.product_note = product.product_note;
+  }
+
+  // Add size if selected
   if (product?.currentSize) {
-    formData.append("size_id", product?.currentSize?.id);
+    data.size_id = product?.currentSize?.id;
   }
+
+  // Add color if selected
   if (product?.currentColor) {
-    formData.append("color_id", product?.currentColor?.id);
+    data.color_id = product?.currentColor?.id;
   }
-  return formData;
+
+  // Add variations if any
+  if (product?.variations && product.variations.length > 0) {
+    // Just pass the variations array directly
+    data.variations = product.variations;
+  }
+
+  return data;
 };
 
 const transformUpdateData = (product: any) => {
@@ -121,3 +168,12 @@ const transformUpdateData = (product: any) => {
 
   return formData;
 };
+
+// const transformUpdateData = (product: any) => {
+//   const data: Record<string, any> = {
+//     product_id: product?.product_id,
+//     count: product?.count || 1
+//   };
+
+//   return data;
+// };

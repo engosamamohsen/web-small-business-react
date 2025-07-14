@@ -1,42 +1,74 @@
+"use client";
+
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import LoginButton from "./LoginButton";
-import { getDefaultStore } from "jotai";
-import { settingsDataAtom } from "@/lib/stores/settingsData";
 import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
+import { useCartServices } from "@/hooks/cart/cart";
+import { useAtom } from "jotai";
+import { usePathname } from "next/navigation";
+import { cartCountAtom } from "@/Store/cart";
 
-export default function Header() {
-  const store = getDefaultStore();
-  const settings = store.get(settingsDataAtom);
+export default function Header({ settingsData }: { settingsData: any }) {
+  // Use the cart count atom directly
+  const [cartCount, setCartCount] = useAtom(cartCountAtom);
 
-  // const items = useCartStore((state) => state.items);
-  // const itemCount = items.reduce((acc, item) => acc + (item?.quantity || 0), 0);
-  // const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Fetch cart data to initialize cart count
+  const { data: cartData } = useCartServices();
+  const [token, setToken] = useState<string | undefined>(
+    Cookies.get("app_token"),
+  );
+
+  const pathname = usePathname();
+  useEffect(() => {
+    // Initialize cart count from fetched cart data
+    if (cartData) {
+      setCartCount(cartData.length);
+    }
+  }, [cartData, setCartCount]);
+
+  // Only check for token on the client side
+  useEffect(() => {
+    setToken(Cookies.get("app_token"));
+  }, [pathname]);
   return (
     <div className="bg-[var(--main-background)]">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link href="/" aria-label="site home">
-            <Image
-              src={settings.logo}
-              alt="site logo"
-              width={100}
-              height={50}
-              quality={70}
-              style={{ maxHeight: "50px", objectFit: "contain" }}
-            />
+            {settingsData.logo ? (
+              <Image
+                src={settingsData.logo}
+                alt="site logo"
+                width={100}
+                height={50}
+                quality={70}
+                style={{ maxHeight: "50px", objectFit: "contain" }}
+              />
+            ) : (
+              <span className="text-lg font-bold">
+                {settingsData.name || "Store"}
+              </span>
+            )}
           </Link>
           <div className="flex items-center gap-4">
             {/* <div className="hidden md:block relative">
               <SearchBar />
             </div> */}
-            {Cookies.get("app_token") && (
+            {token && (
               <Link href="/cart" className="relative" aria-label="site cart">
                 <ShoppingCart className="h-5 w-5 text-[var(--second-font-color)]" />
+
+                {cartCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--main-color)] text-xs text-white">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
             )}
-            <LoginButton />
+            <LoginButton token={token} setToken={setToken} />
 
             {/* <button
               className="md:hidden"

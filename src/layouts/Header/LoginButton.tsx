@@ -6,19 +6,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 
-const LoginButton = () => {
+const LoginButton = ({
+  token,
+  setToken,
+}: {
+  token: string | undefined;
+  setToken: (token: string | undefined) => void;
+}) => {
   // const { onOpen, isOpen } = useDialogStore((state) => state);
   const pathname = usePathname();
-  const [token, setToken] = useState<string | undefined>(undefined);
   const router = useRouter();
   const op = useRef<OverlayPanel>(null);
 
-  // Only check for token on the client side
-  useEffect(() => {
-    setToken(Cookies.get("app_token"));
-  }, [pathname]);
   const refButton = useRef<HTMLButtonElement>(null);
   const switchToggle = (e: any) => {
     console.log(refButton);
