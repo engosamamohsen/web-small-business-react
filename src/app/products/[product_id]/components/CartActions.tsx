@@ -74,14 +74,14 @@ export const CartActions = ({
     setIsAvailable(isAvailable);
   }, [productVariations, selectedVariations]);
   return (
-    <div className="mt-4 flex items-center justify-between gap-3 max-sm:flex-col-reverse">
+    <div className="mt-4 flex items-center justify-between gap-3 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:z-50 max-md:flex-col-reverse max-md:bg-white max-md:px-8 max-md:py-6 max-md:pb-10 max-md:shadow-[0_0_10px_0_rgba(0,0,0,0.2)]">
       <Button
         loading={loading}
         disabled={loading || !isAvailable}
         onClick={handleAddToCart}
         loadingIcon="pi pi-spin pi-spinner absolute"
         className={cn(
-          "flex w-fit items-center justify-center gap-4 rounded-md bg-[var(--main-color)] px-6 py-4 text-white transition-colors hover:bg-gray-800 max-sm:w-full",
+          "flex w-fit items-center justify-center gap-4 rounded-md bg-[var(--main-color)] px-6 py-4 text-white transition-colors hover:bg-gray-800 max-md:w-full",
           !isAvailable && "bg-gray-500",
         )}
         aria-label="Add product to cart"
@@ -91,7 +91,7 @@ export const CartActions = ({
           {totalPrice * count} <span>جنية</span>
         </span>
       </Button>
-      <div className="flex w-40 items-center justify-between gap-1 rounded-lg border bg-white p-4 max-sm:w-full">
+      <div className="flex w-40 items-center justify-between gap-1 rounded-lg border bg-white p-4 max-md:w-full">
         <Button
           icon="pi pi-plus"
           className="p-button-text mx-0 !shadow-none !outline-none hover:text-[var(--second-color)]"

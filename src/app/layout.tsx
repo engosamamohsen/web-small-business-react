@@ -81,14 +81,14 @@ export default async function RootLayout({
   // Cookie handling moved to client component
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={`relative ${cairo.className}`}>
+      <body className={`relative ${cairo.className}`} suppressHydrationWarning>
         <CookieHandler isLogin={settingResponse?.data.isLogin} />
         <ColorHandler globalData={settingResponse} />
         <Header />
 
         {children}
 
-        <Footer />
+        <Footer settingsData={settingResponse?.data} />
         <ToastContainer position="bottom-right" rtl />
       </body>
     </html>

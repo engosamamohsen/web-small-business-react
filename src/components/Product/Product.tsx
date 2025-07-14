@@ -11,7 +11,7 @@ interface ProductProps {
 
 export function Product({ product }: ProductProps) {
   const descount = product?.discount || "0";
-
+  console.log("product", product);
   return (
     <div className="min-h-[350px]">
       <div className="relative h-[208px] max-sm:h-48">
@@ -33,7 +33,7 @@ export function Product({ product }: ProductProps) {
             <Flame fill="red" className="h-8 w-8 text-transparent" />
           </div>
         ) : null}
-        <ButtonAddToCart product={product} />
+        {!product?.is_variation ? <ButtonAddToCart product={product} /> : null}
       </div>
       <div className="flex flex-col items-start justify-start gap-2 px-4 pb-6 pt-4">
         <h3 className="my-2 line-clamp-2 text-sm font-semibold sm:text-base">
