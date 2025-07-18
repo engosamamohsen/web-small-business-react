@@ -1,42 +1,49 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
-import "nprogress/nprogress.css";
-import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import dynamic from "next/dynamic";
+import { fetchSettings } from "@/hooks/fetchSettings";
+const cairo = Cairo({ subsets: ["arabic"] });
+import { getDefaultStore } from "jotai";
+import { settingsDataAtom } from "@/lib/stores/settingsData";
+import ColorHandler from "@/layouts/ColorHandler";
 
 // Use dynamic imports for layout components
 const Header = dynamic(() => import("@/layouts/Header/Header"), {
   ssr: true,
-  loading: () => <div className="h-16 bg-gray-50 animate-pulse"></div>
+  loading: () => <div className="h-16 animate-pulse bg-gray-50"></div>,
 });
 
 const Footer = dynamic(() => import("@/layouts/Footer"), {
   ssr: true,
-  loading: () => <div className="h-40 bg-gray-50 animate-pulse"></div>
+  loading: () => <div className="h-40 animate-pulse bg-gray-50"></div>,
 });
 
-const ColorHandler = dynamic(() => import("@/layouts/ColorHandler"), { ssr: true });
-
+const LoginHandler = dynamic(() => import("@/layouts/LoginHandler"), {
+  ssr: true,
+});
+import "nprogress/nprogress.css";
+import "react-toastify/dist/ReactToastify.css";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import "primeicons/primeicons.css";
-import { fetchSettings } from "@/hooks/fetchSettings";
-const cairo = Cairo({ subsets: ["arabic"] });
 import "./globals.css";
-import { getDefaultStore } from "jotai";
-import { settingsDataAtom } from "@/lib/stores/settingsData";
 
 // Generate dynamic metadata with enhanced SEO
 export async function generateMetadata(): Promise<Metadata> {
   const { data: settings } = await fetchSettings();
   const siteName = settings?.name || "Business Platform";
-  const description = settings?.about_us || "Small business management platform";
+  const description =
+    settings?.about_us || "Small business management platform";
 
   return {
     title: siteName,
     description: description,
     icons: settings?.logo ? [settings.logo] : [],
-    keywords: settings?.keywords || ["small business", "online store", "ecommerce"],
+    keywords: settings?.keywords || [
+      "small business",
+      "online store",
+      "ecommerce",
+    ],
     alternates: {
       canonical: settings?.website_url || "/",
     },
@@ -65,20 +72,22 @@ export default async function RootLayout({
 }) {
   const settingResponse = await fetchSettings();
   const store = getDefaultStore();
-
   store.set(settingsDataAtom, {
     ...store.get(settingsDataAtom),
     ...settingResponse?.data,
   });
+  console.log("settingResponse", settingResponse);
+  // Cookie handling moved to client component
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl">
       <body className={`relative ${cairo.className}`}>
+        <LoginHandler isLogin={settingResponse.is_login} />
         <ColorHandler globalData={settingResponse} />
-        <Header />
+        <Header settingsData={settingResponse?.data} />
 
         {children}
 
-        <Footer />
+        <Footer settingsData={settingResponse?.data} />
         <ToastContainer position="bottom-right" rtl />
       </body>
     </html>

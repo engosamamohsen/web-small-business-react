@@ -20,7 +20,6 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
   //       .join(", ") || "غير محدد"
   //   );
   // }, [order.branches]);
-  console.log("order", order);
   return (
     <div className="mb-4 min-w-[500px] rounded-lg bg-gray-50 p-5 shadow-md">
       <h2 className="border-b pb-2 text-lg font-semibold">ملخص الطلب</h2>

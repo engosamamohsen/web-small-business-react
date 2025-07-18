@@ -89,3 +89,10 @@ img {
 .container_input_otp input {
   padding: 10px;
 }
+
+.p-fileupload-choose {
+  @apply gap-2 bg-[var(--second-color)] text-sm;
+}
+.p-fileupload-choose svg {
+  @apply h-4 w-4;
+}

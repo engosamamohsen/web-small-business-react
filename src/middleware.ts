@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
     'X-Frame-Options': 'SAMEORIGIN',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'origin-when-cross-origin',
-    'Content-Security-Policy': "default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https:;",
+    'Content-Security-Policy': "default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://apis.google.com https://*.googleapis.com; connect-src 'self' https:;",
   };
 
   // Set security headers

@@ -1,17 +1,23 @@
-import { settingsDataAtom } from "@/lib/stores/settingsData";
-import { getDefaultStore } from "jotai";
+"use client";
 import Image from "next/image";
 
 import { Facebook, Instagram } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/utils/utils";
 
-export default function Footer() {
-  const store = getDefaultStore();
-  const settingsData = store.get(settingsDataAtom);
+export default function Footer({ settingsData }: { settingsData: any }) {
+  const pathname = usePathname();
+
   return (
-    <footer className="bg-black py-10 text-white">
+    <footer
+      className={cn(
+        "bg-black py-10 text-white",
+        pathname.startsWith("/products") ? "max-md:pb-72" : "",
+      )}
+    >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between gap-6 max-sm:flex-col">
-          <p className="text-sm max-sm:hidden">جميع الحقوق محفوظة 2020</p>
+        <div className="flex items-center justify-between gap-6 max-md:flex-col">
+          <p className="text-sm max-md:hidden">جميع الحقوق محفوظة 2020</p>
           <div className="flex items-center justify-center gap-2 text-center">
             <h4 className="text-[15px] text-xl font-bold text-[var(--main-color)]">
               {settingsData?.name ? settingsData?.name : ""}
@@ -44,7 +50,7 @@ export default function Footer() {
               <Instagram size={20} />
             </a>
           </div>
-          <p className="text-sm sm:hidden">جميع الحقوق محفوظة 2020</p>
+          <p className="text-sm md:hidden">جميع الحقوق محفوظة 2020</p>
         </div>
       </div>
     </footer>

@@ -86,6 +86,26 @@ export default function RegisterForm({
           يرجى تسجيل الدخول لإجراء الطلب
         </div>
       </div>
+      <div className="flex flex-col items-stretch justify-center gap-4">
+        <Button
+          type="button"
+          loading={loading}
+          onClick={() => loginWithGoogle({ action: () => router.push("/") })}
+          className="mx-auto flex h-12 w-full flex-row-reverse items-center justify-center gap-2 rounded-full bg-orange-700 text-center text-white !shadow-none !outline-none"
+          icon={
+            <Image
+              src={GoogleIcon}
+              alt="Google Icon"
+              width={28}
+              height={28}
+              className="mr-[6px]"
+            />
+          }
+        >
+          Sign In with Google
+        </Button>
+        <h6 className="text-center text-[18px] font-semibold text-black">أو</h6>
+      </div>
       <div className="space-y-4">
         <div>
           <label
@@ -216,29 +236,13 @@ export default function RegisterForm({
       </div>
 
       <div className="text-center">
-        <div className="text-sm text-black">
-          هل لديك حساب بالفعل ؟
+        <div className="flex w-full justify-center gap-1 text-sm text-black">
+          <span> هل لديك حساب بالفعل ؟</span>
           <Link href="/login" className="text-[var(--main-color)]">
             تسجيل الدخول
           </Link>
         </div>
       </div>
-      <Button
-        type="button"
-        disabled={loading}
-        loading={loading}
-        onClick={() => loginWithGoogle({ action: () => router.push("/") })}
-        className="mx-auto flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-[var(--second-background)] text-center !shadow-none !outline-none"
-        icon={
-          <Image
-            src={GoogleIcon}
-            alt="Google Icon"
-            width={28}
-            height={28}
-            className="mr-[6px]"
-          />
-        }
-      />
     </form>
   );
 }
