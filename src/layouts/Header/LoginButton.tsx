@@ -27,7 +27,7 @@ const LoginButton = ({
     op?.current?.toggle(refButton.current as any);
   };
   return (
-    <div>
+    <div suppressHydrationWarning={true}>
       {/* Only render content after client-side hydration */}
       <button
         ref={refButton}

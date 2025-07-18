@@ -18,10 +18,10 @@ export const ProductGallery = ({ product }: ProductGalleryProps) => {
       loop={true}
       navigation
       autoplay
-      className={`${styles["product-swiper"]} max-md:h-80`}
+      className={`${styles["product-swiper"]} !h-[608px] max-md:!h-80`}
     >
       <SwiperSlide>
-        <div className="relative aspect-square w-full">
+        <div className="relative aspect-square h-full w-full">
           <Image
             src={product?.image || "/placeholder-image.jpg"}
             alt={product?.name || "Product image"}
@@ -35,7 +35,7 @@ export const ProductGallery = ({ product }: ProductGalleryProps) => {
 
       {product?.gallery?.map((data) => (
         <SwiperSlide key={data?.id}>
-          <div className="relative aspect-square w-full">
+          <div className="relative aspect-square h-full w-full">
             <Image
               src={data?.image || "/placeholder-image.jpg"}
               alt={product?.name || "Product image"}

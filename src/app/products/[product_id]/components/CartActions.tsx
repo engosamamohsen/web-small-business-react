@@ -86,9 +86,9 @@ export const CartActions = ({
     setIsAvailable(isAvailable);
   }, [productVariations, selectedVariations]);
   return (
-    <div className="mt-4 flex flex-col gap-4 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:z-50 max-md:bg-white max-md:px-8 max-md:py-6 max-md:pb-10 max-md:shadow-[0_0_10px_0_rgba(0,0,0,0.2)]">
+    <div className="mt-4 flex flex-col gap-4">
       {/* Product Note Input */}
-      <div className="w-full">
+      <div className="mt-6 w-full">
         <label
           htmlFor="product-note"
           className="mb-2 block text-sm font-medium text-gray-700"
@@ -105,7 +105,7 @@ export const CartActions = ({
         />
       </div>
 
-      <div className="flex items-center justify-between gap-3 max-md:flex-col-reverse">
+      <div className="flex items-center justify-between gap-3 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:z-50 max-md:flex-col-reverse max-md:bg-white max-md:px-8 max-md:py-6 max-md:pb-10 max-md:shadow-[0_0_10px_0_rgba(0,0,0,0.2)]">
         <Button
           loading={loading}
           disabled={loading || !isAvailable}

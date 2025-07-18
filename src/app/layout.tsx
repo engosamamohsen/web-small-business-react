@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
-import "nprogress/nprogress.css";
-import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import dynamic from "next/dynamic";
+import { fetchSettings } from "@/hooks/fetchSettings";
+const cairo = Cairo({ subsets: ["arabic"] });
+import { getDefaultStore } from "jotai";
+import { settingsDataAtom } from "@/lib/stores/settingsData";
+import ColorHandler from "@/layouts/ColorHandler";
 
 // Use dynamic imports for layout components
 const Header = dynamic(() => import("@/layouts/Header/Header"), {
@@ -16,18 +19,14 @@ const Footer = dynamic(() => import("@/layouts/Footer"), {
   loading: () => <div className="h-40 animate-pulse bg-gray-50"></div>,
 });
 
-const ColorHandler = dynamic(() => import("@/layouts/ColorHandler"), {
+const LoginHandler = dynamic(() => import("@/layouts/LoginHandler"), {
   ssr: true,
 });
-
+import "nprogress/nprogress.css";
+import "react-toastify/dist/ReactToastify.css";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import "primeicons/primeicons.css";
-import { fetchSettings } from "@/hooks/fetchSettings";
-const cairo = Cairo({ subsets: ["arabic"] });
 import "./globals.css";
-import { getDefaultStore } from "jotai";
-import { settingsDataAtom } from "@/lib/stores/settingsData";
-import CookieHandler from "@/components/CookieHandler";
 
 // Generate dynamic metadata with enhanced SEO
 export async function generateMetadata(): Promise<Metadata> {
@@ -80,9 +79,9 @@ export default async function RootLayout({
   console.log("settingResponse", settingResponse);
   // Cookie handling moved to client component
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={`relative ${cairo.className}`} suppressHydrationWarning>
-        <CookieHandler isLogin={settingResponse?.data.isLogin} />
+    <html lang="ar" dir="rtl">
+      <body className={`relative ${cairo.className}`}>
+        <LoginHandler isLogin={settingResponse.is_login} />
         <ColorHandler globalData={settingResponse} />
         <Header settingsData={settingResponse?.data} />
 

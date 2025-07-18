@@ -11,7 +11,6 @@ interface ProductProps {
 
 export function Product({ product }: ProductProps) {
   const descount = product?.discount || "0";
-  console.log("product", product);
   return (
     <div className="min-h-[350px]">
       <div className="relative h-[208px] max-sm:h-48">

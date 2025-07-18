@@ -1,12 +1,15 @@
 "use client";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useCookies } from "react-cookie";
+import { useAtom } from "jotai/react";
+import { cartCountAtom } from "@/Store/cart";
 
 function ColorHandler({ globalData }: { globalData: any }) {
   const effectRan = useRef(true);
   const [, setCookie] = useCookies(["app_data"]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [, setCartCount] = useAtom(cartCountAtom);
 
   // handle function set color before render
   useLayoutEffect(() => {
@@ -49,6 +52,12 @@ function ColorHandler({ globalData }: { globalData: any }) {
     // document.cookie = `app_name=${globalData?.data.name}; path=/; max-age=86400`; // 1 day
   }, [globalData, setCookie]);
 
+  useEffect(() => {
+    console.log("globalData", globalData);
+    if (globalData?.cart_count) {
+      setCartCount(globalData?.cart_count);
+    }
+  }, [globalData, setCartCount]);
   return <>{isLoading ? <LoadingBox /> : null}</>; // This component doesn't render anything
 }
 
@@ -57,6 +66,7 @@ function LoadingBox() {
     <div
       style={{ zIndex: 9999 }}
       className="fixed left-0 top-0 z-[9999] flex h-full w-full items-center justify-center gap-2 bg-slate-50"
+      suppressHydrationWarning={true}
     >
       <ProgressSpinner
         style={{ width: "30px", height: "30px", margin: "0" }}

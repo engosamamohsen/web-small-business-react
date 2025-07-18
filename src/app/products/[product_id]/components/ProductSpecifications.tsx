@@ -19,7 +19,14 @@ export const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({
   specifications,
   className,
 }) => {
+  const [showAll, setShowAll] = React.useState(false);
+
   if (!specifications || specifications.length === 0) return null;
+
+  const visibleSpecifications = showAll
+    ? specifications
+    : specifications.slice(0, 5);
+  const hasMoreSpecifications = specifications.length > 5;
 
   return (
     <div className={cn("my-6", className)}>
@@ -27,7 +34,7 @@ export const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({
       <div className="overflow-hidden rounded-lg border border-gray-200">
         <table className="w-full">
           <tbody>
-            {specifications.map((spec, index) => (
+            {visibleSpecifications.map((spec, index) => (
               <tr
                 key={spec.id}
                 className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
@@ -42,6 +49,16 @@ export const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({
             ))}
           </tbody>
         </table>
+        {hasMoreSpecifications && (
+          <div className="flex justify-center border-t border-gray-200 p-3">
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="text-sm font-medium text-[var(--main-color)] hover:text-[var(--second-color)] focus:outline-none"
+            >
+              {showAll ? "عرض أقل" : "عرض المزيد"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

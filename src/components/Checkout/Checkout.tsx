@@ -1,12 +1,13 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { CartItem } from "@/lib/types";
+import { CartItemType } from "@/types/types";
 import { useCheckout, useGetAddress } from "@/hooks/addressHook";
 import { InputTextarea } from "primereact/inputtextarea";
 
@@ -23,7 +24,8 @@ import { useCartServices } from "@/hooks/cart/cart";
 import PageLoader from "../PageLoader/PageLoader";
 
 export default function CheckoutPage() {
-  const { loading: cartLoading, data: items } = useCartServices();
+  const { loading: cartLoading, data: cartResponse } = useCartServices();
+  const items = cartResponse?.cart_items || [];
 
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -60,10 +62,7 @@ export default function CheckoutPage() {
     return <EmptyCart />;
   }
 
-  const total = items?.reduce(
-    (acc, item) => acc + (item?.price_after || 0) * (item.count || 1),
-    0,
-  );
+  const total = cartResponse?.total_price || 0;
   return (
     <>
       <div className="mx-auto min-h-screen max-w-7xl px-4 py-12">
@@ -219,7 +218,7 @@ const BillingForm = ({
 );
 
 type OrderSummaryProps = {
-  items: CartItem[];
+  items: CartItemType[];
   total: number;
 };
 
@@ -229,26 +228,55 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
     <div className="max-h-[500px] space-y-4 overflow-y-auto bg-gray-50 px-10 pb-10">
       {items.map((item) => (
         <div
-          key={item.id}
-          className="flex items-center gap-4 border-t border-gray-200 py-4"
+          key={item.cart_item_id}
+          className="flex items-center gap-4 border-t border-gray-200 py-4 max-sm:items-start"
         >
-          <div className="relative h-20 w-20">
-            <Image
-              src={item.image}
-              alt={item.name || ""}
-              fill
-              className="rounded object-cover"
-            />
+          <div className="flex flex-1 items-start justify-start gap-4 max-sm:flex-col">
+            {" "}
+            <div className="relative h-20 w-20">
+              <Image
+                src={item.product_image}
+                alt={item.product_name || ""}
+                fill
+                className="rounded object-cover"
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold">{item.product_name}</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                {item.qty} × {item.unit_price} ج.م
+              </p>
+              {item.product_note && (
+                <p className="mt-1 text-xs text-gray-500">
+                  <span className="font-medium">ملاحظة:</span>{" "}
+                  {item.product_note}
+                </p>
+              )}
+              {item.variations && item.variations.length > 0 && (
+                <div className="mt-1">
+                  {item.variations.map((variation) => (
+                    <div
+                      key={variation.main_variation_id}
+                      className="text-xs text-gray-500"
+                    >
+                      <span className="font-medium">
+                        {variation.main_variation_name}:{" "}
+                      </span>
+                      {variation.choices.map((choice, idx) => (
+                        <React.Fragment key={choice.id}>
+                          {idx > 0 && <span>, </span>}
+                          <span>
+                            {choice.name} ({choice.price} ج.م)
+                          </span>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="font-semibold">{item.name}</h3>
-            <p className="mt-2 text-sm text-gray-600">
-              {item.count} × {item.price_after} ج.م
-            </p>
-          </div>
-          <span className="font-semibold">
-            {item.price * (item.count || 1)} ج.م
-          </span>
+          <span className="font-semibold">{item.item_total} ج.م</span>
         </div>
       ))}
     </div>

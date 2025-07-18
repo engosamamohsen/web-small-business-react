@@ -41,7 +41,7 @@ export interface ProductType {
   price_after?: number;
   is_variation?: boolean;
   variations?: Variation[];
-  gallery?: Array<{id: string; image: string}>;
+  gallery?: Array<{ id: string; image: string }>;
   sizes?: SizeOption[];
   colors?: ColorOption[];
   count?: number;

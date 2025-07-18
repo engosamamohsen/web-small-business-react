@@ -6,35 +6,34 @@ import Image from "next/image";
 import LoginButton from "./LoginButton";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
-import { useCartServices } from "@/hooks/cart/cart";
 import { useAtom } from "jotai";
 import { usePathname } from "next/navigation";
 import { cartCountAtom } from "@/Store/cart";
 
 export default function Header({ settingsData }: { settingsData: any }) {
   // Use the cart count atom directly
-  const [cartCount, setCartCount] = useAtom(cartCountAtom);
+  const [cartCount] = useAtom(cartCountAtom);
 
   // Fetch cart data to initialize cart count
-  const { data: cartData } = useCartServices();
   const [token, setToken] = useState<string | undefined>(
     Cookies.get("app_token"),
   );
 
   const pathname = usePathname();
-  useEffect(() => {
-    // Initialize cart count from fetched cart data
-    if (cartData) {
-      setCartCount(cartData.length);
-    }
-  }, [cartData, setCartCount]);
 
   // Only check for token on the client side
   useEffect(() => {
-    setToken(Cookies.get("app_token"));
+    if (Cookies.get("app_token")) {
+      setToken(Cookies.get("app_token"));
+    } else {
+      setToken(undefined);
+    }
   }, [pathname]);
   return (
-    <div className="bg-[var(--main-background)]">
+    <div
+      className="bg-[var(--main-background)]"
+      suppressHydrationWarning={true}
+    >
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link href="/" aria-label="site home">
