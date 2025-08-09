@@ -8,7 +8,7 @@ type PaymentStatus = "success" | "failed" | "pending";
 
 interface PaymentDetails {
   paymentType: string;
-  mobile: string;
+  phone: string;
   email: string;
   amountPaid: string;
   transactionId: string;
@@ -36,7 +36,7 @@ interface InvoiceData {
   requires_redirect: boolean;
   total: string;
   netBanking?: string;
-  mobile?: string;
+  phone?: string;
   email?: string;
 }
 
@@ -94,7 +94,7 @@ const PaymentDetailsSection: React.FC<{ details: PaymentDetails }> = ({
       {details.netBanking && (
         <PaymentDetailRow label="Net banking" value={details.netBanking} />
       )}
-      <PaymentDetailRow label="Mobile" value={details.mobile} />
+      <PaymentDetailRow label="Mobile" value={details.phone} />
       <PaymentDetailRow label="Email" value={details.email} />
       <PaymentDetailRow label="Amount paid" value={details.amountPaid} />
       <PaymentDetailRow label="Transaction id" value={details.transactionId} />
@@ -143,7 +143,7 @@ const TransactionsPage: React.FC<{ invoiceData: InvoiceData }> = ({
   // Use real data from invoiceData prop
   const paymentDetails: PaymentDetails = {
     paymentType: invoiceData.payment_type || "N/A",
-    mobile: invoiceData.mobile ?? "",
+    phone: invoiceData.phone ?? "",
     email: invoiceData.email ?? "",
     amountPaid: invoiceData.total || "0.00",
     transactionId: invoice_id || invoiceData.invoice_id || "N/A",

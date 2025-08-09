@@ -16,12 +16,14 @@ async function PaymentTransactionsPage(params: { searchParams: any }) {
     return notFound();
   }
 
-  return <TransactionsPage invoiceData={invoiceData} />;
+  return (
+    <TransactionsPage
+      invoiceData={{ ...invoiceData.invoice, ...invoiceData.customer }}
+    />
+  );
 }
 
 export default PaymentTransactionsPage;
-// /payment/transactions?status=success&invoice_number=INV_1754472816_439&invoice_id=1067664
-// payment/transactions?status=(success,failed,pending)&invoice_number=INV_1754472816_439&invoice_id=1067664
 
 async function getInvoiceServices({ id }: { id: string }): Promise<{
   invoiceData: any;
