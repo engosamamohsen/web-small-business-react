@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -18,10 +18,12 @@ import {
 } from "./formSchema";
 import AddressList from "./AddressList";
 import DialogAddressForm from "./DialogAddressForm";
+import PaymentMethodsList from "./PaymentMethodsList";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { useCartServices } from "@/hooks/cart/cart";
 import PageLoader from "../PageLoader/PageLoader";
+import { usePaymentMethods } from "@/hooks/payment/Payments";
 
 export default function CheckoutPage() {
   const { loading: cartLoading, data: cartResponse } = useCartServices();
@@ -45,13 +47,27 @@ export default function CheckoutPage() {
   });
 
   const { loading: addressLoading, value: address, retry } = useGetAddress();
+  const { data: paymentMethods, loading: paymentLoading } = usePaymentMethods();
+
+  // Auto-select VISA payment method (paymentId: 2) when payment methods are loaded
+  useEffect(() => {
+    if (paymentMethods?.length) {
+      // Find VISA payment method (paymentId: 2)
+      const visaMethod = paymentMethods.find(
+        (method) => method.paymentId === 2,
+      );
+      if (visaMethod) {
+        setValue("paymentMethod", visaMethod);
+      }
+    }
+  }, [paymentMethods, setValue]);
 
   const { createOrder } = useCheckout();
   const onSubmit = async (inputs: any) => {
     setLoading(true);
     const res = await createOrder(inputs);
     if (res?.status === 200) {
-      router.push("/order");
+      router.push(res.data.data.payment_url);
     }
     setLoading(false);
   };
@@ -84,6 +100,8 @@ export default function CheckoutPage() {
                 handleSubmit={handleSubmit}
                 onSubmit={onSubmit}
                 loading={loading}
+                paymentMethods={paymentMethods}
+                paymentLoading={paymentLoading}
               />
             )}
           </div>
@@ -142,6 +160,8 @@ type BillingFormProps = {
   handleSubmit: any;
   onSubmit: (inputs: any) => void;
   loading: boolean;
+  paymentMethods: any[];
+  paymentLoading: boolean;
 };
 
 const BillingForm = ({
@@ -155,6 +175,8 @@ const BillingForm = ({
   handleSubmit,
   onSubmit,
   loading,
+  paymentMethods,
+  paymentLoading,
 }: BillingFormProps) => (
   <div className="mb-6 rounded-lg bg-white px-4 py-6">
     <h2 className="mb-4 text-xl font-bold">معلومات الفاتورة</h2>
@@ -186,6 +208,26 @@ const BillingForm = ({
       />
     )}
 
+    {paymentLoading ? (
+      <div className="mt-6 animate-pulse space-y-4">
+        <div className="h-6 w-1/4 rounded bg-gray-200"></div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="h-16 rounded bg-gray-200"></div>
+          <div className="h-16 rounded bg-gray-200"></div>
+          <div className="h-16 rounded bg-gray-200"></div>
+        </div>
+      </div>
+    ) : (
+      <PaymentMethodsList
+        paymentMethods={paymentMethods}
+        selectedPaymentId={watch("paymentMethod")?.paymentId || null}
+        onSelectPaymentMethod={(selectedPayment) => {
+          setValue("paymentMethod", selectedPayment);
+          setError("paymentMethod", { type: "manual", message: "" });
+        }}
+      />
+    )}
+
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -202,6 +244,11 @@ const BillingForm = ({
         {errors.address && (
           <p className="mt-1 text-sm text-red-600">
             {errors.address.message?.toString()}
+          </p>
+        )}
+        {errors.paymentMethod && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.paymentMethod.message?.toString()}
           </p>
         )}
       </div>
@@ -283,7 +330,7 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
     <div className="text-md space-y-2 border-t pt-4 font-bold">
       <div className="flex justify-between">
         <span>إجمالي المنتجات</span>
-        <span>{total} ج.م</span>
+        <span>{total.toFixed(2)} ج.م</span>
       </div>
     </div>
   </div>

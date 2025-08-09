@@ -69,7 +69,7 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
         </div>
         <div className="flex justify-between border-t pt-2 text-lg font-semibold">
           <span>الإجمالي</span>
-          <span>EGP {order?.total || "0"}</span>
+          <span>EGP {Number(order?.total)?.toFixed(2) || "0"}</span>
         </div>
       </div>
     </div>

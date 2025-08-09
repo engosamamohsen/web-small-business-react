@@ -126,6 +126,7 @@ export const useCheckout = () => {
         address_id: inputs.address?.id,
         shipping: 0,
         notes: inputs.desc,
+        payment_method: inputs.paymentMethod?.paymentId || 1, // Default to cash (id: 1) if not selected
       });
       toast.success(`تمت إضافة الطلب بنجاح`, {
         position: "top-right",

@@ -35,6 +35,7 @@ export interface ProductType {
   name: string;
   price: number;
   description: string;
+  steps?: string[];
   category?: Category;
   image: string;
   discount?: string;
@@ -76,3 +77,11 @@ export interface OrderType {
   table_id: number;
   date: string;
 }
+
+export type PaymentMethod = {
+  paymentId: number;
+  name_en: string;
+  name_ar: string;
+  redirect: string;
+  logo: string;
+};

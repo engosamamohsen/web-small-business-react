@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
-import { Skeleton } from "primereact/skeleton";
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/pagination";
@@ -64,14 +63,7 @@ export default function SwiperBanner({ response }: { response: any }) {
               );
             })
           ) : (
-            <>
-              <SwiperSlide>
-                <Skeleton width="100%" height="100%"></Skeleton>
-              </SwiperSlide>
-              <SwiperSlide>
-                <Skeleton width="100%" height="100%"></Skeleton>
-              </SwiperSlide>
-            </>
+            <></>
           )}
         </Swiper>
       </div>

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   // Clone the request headers
@@ -13,12 +13,13 @@ export function middleware(request: NextRequest) {
 
   // Add security headers
   const securityHeaders = {
-    'X-DNS-Prefetch-Control': 'on',
-    'X-XSS-Protection': '1; mode=block',
-    'X-Frame-Options': 'SAMEORIGIN',
-    'X-Content-Type-Options': 'nosniff',
-    'Referrer-Policy': 'origin-when-cross-origin',
-    'Content-Security-Policy': "default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://apis.google.com https://*.googleapis.com; connect-src 'self' https:;",
+    "X-DNS-Prefetch-Control": "on",
+    "X-XSS-Protection": "1; mode=block",
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "origin-when-cross-origin",
+    "Content-Security-Policy":
+      "default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://apis.google.com https://*.googleapis.com https://*.firebaseapp.com; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://firebasestorage.googleapis.com; connect-src 'self' https: wss: https://*.firebase.com https://*.firebaseio.com https://*.firebaseapp.com https://auth.firebase.com https://identitytoolkit.googleapis.com https://firestore.googleapis.com;",
   };
 
   // Set security headers
@@ -27,8 +28,8 @@ export function middleware(request: NextRequest) {
   });
 
   // Prevent caching of sensitive routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    response.headers.set('Cache-Control', 'no-store, max-age=0');
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    response.headers.set("Cache-Control", "no-store, max-age=0");
   }
 
   return response;
@@ -43,6 +44,6 @@ export const config = {
      * - favicon.ico (browser asset)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    "/((?!_next/static|_next/image|favicon.ico|public/).*)",
   ],
 };

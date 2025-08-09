@@ -87,7 +87,7 @@ export const useLoginHook = () => {
         expires: 1,
         path: "/",
       }); // Expires in 1 day
-      console.log("login");
+      routes.refresh();
       routes.push(`/`);
     } catch (error: any) {
       toast.error(` فشل تسجيل الدخول : ${error?.response?.data?.message}`, {
