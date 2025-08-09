@@ -330,7 +330,7 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
     <div className="text-md space-y-2 border-t pt-4 font-bold">
       <div className="flex justify-between">
         <span>إجمالي المنتجات</span>
-        <span>{total} ج.م</span>
+        <span>{total.toFixed(2)} ج.م</span>
       </div>
     </div>
   </div>
