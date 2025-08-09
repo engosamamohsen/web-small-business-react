@@ -53,7 +53,6 @@ function ColorHandler({ globalData }: { globalData: any }) {
   }, [globalData, setCookie]);
 
   useEffect(() => {
-    console.log("globalData", globalData);
     if (globalData?.cart_count) {
       setCartCount(globalData?.cart_count);
     }

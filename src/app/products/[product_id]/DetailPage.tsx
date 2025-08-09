@@ -15,6 +15,7 @@ import {
 } from "./components";
 
 export default function DetailPage({ product }: { product: ProductType }) {
+  console.log("product");
   // Extract all product options logic to a custom hook
   const {
     selectedSize,
@@ -47,7 +48,11 @@ export default function DetailPage({ product }: { product: ProductType }) {
 
           {/* Product description */}
           <div className="mt-4">{parse(product?.description || "")}</div>
-
+          {product?.steps?.length && (
+            <ul className="mt-4 list-disc">
+              {product?.steps?.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          )}
           {/* Variations selector */}
           {product.variations && product.variations.length > 0 && (
             <VariationsSelector

@@ -13,6 +13,16 @@ const formSchema = z.object({
         message: "يرجى اختيار عنوان",
       },
     ),
+  paymentMethod: z
+    .any({
+      required_error: "يرجى اختيار طريقة الدفع",
+    })
+    .refine(
+      (val: any) => val?.paymentId !== "" && val?.paymentId !== null && val?.paymentId !== undefined,
+      {
+        message: "يرجى اختيار طريقة الدفع",
+      },
+    ),
 });
 
 type FormSchemaType = z.infer<typeof formSchema>;
@@ -20,6 +30,7 @@ type FormSchemaType = z.infer<typeof formSchema>;
 const formSchemaDefaultValues: FormSchemaType = {
   desc: "",
   address: "",
+  paymentMethod: "",
 };
 
 export { formSchema, type FormSchemaType, formSchemaDefaultValues };

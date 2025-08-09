@@ -4,7 +4,7 @@ import { revalidateTime } from "@/constants/constansts";
 
 export default async function Hero() {
   const response = await getHeroServer();
-  if (response?.isSuccess) {
+  if (response?.isSuccess && response?.bannerData?.length) {
     return <SwiperBanner response={response} />;
   } else {
     return <></>;

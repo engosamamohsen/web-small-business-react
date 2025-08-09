@@ -81,19 +81,6 @@ export default function Header({ settingsData }: { settingsData: any }) {
             </button> */}
           </div>
         </div>
-
-        {/* Mobile Search */}
-        {/* <div
-          className={`md:hidden transition-all duration-300 ${
-            isMenuOpen
-              ? "max-h-20 opacity-100 mt-4"
-              : "max-h-0 opacity-0 overflow-hidden"
-          }`}
-        >
-          <div className="relative">
-            <SearchBar />
-          </div>
-        </div> */}
       </div>
     </div>
   );
