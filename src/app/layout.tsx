@@ -30,39 +30,68 @@ import "./globals.css";
 
 // Generate dynamic metadata with enhanced SEO
 export async function generateMetadata(): Promise<Metadata> {
-  const { data: settings } = await fetchSettings();
-  const siteName = settings?.name || "Business Platform";
-  const description =
-    settings?.about_us || "Small business management platform";
+  const settings = await fetchSettings();
 
-  return {
-    title: siteName,
-    description: description,
-    icons: settings?.logo ? [settings.logo] : [],
-    keywords: settings?.keywords || [
-      "small business",
-      "online store",
-      "ecommerce",
-    ],
-    alternates: {
-      canonical: settings?.website_url || "/",
-    },
-    openGraph: {
+  if (!settings) {
+    return {
+      title: "Business Platform",
+      description: "Small business management platform",
+      icons: [],
+      keywords: ["small business", "online store", "ecommerce"],
+      alternates: {
+        canonical: "/",
+      },
+      openGraph: {
+        title: "Business Platform",
+        description: "Small business management platform",
+        images: [],
+        type: "website",
+        locale: "ar_SA",
+        siteName: "Business Platform",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Business Platform",
+        description: "Small business management platform",
+        images: [],
+      },
+      metadataBase: new URL("https://example.com"),
+    };
+  } else {
+    const siteName = settings?.data?.name || "Business Platform";
+    const description =
+      settings?.data?.about_us || "Small business management platform";
+    return {
       title: siteName,
       description: description,
-      images: settings?.logo ? [settings.logo] : [],
-      type: "website",
-      locale: "ar_SA",
-      siteName: siteName,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: siteName,
-      description: description,
-      images: settings?.logo ? [settings.logo] : [],
-    },
-    metadataBase: new URL(settings?.website_url || "https://example.com"),
-  };
+      icons: settings?.data?.logo ? [settings?.data?.logo] : [],
+      keywords: settings?.data?.keywords || [
+        "small business",
+        "online store",
+        "ecommerce",
+      ],
+      alternates: {
+        canonical: settings?.data?.website_url || "/",
+      },
+      openGraph: {
+        title: siteName,
+        description: description,
+        images: settings?.data?.logo ? [settings.data.logo] : [],
+        type: "website",
+        locale: "ar_SA",
+        siteName: siteName,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: siteName,
+        description: description,
+        images: settings?.data?.logo ? [settings.data.logo] : [],
+      },
+      metadataBase: new URL(
+        settings?.data?.website_url || "https://example.com",
+      ),
+    };
+  }
 }
 
 export default async function RootLayout({
@@ -76,12 +105,11 @@ export default async function RootLayout({
     ...store.get(settingsDataAtom),
     ...settingResponse?.data,
   });
-  console.log("settingResponse", settingResponse);
   // Cookie handling moved to client component
   return (
     <html lang="ar" dir="rtl">
       <body className={`relative ${cairo.className}`}>
-        <LoginHandler isLogin={settingResponse.is_login} />
+        <LoginHandler isLogin={settingResponse?.is_login ?? false} />
         <ColorHandler globalData={settingResponse} />
         <Header settingsData={settingResponse?.data} />
 

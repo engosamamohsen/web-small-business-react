@@ -17,8 +17,11 @@ function ColorHandler({ globalData }: { globalData: any }) {
       !globalData?.status ||
       !effectRan.current ||
       !window.document.documentElement
-    )
+    ) {
+      setIsLoading(false);
+
       return;
+    }
     // Set theme colors on document root only once
     const root = window.document.documentElement;
     // root.style.setProperty("--main-background", globalData?.data?.main_bg);
@@ -44,11 +47,12 @@ function ColorHandler({ globalData }: { globalData: any }) {
       "--second-color",
       globalData?.data?.main_font_color || "#FC7643",
     );
+
     // handle function set cookie
     setCookie("app_data", { ...globalData?.data });
-
-    setIsLoading(false);
     effectRan.current = true;
+    setIsLoading(false);
+
     // document.cookie = `app_name=${globalData?.data.name}; path=/; max-age=86400`; // 1 day
   }, [globalData, setCookie]);
 

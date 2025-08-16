@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 type typeCache = "force-cache" | "no-cache" | "no-store";
 type revalidate = { revalidate: false | number | undefined };
 
@@ -12,8 +14,12 @@ export async function fetchingData({
   type = undefined,
   token,
 }: fetchingProps) {
+  const cookieStore = await cookies();
+  const baseApi = cookieStore.get("baseApi")?.value;
+  const fullUrl = `${baseApi}${process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL}${url}`;
+
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    const response = await fetch(fullUrl, {
       ...type,
       headers: {
         "Content-Type": "application/json",
@@ -26,13 +32,13 @@ export async function fetchingData({
     }
 
     const data = await response.json();
+
     return {
       data,
       status: response.status,
       isSuccess: true,
     };
   } catch (error) {
-    console.log("error", error);
-    return { data: null, status: 500, isSuccess: false };
+    return { data: null, status: 500, isSuccess: false, error };
   }
 }

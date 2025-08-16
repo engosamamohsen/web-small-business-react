@@ -14,6 +14,6 @@ export async function fetchSettings() {
     return settingResponse?.data;
   } catch (error) {
     console.log(error);
-    return null;
+    return { data: null };
   }
 }

@@ -1,49 +1,20 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { handleBaseApi } from "./middleware/baseApi-middleware";
 
 export function middleware(request: NextRequest) {
-  // Clone the request headers
-  const requestHeaders = new Headers(request.headers);
-  const response = NextResponse.next({
-    request: {
-      // New request headers
-      headers: requestHeaders,
-    },
-  });
-
-  // Add security headers
-  const securityHeaders = {
-    "X-DNS-Prefetch-Control": "on",
-    "X-XSS-Protection": "1; mode=block",
-    "X-Frame-Options": "SAMEORIGIN",
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "origin-when-cross-origin",
-    "Content-Security-Policy":
-      "default-src 'self'; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://apis.google.com https://*.googleapis.com https://*.firebaseapp.com; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://firebasestorage.googleapis.com; connect-src 'self' https: wss: https://*.firebase.com https://*.firebaseio.com https://*.firebaseapp.com https://auth.firebase.com https://identitytoolkit.googleapis.com https://firestore.googleapis.com;",
-  };
-
-  // Set security headers
-  Object.entries(securityHeaders).forEach(([key, value]) => {
-    response.headers.set(key, value);
-  });
-
-  // Prevent caching of sensitive routes
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    response.headers.set("Cache-Control", "no-store, max-age=0");
+  // Handle baseApi cookie logic
+  const baseApiResponse = handleBaseApi(request);
+  if (baseApiResponse) {
+    return baseApiResponse;
   }
 
-  return response;
+  // Continue with other middleware logic if needed
+  return NextResponse.next();
 }
 
+// exceptions: do not run on /api/* or static files
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next (Next.js internals)
-     * - static (static files)
-     * - favicon.ico (browser asset)
-     * - public folder
-     */
-    "/((?!_next/static|_next/image|favicon.ico|public/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|api/|.*\\.).*)",
   ],
 };
