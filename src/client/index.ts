@@ -1,10 +1,13 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import NProgress from "nprogress";
-const url = process.env.NEXT_PUBLIC_API_URL as string;
-const axiosInstance = (baseUrl: string) => {
+
+const axiosInstance = () => {
+  // const baseApi = Cookies.get("app_token");
+  // console.log("axiosInstance", baseApi);
+  const url = `${process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL}`;
   const instance = axios.create({
-    baseURL: baseUrl,
+    baseURL: url,
     // headers: {
     //   platform: 3,
     //   lang: "en",
@@ -15,7 +18,6 @@ const axiosInstance = (baseUrl: string) => {
     //     "Origin, Content-Type, X-Auth-Token ,X-Requested-With",
     // },
   });
-
   instance.interceptors.request.use((config) => {
     NProgress.start();
     const token = Cookies.get("app_token");
@@ -37,4 +39,4 @@ const axiosInstance = (baseUrl: string) => {
   return instance;
 };
 
-export const $api = axiosInstance(url);
+export const $api = axiosInstance();
