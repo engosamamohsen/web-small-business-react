@@ -1,11 +1,11 @@
 import DetailPage from "./DetailPage";
-import { fetchingData } from "@/hooks/fetching";
 import { revalidateTime } from "@/constants/constansts";
 import { notFound } from "next/navigation";
 import { ProductType } from "@/lib/types";
 import { Metadata } from "next";
 import { getDefaultStore } from "jotai";
 import { settingsDataAtom } from "@/lib/stores/settingsData";
+import { fetchHook } from "@/hooks/fetch-hook";
 
 export async function generateMetadata(): Promise<Metadata> {
   const store = getDefaultStore();
@@ -52,9 +52,9 @@ async function getProductDetailServices({
   productData: any;
 }> {
   try {
-    const response = await fetchingData({
+    const response = await fetchHook({
       url: `v1/product-details?product_id=${productId}`,
-      type: { next: { revalidate: revalidateTime } },
+      init: { next: { revalidate: revalidateTime } },
     });
 
     const productData = response?.data?.data;

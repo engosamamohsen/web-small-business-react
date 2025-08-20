@@ -1,6 +1,6 @@
-import { fetchingData } from "@/hooks/fetching";
 import SwiperBanner from "./SwiperBanner";
 import { revalidateTime } from "@/constants/constansts";
+import { fetchHook } from "@/hooks/fetch-hook";
 
 export default async function Hero() {
   const response = await getHeroServer();
@@ -16,9 +16,9 @@ async function getHeroServer(): Promise<{
   isSuccess: boolean;
 }> {
   try {
-    const response = await fetchingData({
+    const response = await fetchHook({
       url: `v1/banner`,
-      type: { next: { revalidate: revalidateTime } },
+      init: { next: { revalidate: revalidateTime } },
     });
 
     const bannerData = response?.data?.data;
