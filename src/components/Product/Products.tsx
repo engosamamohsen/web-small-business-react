@@ -1,8 +1,8 @@
 import { revalidateTime } from "@/constants/constansts";
-import { fetchingData } from "@/hooks/fetching";
 import ProductsGrid from "./ProductsGrid";
 import Pagination from "../Pagination/Pagination";
 import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
+import { fetchHook } from "@/hooks/fetch-hook";
 // import Link from "next/link";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -58,9 +58,9 @@ export default async function Products({
 
 async function getProductsServer(url: string) {
   try {
-    const response = await fetchingData({
+    const response = await fetchHook({
       url: url,
-      type: { next: { revalidate: revalidateTime } },
+      init: { next: { revalidate: revalidateTime } },
     });
 
     const data = response?.data?.data;

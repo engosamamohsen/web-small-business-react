@@ -1,8 +1,8 @@
-import { fetchingData } from "@/hooks/fetching";
 import CategorySwiper from "./CategorySwiper";
 import SubCategories from "./SubCategories";
 import { cookies } from "next/headers";
 import { revalidateTime } from "@/constants/constansts";
+import { fetchHook } from "@/hooks/fetch-hook";
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function Categories({
@@ -74,9 +74,9 @@ async function getCategoriesServer(): Promise<{
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("app_token")?.value;
-    const response = await fetchingData({
+    const response = await fetchHook({
       url: `v1/categories`,
-      type: { next: { revalidate: revalidateTime } },
+      init: { next: { revalidate: revalidateTime } },
       token,
     });
 

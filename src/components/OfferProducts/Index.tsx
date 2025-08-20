@@ -1,15 +1,15 @@
 import React from "react";
 import SwiperOffer from "./SwiperOffer";
-import { fetchingData } from "@/hooks/fetching";
 import { revalidateTime } from "@/constants/constansts";
 import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
+import { fetchHook } from "@/hooks/fetch-hook";
 
 async function OfferProducts() {
-  const response = await fetchingData({
+  const response = await fetchHook({
     url: "v1/product?offer=1",
-    type: { next: { revalidate: revalidateTime } },
+    init: { next: { revalidate: revalidateTime } },
   });
-  if (response?.isSuccess) {
+  if (response?.ok) {
     return (
       <div className="container py-10">
         <h2 className="mb-8 text-2xl font-bold">العروض</h2>

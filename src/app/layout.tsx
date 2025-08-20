@@ -32,7 +32,7 @@ import "./globals.css";
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchSettings();
 
-  if (!settings) {
+  if (!settings?.ok) {
     return {
       title: "Business Platform",
       description: "Small business management platform",
@@ -110,7 +110,7 @@ export default async function RootLayout({
     <html lang="ar" dir="rtl">
       <body className={`relative ${cairo.className}`}>
         <LoginHandler isLogin={settingResponse?.is_login ?? false} />
-        <ColorHandler globalData={settingResponse} />
+        <ColorHandler globalData={settingResponse?.data} />
         <Header settingsData={settingResponse?.data} />
 
         {children}

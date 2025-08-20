@@ -1,5 +1,5 @@
 import TransactionsPage from "@/components/Payment/Transactions/TransactionsPage";
-import { fetchingData } from "@/hooks/fetching";
+import { fetchHook } from "@/hooks/fetch-hook";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -29,9 +29,9 @@ async function getInvoiceServices({ id }: { id: string }): Promise<{
   invoiceData: any;
 }> {
   try {
-    const response = await fetchingData({
+    const response = await fetchHook({
       url: `invoices?invoice_number=${id}`,
-      type: { next: { revalidate: 0 } },
+      init: { next: { revalidate: 0 } },
     });
     const invoiceData = response?.data?.data;
     if (!invoiceData) {
