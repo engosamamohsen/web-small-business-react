@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import Hero from "@/components/Hero/Hero";
+import { fetchSettings } from "@/hooks/fetchSettings";
 const OfferProducts = dynamic(
   () => import("@/components/OfferProducts/Index"),
   {
@@ -25,12 +26,15 @@ export default async function Home({
 }: {
   searchParams: SearchParams;
 }) {
+  // const settingResponse = await fetchSettings();
+  // console.log("settingResponse", settingResponse);
   return (
-    <main>
-      <Hero />
-      <OfferProducts />
-      <Categories searchParams={searchParams} />
-      <Products searchParams={searchParams} />
+    <main className="min-w-screen h-full min-h-screen w-full bg-gray-300">
+      sss
+      {/* <Hero /> */}
+      {/* <OfferProducts /> */}
+      {/* <Categories searchParams={searchParams} /> */}
+      {/* <Products searchParams={searchParams} /> */}
     </main>
   );
 }
