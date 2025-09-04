@@ -5,6 +5,19 @@ import { fetchSettings } from "@/hooks/fetchSettings";
 export async function generateMetadata(): Promise<Metadata> {
   const settingResponse = await fetchSettings();
 
+  if (!settingResponse?.ok) {
+    return {
+      title: "تسجيل الدخول",
+      description: "تسجيل الدخول للوصول إلى جميع ميزات موقعنا",
+      icons: [],
+      keywords: ["تسجيل", "دخول", "تسجيل الدخول"],
+      openGraph: {
+        title: "تسجيل الدخول",
+        description: "Login",
+        images: [],
+      },
+    };
+  }
   return {
     title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
     description:
@@ -18,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "إنشاء حساب",
     ],
     openGraph: {
-      title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
+      title: `تسجيل الدخول | ${settingResponse?.data?.name || ""}`,
       description:
         settingResponse?.data?.about_us || "انضم إلينا واحصل على تجربة مميزة",
       images: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],

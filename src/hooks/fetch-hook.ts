@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import getSubdomain from "@/app/subdomain";
 
 // utils/fetchingData.ts
 type CacheMode = "force-cache" | "no-store";
@@ -37,11 +37,12 @@ export async function fetchHook<T = any>({
   ok: boolean;
   error?: string;
 }> {
-  const cookieStore = await cookies();
-  const baseApi = cookieStore.get("baseApi")?.value;
+  const subdomain = await getSubdomain();
+
   const currentUrl =
-    baseUrl ?? `${baseApi}${process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL}`;
+    baseUrl ?? `${subdomain}${process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL}`;
   const fullUrl = `${currentUrl}${url}`;
+  console.log("fullUrl", fullUrl);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -50,7 +51,6 @@ export async function fetchHook<T = any>({
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {}),
     };
-    console.log("fullUrl", fullUrl);
     const res = await fetch(fullUrl, {
       ...init,
       // For data-only requests we default to GET unless caller overrides.
