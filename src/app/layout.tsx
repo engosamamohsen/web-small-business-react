@@ -9,24 +9,19 @@ import { settingsDataAtom } from "@/lib/stores/settingsData";
 import ColorHandler from "@/layouts/ColorHandler";
 
 // Use dynamic imports for layout components
-const Header = dynamic(() => import("@/layouts/Header/Header"), {
-  ssr: true,
-  loading: () => <div className="h-16 animate-pulse bg-gray-50"></div>,
-});
 
 const Footer = dynamic(() => import("@/layouts/Footer"), {
   ssr: true,
   loading: () => <div className="h-40 animate-pulse bg-gray-50"></div>,
 });
 
-const LoginHandler = dynamic(() => import("@/layouts/LoginHandler"), {
-  ssr: true,
-});
 import "nprogress/nprogress.css";
 import "react-toastify/dist/ReactToastify.css";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import "primeicons/primeicons.css";
 import "./globals.css";
+import Header from "@/layouts/Header/Header";
+import LoginHandler from "@/layouts/LoginHandler";
 
 // Generate dynamic metadata with enhanced SEO
 export async function generateMetadata(): Promise<Metadata> {
@@ -105,7 +100,6 @@ export default async function RootLayout({
     ...store.get(settingsDataAtom),
     ...settingResponse?.data,
   });
-  // Cookie handling moved to client component
   return (
     <html lang="ar" dir="rtl">
       <body className={`relative ${cairo.className}`}>

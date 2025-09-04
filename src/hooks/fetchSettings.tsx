@@ -1,4 +1,3 @@
-// lib/fetchSettings.ts
 import { cookies } from "next/headers";
 import { fetchHook } from "./fetch-hook";
 
@@ -7,10 +6,11 @@ export async function fetchSettings() {
   const token = cookieStore.get("app_token")?.value;
   try {
     const res = await fetchHook({
-      url: "v1/setting-profile",
+      url: `/v1/setting-profile`,
       init: { next: { revalidate: 600 } },
       token,
     });
+    console.log("res", res);
     return res.ok ? { ...res.data, ok: true } : null;
   } catch (error) {
     console.log(error);

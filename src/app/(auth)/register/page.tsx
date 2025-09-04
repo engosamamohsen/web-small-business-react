@@ -5,6 +5,19 @@ import { fetchSettings } from "@/hooks/fetchSettings";
 export async function generateMetadata(): Promise<Metadata> {
   const settingResponse = await fetchSettings();
 
+  if (!settingResponse?.ok) {
+    return {
+      title: "إنشاء حساب جديد",
+      description: "إنشاء حساب جديد للوصول إلى جميع ميزات موقعنا",
+      icons: [],
+      keywords: ["تسجيل", "حساب جديد", "إنشاء حساب"],
+      openGraph: {
+        title: "إنشاء حساب جديد",
+        description: "Register",
+        images: [],
+      },
+    };
+  }
   return {
     title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
     description:
