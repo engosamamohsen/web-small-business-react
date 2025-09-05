@@ -22,7 +22,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
 
   const onCategoryClick = (category: any) => {
     const searchParams = new URLSearchParams(window.location.search);
-    if (category.id.toString() === searchParams.get("category")) {
+    if (category.id.toString() === searchParams?.get("category")) {
       searchParams.delete("category"); // Clear the category
       searchParams.delete("sub_category"); // Clear the sub-category
       searchParams.set("page", "1");

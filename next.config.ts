@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       "emend.cashierthru.com",
       "cdn.pixabay.com",
       "source.unsplash.com",
+      "staging.fawaterk.com",
+      "i.ibb.co",
     ],
   },
 };

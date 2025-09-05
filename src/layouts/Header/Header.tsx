@@ -37,9 +37,9 @@ export default function Header({ settingsData }: { settingsData: any }) {
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link href="/" aria-label="site home">
-            {settingsData.logo ? (
+            {settingsData?.logo ? (
               <Image
-                src={settingsData.logo}
+                src={settingsData?.logo}
                 alt="site logo"
                 width={100}
                 height={50}
@@ -48,7 +48,7 @@ export default function Header({ settingsData }: { settingsData: any }) {
               />
             ) : (
               <span className="text-lg font-bold">
-                {settingsData.name || "Store"}
+                {settingsData?.name || "Store"}
               </span>
             )}
           </Link>
@@ -81,19 +81,6 @@ export default function Header({ settingsData }: { settingsData: any }) {
             </button> */}
           </div>
         </div>
-
-        {/* Mobile Search */}
-        {/* <div
-          className={`md:hidden transition-all duration-300 ${
-            isMenuOpen
-              ? "max-h-20 opacity-100 mt-4"
-              : "max-h-0 opacity-0 overflow-hidden"
-          }`}
-        >
-          <div className="relative">
-            <SearchBar />
-          </div>
-        </div> */}
       </div>
     </div>
   );
