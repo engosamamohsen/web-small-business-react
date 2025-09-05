@@ -4,7 +4,7 @@ async function getSubdomain() {
   const host = headersList.get("host") || "";
   const subdomainValue = host.split(".")[0];
 
-  return subdomainValue;
+  return process.env.NEXT_PUBLIC_BASE_URL ?? subdomainValue;
 }
 
 export default getSubdomain;
