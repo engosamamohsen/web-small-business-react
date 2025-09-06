@@ -10,7 +10,8 @@ export async function fetchSettings() {
       init: { next: { revalidate: 600 } },
       token,
     });
-    console.log("res", res);
+    console.log("_v1.0.........");
+    console.log("res_v1.0", res);
     return res.ok ? { ...res.data, ok: true } : null;
   } catch (error) {
     console.log(error);
