@@ -100,6 +100,7 @@ export default async function RootLayout({
     ...store.get(settingsDataAtom),
     ...settingResponse?.data,
   });
+
   return (
     <html lang="ar" dir="rtl">
       <body className={`relative ${cairo.className}`}>
@@ -110,6 +111,9 @@ export default async function RootLayout({
         {children}
 
         <Footer settingsData={settingResponse?.data} />
+        <div className="flex w-full items-center justify-center bg-gray-500 py-4 text-center text-white">
+          v.0.0.1
+        </div>
         <ToastContainer position="bottom-right" rtl />
       </body>
     </html>
