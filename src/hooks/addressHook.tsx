@@ -122,7 +122,7 @@ export const useCheckout = () => {
     try {
       setLoading(true);
 
-      const data = await $api.post(`/v1/basket/buy`, {
+      const data = await $api.post(`v1/basket/buy`, {
         address_id: inputs.address?.id,
         shipping: 0,
         notes: inputs.desc,
