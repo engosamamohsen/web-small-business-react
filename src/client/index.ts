@@ -2,12 +2,11 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import NProgress from "nprogress";
 
-const axiosInstance = () => {
+const axiosInstance = (baseUrl: string) => {
   // const baseApi = Cookies.get("app_token");
   // console.log("axiosInstance", baseApi);
-  const url = `${process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL}`;
   const instance = axios.create({
-    baseURL: url,
+    baseURL: baseUrl,
     // headers: {
     //   platform: 3,
     //   lang: "en",
@@ -39,4 +38,5 @@ const axiosInstance = () => {
   return instance;
 };
 
-export const $api = axiosInstance();
+// export const $api = axiosInstance(process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL || "");
+export const $api = axiosInstance(process.env.NEXT_PUBLIC_API_URL || "");
