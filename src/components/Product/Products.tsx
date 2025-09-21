@@ -1,7 +1,7 @@
 import { revalidateTime } from "@/constants/constansts";
 import ProductsGrid from "./ProductsGrid";
 import Pagination from "../Pagination/Pagination";
-import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
+import ProductsSkeleton from "./ProductsSkeleton";
 import { fetchHook } from "@/hooks/fetch-hook";
 // import Link from "next/link";
 
@@ -21,7 +21,7 @@ export default async function Products({
   }${searchParamsUrl?.sub_category ? `&sub_category_id=${searchParamsUrl?.sub_category}` : ""}${searchParamsUrl?.sub_category || searchParamsUrl?.category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
 
   const response = await getProductsServer(url);
-  if (response?.isSuccess) {
+  if (response?.isSuccess && response?.data?.length) {
     return (
       <section className="py-10" id="products">
         <div className="container">
@@ -37,7 +37,6 @@ export default async function Products({
           {response?.pagination?.last_page > 1 && (
             <Pagination totalPages={response?.pagination?.last_page} />
           )}
-          {response?.data?.length == 0 && <NotFoundProducts />}
         </div>
       </section>
     );
@@ -48,7 +47,7 @@ export default async function Products({
         <section className="py-10" id="products">
           <div className="container">
             <div className="flex w-full items-center justify-between max-sm:flex-col max-sm:justify-center max-sm:gap-4"></div>
-            <NotFoundProducts />
+            <ProductsSkeleton />
           </div>
         </section>
       </>

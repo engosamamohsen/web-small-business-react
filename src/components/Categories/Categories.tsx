@@ -1,5 +1,6 @@
 import CategorySwiper from "./CategorySwiper";
 import SubCategories from "./SubCategories";
+import CategoriesSkeleton from "./CategoriesSkeleton";
 import { cookies } from "next/headers";
 import { revalidateTime } from "@/constants/constansts";
 import { fetchHook } from "@/hooks/fetch-hook";
@@ -16,7 +17,7 @@ export default async function Categories({
     categories: response?.categoriesData,
     category_id: searchParamsUrl.category,
   });
-  if (response?.isSuccess) {
+  if (response?.isSuccess && response?.categoriesData?.length) {
     return (
       <>
         <div className="relative overflow-visible bg-gray-50">
@@ -48,7 +49,7 @@ export default async function Categories({
       </>
     );
   } else {
-    <></>;
+    return <CategoriesSkeleton />;
   }
 }
 

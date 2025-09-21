@@ -1,7 +1,7 @@
 import React from "react";
 import SwiperOffer from "./SwiperOffer";
+import OfferProductsSkeleton from "./OfferProductsSkeleton";
 import { revalidateTime } from "@/constants/constansts";
-import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
 import { fetchHook } from "@/hooks/fetch-hook";
 
 async function OfferProducts() {
@@ -16,7 +16,7 @@ async function OfferProducts() {
         {response?.data?.data?.length ? (
           <SwiperOffer response={response} />
         ) : (
-          <NotFoundProducts text="عروض" />
+          <OfferProductsSkeleton />
         )}
       </div>
     );
@@ -25,7 +25,7 @@ async function OfferProducts() {
       <>
         <section className="container py-10" id="products">
           <h2 className="mb-8 text-2xl font-bold">العروض</h2>
-          <NotFoundProducts text="عروض" />
+          <OfferProductsSkeleton />
         </section>
       </>
     );

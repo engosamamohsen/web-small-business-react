@@ -5,7 +5,7 @@ async function getSubdomain() {
   const host = headersList.get("host") || "";
   console.log("host", host);
   // return `https://${host}`;
-  return "https://emend.cashierthru.com";
+  return "https://emendw.cashierthru.com";
 }
 
 export default getSubdomain;

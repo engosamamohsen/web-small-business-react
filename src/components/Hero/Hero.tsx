@@ -1,4 +1,5 @@
 import SwiperBanner from "./SwiperBanner";
+import HeroSkeleton from "./HeroSkeleton";
 import { revalidateTime } from "@/constants/constansts";
 import { fetchHook } from "@/hooks/fetch-hook";
 
@@ -7,7 +8,7 @@ export default async function Hero() {
   if (response?.isSuccess && response?.bannerData?.length) {
     return <SwiperBanner response={response} />;
   } else {
-    return <></>;
+    return <HeroSkeleton />;
   }
 }
 
