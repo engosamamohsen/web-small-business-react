@@ -15,7 +15,6 @@ import {
 } from "./components";
 
 export default function DetailPage({ product }: { product: ProductType }) {
-  console.log("product");
   // Extract all product options logic to a custom hook
   const {
     selectedSize,
