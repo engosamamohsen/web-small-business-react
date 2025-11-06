@@ -18,7 +18,7 @@ import {
 } from "./formSchema";
 import AddressList from "./AddressList";
 import DialogAddressForm from "./DialogAddressForm";
-import PaymentMethodsList from "./PaymentMethodsList";
+// import PaymentMethodsList from "./PaymentMethodsList";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { useCartServices } from "@/hooks/cart/cart";
@@ -160,8 +160,8 @@ type BillingFormProps = {
   handleSubmit: any;
   onSubmit: (inputs: any) => void;
   loading: boolean;
-  paymentMethods: any[];
-  paymentLoading: boolean;
+  paymentMethods?: any[];
+  paymentLoading?: boolean;
 };
 
 const BillingForm = ({
@@ -175,8 +175,8 @@ const BillingForm = ({
   handleSubmit,
   onSubmit,
   loading,
-  paymentMethods,
-  paymentLoading,
+  // paymentMethods,
+  // paymentLoading,
 }: BillingFormProps) => (
   <div className="mb-6 rounded-lg bg-white px-4 py-6">
     <h2 className="mb-4 text-xl font-bold">معلومات الفاتورة</h2>
@@ -208,7 +208,7 @@ const BillingForm = ({
       />
     )}
 
-    {paymentLoading ? (
+    {/* {paymentLoading ? (
       <div className="mt-6 animate-pulse space-y-4">
         <div className="h-6 w-1/4 rounded bg-gray-200"></div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -226,7 +226,7 @@ const BillingForm = ({
           setError("paymentMethod", { type: "manual", message: "" });
         }}
       />
-    )}
+    )} */}
 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
       <div>
@@ -290,8 +290,21 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
             </div>
             <div className="flex-1">
               <h3 className="font-semibold">{item.product_name}</h3>
-              <p className="mt-2 text-sm text-gray-600">
-                {item.qty} × {item.unit_price} ج.م
+              <p className="mt-2 text-end text-sm text-gray-800">
+                {item.qty} ×{" "}
+                {(
+                  item.item_total -
+                  (item.variations?.reduce(
+                    (sum, variation) =>
+                      sum +
+                      variation.choices.reduce(
+                        (choiceSum, choice) => choiceSum + choice.price,
+                        0,
+                      ),
+                    0,
+                  ) || 0)
+                ).toFixed(1)}{" "}
+                ج.م
               </p>
               {item.product_note && (
                 <p className="mt-1 text-xs text-gray-500">
@@ -304,7 +317,7 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
                   {item.variations.map((variation) => (
                     <div
                       key={variation.main_variation_id}
-                      className="text-xs text-gray-500"
+                      className="flex items-center justify-between gap-1 text-xs text-gray-500"
                     >
                       <span className="font-medium">
                         {variation.main_variation_name}:{" "}
@@ -312,23 +325,26 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
                       {variation.choices.map((choice, idx) => (
                         <React.Fragment key={choice.id}>
                           {idx > 0 && <span>, </span>}
-                          <span>
-                            {choice.name} ({choice.price} ج.م)
-                          </span>
+                          <bdi>
+                            {choice.name} ({choice.price} ج.م+)
+                          </bdi>
                         </React.Fragment>
                       ))}
                     </div>
                   ))}
                 </div>
               )}
+              <div className="mt-1 flex items-center justify-between text-sm text-gray-800">
+                <span className="">إجمالي المنتج</span>
+                <>{item.item_total.toFixed(2)} ج.م</>
+              </div>
             </div>
           </div>
-          <span className="font-semibold">{item.item_total} ج.م</span>
         </div>
       ))}
     </div>
     <div className="text-md space-y-2 border-t pt-4 font-bold">
-      <div className="flex justify-between">
+      <div className="justify-betwe en flex">
         <span>إجمالي المنتجات</span>
         <span>{total.toFixed(2)} ج.م</span>
       </div>

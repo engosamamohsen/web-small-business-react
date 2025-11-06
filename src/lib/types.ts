@@ -36,6 +36,7 @@ export interface ProductType {
   price: number;
   description: string;
   steps?: string[];
+  description_steps?: string[];
   category?: Category;
   image: string;
   main_image?: string;
@@ -57,6 +58,11 @@ export interface ProductType {
     updated_at: string;
     main_image?: string;
     gallery_images?: Array<any>;
+  }>;
+  technicalInformation?: Array<{
+    id: number;
+    key: string;
+    value: string | number;
   }>;
 }
 

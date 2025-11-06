@@ -52,6 +52,21 @@ export default function DetailPage({ product }: { product: ProductType }) {
               {product?.steps?.map((item) => <li key={item}>{item}</li>)}
             </ul>
           )}
+          
+          {/* Description steps */}
+          {product?.description_steps && product.description_steps.length > 0 && (
+            <div className="mt-4">
+              <h3 className="mb-3 text-lg font-semibold">المواصفات الأساسية</h3>
+              <ul className="space-y-2">
+                {product.description_steps.map((step, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="ml-2 mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--main-color)]"></span>
+                    <span className="text-gray-700">{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {/* Variations selector */}
           {product.variations && product.variations.length > 0 && (
             <VariationsSelector
@@ -85,10 +100,10 @@ export default function DetailPage({ product }: { product: ProductType }) {
       </div>
       {/* Product specifications table */}
       <div className="flex w-full items-center justify-between">
-        {product.technical_information &&
-          product.technical_information.length > 0 && (
+        {product.technicalInformation &&
+          product.technicalInformation.length > 0 && (
             <ProductSpecifications
-              specifications={product.technical_information}
+              specifications={product.technicalInformation}
               className="w-full flex-1"
             />
           )}
