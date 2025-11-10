@@ -36,13 +36,16 @@ export interface ProductType {
   price: number;
   description: string;
   steps?: string[];
+  description_steps?: string[];
   category?: Category;
   image: string;
+  main_image?: string;
   discount?: string;
   price_after?: number;
   is_variation?: boolean;
   variations?: Variation[];
-  gallery?: Array<{ id: string; image: string }>;
+  gallery?: Array<string>;
+  gallery_images?: Array<string>;
   sizes?: SizeOption[];
   colors?: ColorOption[];
   count?: number;
@@ -53,6 +56,13 @@ export interface ProductType {
     value: string | number;
     created_at: string;
     updated_at: string;
+    main_image?: string;
+    gallery_images?: Array<any>;
+  }>;
+  technicalInformation?: Array<{
+    id: number;
+    key: string;
+    value: string | number;
   }>;
 }
 

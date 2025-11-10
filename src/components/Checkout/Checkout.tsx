@@ -18,7 +18,7 @@ import {
 } from "./formSchema";
 import AddressList from "./AddressList";
 import DialogAddressForm from "./DialogAddressForm";
-import PaymentMethodsList from "./PaymentMethodsList";
+// import PaymentMethodsList from "./PaymentMethodsList";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { useCartServices } from "@/hooks/cart/cart";
@@ -67,7 +67,7 @@ export default function CheckoutPage() {
     setLoading(true);
     const res = await createOrder(inputs);
     if (res?.status === 200) {
-      router.push(res.data.data.payment_url);
+      router.push("/order");
     }
     setLoading(false);
   };
@@ -79,6 +79,7 @@ export default function CheckoutPage() {
   }
 
   const total = cartResponse?.total_price || 0;
+  const shippingFees = watch("address").shipping_fees || 0;
   return (
     <>
       <div className="mx-auto min-h-screen max-w-7xl px-4 py-12">
@@ -105,7 +106,11 @@ export default function CheckoutPage() {
               />
             )}
           </div>
-          <OrderSummary items={items} total={total} />
+          <OrderSummary
+            items={items}
+            total={total}
+            shippingFees={shippingFees}
+          />
         </div>
       </div>
       {showDialog && (
@@ -160,8 +165,8 @@ type BillingFormProps = {
   handleSubmit: any;
   onSubmit: (inputs: any) => void;
   loading: boolean;
-  paymentMethods: any[];
-  paymentLoading: boolean;
+  paymentMethods?: any[];
+  paymentLoading?: boolean;
 };
 
 const BillingForm = ({
@@ -175,8 +180,8 @@ const BillingForm = ({
   handleSubmit,
   onSubmit,
   loading,
-  paymentMethods,
-  paymentLoading,
+  // paymentMethods,
+  // paymentLoading,
 }: BillingFormProps) => (
   <div className="mb-6 rounded-lg bg-white px-4 py-6">
     <h2 className="mb-4 text-xl font-bold">معلومات الفاتورة</h2>
@@ -208,7 +213,7 @@ const BillingForm = ({
       />
     )}
 
-    {paymentLoading ? (
+    {/* {paymentLoading ? (
       <div className="mt-6 animate-pulse space-y-4">
         <div className="h-6 w-1/4 rounded bg-gray-200"></div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -226,7 +231,7 @@ const BillingForm = ({
           setError("paymentMethod", { type: "manual", message: "" });
         }}
       />
-    )}
+    )} */}
 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
       <div>
@@ -267,9 +272,10 @@ const BillingForm = ({
 type OrderSummaryProps = {
   items: CartItemType[];
   total: number;
+  shippingFees: number;
 };
 
-const OrderSummary = ({ items, total }: OrderSummaryProps) => (
+const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
   <div className="h-fit w-full flex-1 rounded-lg bg-gray-100 p-6">
     <h2 className="mb-4 text-xl font-bold">ملخص الطلب</h2>
     <div className="max-h-[500px] space-y-4 overflow-y-auto bg-gray-50 px-10 pb-10">
@@ -290,8 +296,21 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
             </div>
             <div className="flex-1">
               <h3 className="font-semibold">{item.product_name}</h3>
-              <p className="mt-2 text-sm text-gray-600">
-                {item.qty} × {item.unit_price} ج.م
+              <p className="mt-2 text-end text-sm text-gray-800">
+                {item.qty} ×{" "}
+                {(
+                  item.item_total -
+                  (item.variations?.reduce(
+                    (sum, variation) =>
+                      sum +
+                      variation.choices.reduce(
+                        (choiceSum, choice) => choiceSum + choice.price,
+                        0,
+                      ),
+                    0,
+                  ) || 0)
+                ).toFixed(1)}{" "}
+                ج.م
               </p>
               {item.product_note && (
                 <p className="mt-1 text-xs text-gray-500">
@@ -304,7 +323,7 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
                   {item.variations.map((variation) => (
                     <div
                       key={variation.main_variation_id}
-                      className="text-xs text-gray-500"
+                      className="flex items-center justify-between gap-1 text-xs text-gray-500"
                     >
                       <span className="font-medium">
                         {variation.main_variation_name}:{" "}
@@ -312,25 +331,36 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
                       {variation.choices.map((choice, idx) => (
                         <React.Fragment key={choice.id}>
                           {idx > 0 && <span>, </span>}
-                          <span>
-                            {choice.name} ({choice.price} ج.م)
-                          </span>
+                          <bdi>
+                            {choice.name} ({choice.price} ج.م+)
+                          </bdi>
                         </React.Fragment>
                       ))}
                     </div>
                   ))}
                 </div>
               )}
+              <div className="mt-1 flex items-center justify-between text-sm text-gray-800">
+                <span className="">إجمالي المنتج</span>
+                <>{item.item_total.toFixed(2)} ج.م</>
+              </div>
             </div>
           </div>
-          <span className="font-semibold">{item.item_total} ج.م</span>
         </div>
       ))}
     </div>
     <div className="text-md space-y-2 border-t pt-4 font-bold">
-      <div className="flex justify-between">
+      <div className="flex justify-between text-sm">
         <span>إجمالي المنتجات</span>
         <span>{total.toFixed(2)} ج.م</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span>رسوم الشحن</span>
+        <span>{shippingFees.toFixed(2)} ج.م</span>
+      </div>
+      <div className="text-md flex justify-between border-t pt-2">
+        <span>الإجمالي النهائي</span>
+        <span>{(total + shippingFees).toFixed(2)} ج.م</span>
       </div>
     </div>
   </div>

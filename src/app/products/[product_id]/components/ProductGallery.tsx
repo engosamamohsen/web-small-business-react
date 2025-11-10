@@ -20,29 +20,16 @@ export const ProductGallery = ({ product }: ProductGalleryProps) => {
       autoplay
       className={`${styles["product-swiper"]} !h-[608px] max-md:!h-80`}
     >
-      <SwiperSlide>
-        <div className="relative aspect-square h-full w-full">
-          <Image
-            src={product?.image || "/placeholder-image.jpg"}
-            alt={product?.name || "Product image"}
-            width={321}
-            height={400}
-            priority
-            className="h-[608px] !w-full !max-w-full object-fill transition-all duration-200 group-hover:brightness-90 max-md:max-h-80"
-          />
-        </div>
-      </SwiperSlide>
-
-      {product?.gallery?.map((data) => (
-        <SwiperSlide key={data?.id}>
+      {product?.gallery_images?.map((data) => (
+        <SwiperSlide key={data}>
           <div className="relative aspect-square h-full w-full">
             <Image
-              src={data?.image || "/placeholder-image.jpg"}
+              src={data || "/placeholder-image.jpg"}
               alt={product?.name || "Product image"}
               width={321}
               height={400}
               priority
-              className="h-[608px] !w-full !max-w-full object-fill transition-all duration-200 group-hover:brightness-90 max-md:max-h-80"
+              className="h-[608px] !w-full !max-w-full object-contain transition-all duration-200 group-hover:brightness-90 max-md:max-h-80"
             />
           </div>
         </SwiperSlide>

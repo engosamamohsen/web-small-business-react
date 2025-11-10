@@ -151,10 +151,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           <span>إجمالي المنتجات</span>
           <span>{subtotal?.toFixed(2)} ج.م</span>
         </div>
-        <div className="flex justify-between">
-          <span>مصاريف الشحن</span>
-          <span>{shipping} ج.م</span>
-        </div>
+
         <div className="flex justify-between">
           <span>الضريبة</span>
           <span>{tax} ج.م</span>

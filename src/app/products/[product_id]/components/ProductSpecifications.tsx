@@ -3,7 +3,7 @@ import React from "react";
 
 export type SpecificationType = {
   id: number;
-  product_id: string;
+  product_id?: string;
   key: string;
   value: string | number;
   created_at?: string;

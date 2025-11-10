@@ -331,7 +331,7 @@ function DialogAddressForm({
                     disabled={loading}
                     className="w-full rounded-lg bg-orange-500 py-3 font-semibold text-white transition-colors hover:bg-orange-600"
                   >
-                    تأكيد الطلب
+                    تأكيد العنوان
                   </button>
                 </form>
               </div>

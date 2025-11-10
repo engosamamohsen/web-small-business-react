@@ -153,6 +153,7 @@ async function getProductDetailServices({
     });
 
     const productData = response?.data?.data;
+    // console.log("productData-detail", productData);
     if (!productData) {
       return {
         productData: {},

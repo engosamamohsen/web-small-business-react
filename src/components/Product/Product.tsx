@@ -13,19 +13,26 @@ export function Product({ product }: ProductProps) {
   const descount = product?.discount || "0";
   return (
     <div className="min-h-[350px]">
-      <div className="relative h-[208px] max-sm:h-48">
-        <Link
-          href={`/products/${product?.id}`}
-          className="relative h-[208px] max-sm:h-48"
-        >
-          <Image
-            src={product?.image}
-            alt={product?.name || ""}
-            width={321}
-            height={208}
-            quality={80}
-            className="h-52 !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
-          />
+      <div className="relative h-fit">
+        <Link href={`/products/${product?.id}`} className="relative h-fit">
+          {product?.main_image || product?.gallery_images?.[0] ? (
+            <Image
+              src={
+                product?.main_image ||
+                product?.gallery_images?.[0] ||
+                product.image
+              }
+              alt={product?.name || ""}
+              width={321}
+              height={208}
+              quality={80}
+              className="h-auto !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
+            />
+          ) : (
+            <div className="flex h-52 w-full items-center justify-center bg-gray-200">
+              <span className="text-sm text-gray-500">لا توجد صورة</span>
+            </div>
+          )}
         </Link>
         {+descount > 0 ? (
           <div className="absolute right-4 top-4">
