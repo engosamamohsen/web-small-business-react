@@ -67,7 +67,7 @@ export default function CheckoutPage() {
     setLoading(true);
     const res = await createOrder(inputs);
     if (res?.status === 200) {
-      router.push(res.data.data.payment_url);
+      router.push("/order");
     }
     setLoading(false);
   };
@@ -79,6 +79,7 @@ export default function CheckoutPage() {
   }
 
   const total = cartResponse?.total_price || 0;
+  const shippingFees = watch("address").shipping_fees || 0;
   return (
     <>
       <div className="mx-auto min-h-screen max-w-7xl px-4 py-12">
@@ -105,7 +106,11 @@ export default function CheckoutPage() {
               />
             )}
           </div>
-          <OrderSummary items={items} total={total} />
+          <OrderSummary
+            items={items}
+            total={total}
+            shippingFees={shippingFees}
+          />
         </div>
       </div>
       {showDialog && (
@@ -267,9 +272,10 @@ const BillingForm = ({
 type OrderSummaryProps = {
   items: CartItemType[];
   total: number;
+  shippingFees: number;
 };
 
-const OrderSummary = ({ items, total }: OrderSummaryProps) => (
+const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
   <div className="h-fit w-full flex-1 rounded-lg bg-gray-100 p-6">
     <h2 className="mb-4 text-xl font-bold">ملخص الطلب</h2>
     <div className="max-h-[500px] space-y-4 overflow-y-auto bg-gray-50 px-10 pb-10">
@@ -344,9 +350,17 @@ const OrderSummary = ({ items, total }: OrderSummaryProps) => (
       ))}
     </div>
     <div className="text-md space-y-2 border-t pt-4 font-bold">
-      <div className="justify-betwe en flex">
+      <div className="flex justify-between text-sm">
         <span>إجمالي المنتجات</span>
         <span>{total.toFixed(2)} ج.م</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span>رسوم الشحن</span>
+        <span>{shippingFees.toFixed(2)} ج.م</span>
+      </div>
+      <div className="text-md flex justify-between border-t pt-2">
+        <span>الإجمالي النهائي</span>
+        <span>{(total + shippingFees).toFixed(2)} ج.م</span>
       </div>
     </div>
   </div>
