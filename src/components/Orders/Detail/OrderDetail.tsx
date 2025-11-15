@@ -22,7 +22,7 @@ const OrderDetail = ({
   orderId: string | number;
 }): React.ReactNode => {
   const { loading, data: order } = useOrderDetailServices(orderId);
-  
+
   // Using useMemo to prevent unnecessary recalculations
   const content = useMemo(() => {
     if (loading) {
@@ -36,26 +36,37 @@ const OrderDetail = ({
         </div>
       );
     }
-    
+
     return (
       <div className="container mt-20 min-h-[calc(100vh-300px)]">
-        <MemoizedOrderStatusTracker orderStatus={order.order_status} />
+        <MemoizedOrderStatusTracker
+          orderStatus={order.order_status_id}
+          orderId={orderId}
+        />
 
         <div className="overflow-x-auto">
-          <Suspense fallback={<div className="animate-pulse h-32 bg-gray-100 rounded"></div>}>
+          <Suspense
+            fallback={
+              <div className="h-32 animate-pulse rounded bg-gray-100"></div>
+            }
+          >
             <MemoizedOrderSummary order={order} />
           </Suspense>
         </div>
 
         <div className="overflow-x-auto">
-          <Suspense fallback={<div className="animate-pulse h-64 bg-gray-100 rounded mt-4"></div>}>
+          <Suspense
+            fallback={
+              <div className="mt-4 h-64 animate-pulse rounded bg-gray-100"></div>
+            }
+          >
             <MemoizedOrderItems order={order} />
           </Suspense>
         </div>
       </div>
     );
-  }, [loading, order]);
-  
+  }, [loading, order, orderId]);
+
   return content;
 };
 

@@ -6,9 +6,11 @@ import { Address, OrderStatusState } from "./types";
 export const getOrderStatus = (status: string): OrderStatusState => {
   const statusInt = parseInt(status);
   return {
-    received: statusInt >= 1,
-    preparing: statusInt >= 2,
-    delivered: statusInt >= 3,
+    waitingApproval: statusInt >= 1,
+    waitingPayment: statusInt >= 2,
+    received: statusInt >= 3,
+    preparing: statusInt >= 4,
+    delivered: statusInt >= 5,
   };
 };
 
@@ -23,7 +25,10 @@ export const formatAddress = (address?: Address): string => {
 /**
  * Calculates actual price after discount
  */
-export const calculateActualPrice = (price: string, discount: string): string => {
+export const calculateActualPrice = (
+  price: string,
+  discount: string,
+): string => {
   const priceNum = parseFloat(price || "0");
   const discountNum = parseFloat(discount || "0");
   return (priceNum - discountNum).toFixed(2);
@@ -32,7 +37,11 @@ export const calculateActualPrice = (price: string, discount: string): string =>
 /**
  * Calculates total price for an item
  */
-export const calculateItemTotal = (price: string, discount: string, quantity: string): string => {
+export const calculateItemTotal = (
+  price: string,
+  discount: string,
+  quantity: string,
+): string => {
   const actualPrice = parseFloat(calculateActualPrice(price, discount));
   const qty = parseInt(quantity || "0", 10);
   return (actualPrice * qty).toFixed(2);

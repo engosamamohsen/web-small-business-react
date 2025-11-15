@@ -1,0 +1,15 @@
+/* OrderStatusTracker Animation Styles */
+
+@keyframes slideLeftRight {
+  0%,
+  100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+.slide-left-right {
+  animation: slideLeftRight 1s ease-in-out infinite;
+}

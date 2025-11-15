@@ -17,9 +17,8 @@ const PaymentMethodsList = ({
 
   return (
     <div className="mt-6 space-y-4">
-      <h3 className="text-lg font-medium">طرق الدفع</h3>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {paymentMethods.map((method) => (
+        {paymentMethods?.map((method) => (
           <div
             key={method.paymentId}
             onClick={() => onSelectPaymentMethod(method)}

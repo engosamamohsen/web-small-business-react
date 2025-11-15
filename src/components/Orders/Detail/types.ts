@@ -42,7 +42,8 @@ export interface OrderDetailType {
   shipping: string;
   delivery_id: string;
   total: string;
-  order_status: string;
+  order_status_id: string;
+  order_status_name: string;
   address_id: string;
   customer_id: string;
   created_at: string;
@@ -58,6 +59,8 @@ export interface OrderDetailType {
 }
 
 export interface OrderStatusState {
+  waitingApproval: boolean;
+  waitingPayment: boolean;
   received: boolean;
   preparing: boolean;
   delivered: boolean;
@@ -69,6 +72,7 @@ export interface OrderDetailProps {
 
 export interface OrderStatusTrackerProps {
   orderStatus: string;
+  orderId: string | number;
 }
 
 export interface OrderSummaryProps {

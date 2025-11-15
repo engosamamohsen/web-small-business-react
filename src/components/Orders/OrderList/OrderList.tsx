@@ -24,27 +24,27 @@ function OrderList() {
   // Filter orders based on the active tab
   const filteredOrders = orders?.filter((order) => {
     if (activeTab === "All") return true;
-    if (activeTab === "Open" && order.order_status === 1) return true;
-    if (activeTab === "Shipped" && order.order_status === 2) return true;
-    if (activeTab === "Completed" && order.order_status === 3) return true;
+    if (activeTab === "Open" && order.order_status_id === 1) return true;
+    if (activeTab === "Shipped" && order.order_status_id === 2) return true;
+    if (activeTab === "Completed" && order.order_status_id === 3) return true;
     return false;
   });
 
   // Get status text based on order_status code
-  const getStatusText = (status: number) => {
-    switch (status) {
-      case 1:
-        return "مفتوح";
-      case 2:
-        return "شحن";
-      case 3:
-        return "تمت";
-      case 4:
-        return "ملغي";
-      default:
-        return "Unknown";
-    }
-  };
+  // const getStatusText = (status: number) => {
+  //   switch (status) {
+  //     case 1:
+  //       return "مفتوح";
+  //     case 2:
+  //       return "شحن";
+  //     case 3:
+  //       return "تمت";
+  //     case 4:
+  //       return "ملغي";
+  //     default:
+  //       return "Unknown";
+  //   }
+  // };
 
   return (
     <div className="container mt-20 min-h-[calc(100vh-300px)]">
@@ -94,14 +94,15 @@ function OrderList() {
                 <div className="flex flex-col gap-3">
                   <h6
                     className={cn(
-                      "rounded-full bg-gray-100 px-2 py-1 text-center",
-                      order.order_status === 1 && "bg-orange-500 text-white",
-                      order.order_status === 2 && "bg-green-500 text-white",
-                      order.order_status === 3 && "bg-green-500 text-white",
-                      order.order_status === 4 && "bg-red-500 text-white",
+                      "rounded-full bg-gray-100 px-3 py-1 text-center text-xs",
+                      order.order_status_id === 1 && "bg-yellow-500 text-white",
+                      order.order_status_id === 2 && "bg-blue-500 text-white",
+                      order.order_status_id === 3 && "bg-green-500 text-white",
+                      order.order_status_id === 4 && "bg-green-500 text-white",
+                      order.order_status_id === 5 && "bg-green-500 text-white",
                     )}
                   >
-                    {getStatusText(order.order_status)}
+                    {order.order_status_name}
                   </h6>
                   <h6 className="text-gray-500">{order.total} ج.م</h6>
                 </div>

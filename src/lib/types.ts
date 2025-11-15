@@ -76,7 +76,8 @@ export type SettingsType = Record<string, any>;
 export interface OrderType {
   id: number;
   order_type: number;
-  order_status: number;
+  order_status_id: number;
+  order_status_name: string;
   sub_total: string;
   shipping: string;
   total: string;
