@@ -112,7 +112,7 @@ export default async function RootLayout({
 
         <Footer settingsData={settingResponse?.data} />
         <div className="flex w-full items-center justify-center bg-gray-500 py-4 text-center text-white">
-          v.0.0.1
+          v.0.0.2
         </div>
         <ToastContainer position="bottom-right" rtl />
       </body>
