@@ -1,2 +1,2 @@
-export const revalidateTime = 180;
+export const revalidateTime = 60;
 export const currency = "جنيه";

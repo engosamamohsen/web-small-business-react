@@ -61,9 +61,9 @@ export interface OrderDetailType {
 export interface OrderStatusState {
   waitingApproval: boolean;
   waitingPayment: boolean;
-  received: boolean;
-  preparing: boolean;
+  waitingShipping: boolean;
   delivered: boolean;
+  cancelled: boolean;
 }
 
 export interface OrderDetailProps {

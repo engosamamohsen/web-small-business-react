@@ -2,15 +2,16 @@ import { Address, OrderStatusState } from "./types";
 
 /**
  * Determines order status based on status string
+ * Status IDs: 1=بانتظار الموافقة, 2=بانتظار الدفع, 3=بانتظار الشحن, 4=تم التسليم, 5=تم الإلغاء
  */
 export const getOrderStatus = (status: string): OrderStatusState => {
   const statusInt = parseInt(status);
   return {
-    waitingApproval: statusInt >= 1,
-    waitingPayment: statusInt >= 2,
-    received: statusInt >= 3,
-    preparing: statusInt >= 4,
-    delivered: statusInt >= 5,
+    waitingApproval: statusInt === 1,
+    waitingPayment: statusInt === 2,
+    waitingShipping: statusInt === 3,
+    delivered: statusInt === 4,
+    cancelled: statusInt === 5,
   };
 };
 

@@ -97,9 +97,9 @@ function OrderList() {
                       "rounded-full bg-gray-100 px-3 py-1 text-center text-xs",
                       order.order_status_id === 1 && "bg-yellow-500 text-white",
                       order.order_status_id === 2 && "bg-blue-500 text-white",
-                      order.order_status_id === 3 && "bg-green-500 text-white",
+                      order.order_status_id === 3 && "bg-orange-400 text-white",
                       order.order_status_id === 4 && "bg-green-500 text-white",
-                      order.order_status_id === 5 && "bg-green-500 text-white",
+                      order.order_status_id === 5 && "bg-red-500 text-white",
                     )}
                   >
                     {order.order_status_name}
