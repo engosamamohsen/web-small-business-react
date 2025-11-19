@@ -11,53 +11,58 @@ interface ProductProps {
 
 export function Product({ product }: ProductProps) {
   const descount = product?.discount || "0";
+  const imageSrc =
+    product?.main_image ||
+    product?.gallery_images?.[0] ||
+    product.image ||
+    "";
+
   return (
-    <div className="min-h-[350px]">
-      <div className="relative h-fit">
-        <Link href={`/products/${product?.id}`} className="relative h-fit">
-          {product?.main_image || product?.gallery_images?.[0] ? (
-            <Image
-              src={
-                product?.main_image ||
-                product?.gallery_images?.[0] ||
-                product.image
-              }
-              alt={product?.name || ""}
-              width={321}
-              height={208}
-              quality={80}
-              className="h-auto !w-full !max-w-full object-center transition-all duration-200 group-hover:brightness-90"
-            />
-          ) : (
-            <div className="flex h-52 w-full items-center justify-center bg-gray-200">
-              <span className="text-sm text-gray-500">لا توجد صورة</span>
-            </div>
-          )}
+    <div className="flex h-full min-h-[350px] flex-col">
+      {/* Image block */}
+      <div className="relative">
+        <Link href={`/products/${product?.id}`} className="block">
+          <div className="relative w-full aspect-square">
+            {imageSrc ? (
+              <Image
+                src={imageSrc}
+                alt={product?.name || ""}
+                fill
+                quality={80}
+                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                className="object-cover transition-all duration-200 group-hover:brightness-90"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gray-200">
+                <span className="text-sm text-gray-500">لا توجد صورة</span>
+              </div>
+            )}
+          </div>
         </Link>
+
+        {/* Discount flame */}
         {+descount > 0 ? (
           <div className="absolute right-4 top-4">
             <Flame fill="red" className="h-8 w-8 text-transparent" />
           </div>
         ) : null}
+
+        {/* Add to cart button over image (if not variation) */}
         {!product?.is_variation ? <ButtonAddToCart product={product} /> : null}
       </div>
-      <div className="flex flex-col items-start justify-start gap-2 px-4 pb-6 pt-4">
+
+      {/* Content area */}
+      <div className="flex flex-1 flex-col items-start justify-between gap-2 px-4 pb-6 pt-4">
         <h3 className="my-2 line-clamp-2 text-sm font-semibold sm:text-base">
           {product.name}
         </h3>
 
-        <div className="flex items-center justify-between">
+        <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-1">
             <PriceContent product={product} />
           </div>
         </div>
-        <Link
-          href={`/products/${product?.id}`}
-          className="text-sm hover:text-[var(--second-color)] hover:underline"
-        >
-          {" "}
-          عرض المزيد
-        </Link>
+        {/* 'عرض المزيد' removed as you requested */}
       </div>
     </div>
   );

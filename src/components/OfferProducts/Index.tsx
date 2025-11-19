@@ -9,6 +9,10 @@ async function OfferProducts() {
     url: "v1/product?offer=1",
     init: { next: { revalidate: revalidateTime } },
   });
+
+  console.log(response)
+
+  console.log(response)
   if (response?.ok) {
     return (
       <div className="container py-10">

@@ -21,6 +21,8 @@ async function getHeroServer(): Promise<{
       init: { next: { revalidate: revalidateTime } },
     });
 
+    console.log(response)
+
     const bannerData = response?.data?.data;
     if (!bannerData) {
       return {

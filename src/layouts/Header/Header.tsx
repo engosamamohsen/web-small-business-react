@@ -41,10 +41,10 @@ export default function Header({ settingsData }: { settingsData: any }) {
               <Image
                 src={settingsData?.logo}
                 alt="site logo"
-                width={100}
+                width={50}
                 height={50}
                 quality={70}
-                style={{ maxHeight: "50px", objectFit: "contain" }}
+                style={{ maxHeight: "50px", objectFit: "contain", borderRadius: "50%" }}
               />
             ) : (
               <span className="text-lg font-bold">

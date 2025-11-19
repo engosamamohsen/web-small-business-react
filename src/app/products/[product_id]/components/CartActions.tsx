@@ -40,6 +40,12 @@ export const CartActions = ({
   const token = Cookies.get("app_token");
   const [isAvailable, setIsAvailable] = useState(true);
   const { loading, addToCart } = useCartHook();
+  const discount = product.discount ? parseInt(product.discount, 10) : 0;
+
+  function getDiscountedPrice(price: number, discount: number): number {
+    const discountedPrice = price - (price * discount) / 100;
+    return parseFloat(discountedPrice.toFixed(2));
+  }
 
   const handleAddToCart = async () => {
     if (!token) {
@@ -119,7 +125,7 @@ export const CartActions = ({
         >
           <span>أضف إلى السلة</span>{" "}
           <span>
-            {totalPrice * count} <span>جنية</span>
+            {discount > 0 ? getDiscountedPrice(product?.price, discount) : totalPrice * count} <span>جنية</span>
           </span>
         </Button>
         <div className="flex w-40 items-center justify-between gap-1 rounded-lg border bg-white p-4 max-md:w-full">

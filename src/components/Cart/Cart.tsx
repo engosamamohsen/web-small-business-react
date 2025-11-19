@@ -5,9 +5,10 @@ import { Minus, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
 import { cn } from "@/utils/utils";
-import React from "react";
+import React, { useEffect } from "react";
 import PageLoader from "../PageLoader/PageLoader";
 import { CartItemType } from "@/types/types";
+import { useCartStore } from "@/Store/cart";
 
 // CartItem component for better separation of concerns
 type CartItemProps = {
@@ -194,6 +195,20 @@ export default function Cart() {
   const router = useRouter();
   const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
   const { loading, removeFromCart, updateCount } = useCartHook();
+  const { setCartCount } = useCartStore();
+
+  useEffect(() => {
+    if (cartResponse?.cart_items) {
+      const totalCount = cartResponse.cart_items.reduce(
+        (sum: number, item: CartItemType) => sum + Number(item.qty ?? 0),
+        0,
+      );
+
+      setCartCount(totalCount);
+    } else {
+      setCartCount(0);
+    }
+  }, [cartResponse, setCartCount]);
 
   // Conditional rendering based on loading and cart state
   if (cartLoading) {

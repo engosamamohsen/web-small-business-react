@@ -42,11 +42,12 @@ export default function SwiperBanner({ response }: { response: any }) {
         {response?.data?.data?.length ? (
           response?.data?.data?.map((product: any) => {
             return (
-              <SwiperSlide key={product.id} className="py-4">
-                <div className="group block overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg">
+              <SwiperSlide key={product.id} className="py-4 !h-auto">
+                <div className="group block h-full overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg">
                   <Product product={product} />
                 </div>
               </SwiperSlide>
+
             );
           })
         ) : (
