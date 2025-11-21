@@ -4,11 +4,12 @@ import { fetchHook } from "@/hooks/fetch-hook";
 
 export default async function Hero() {
   const response = await getHeroServer();
+
   if (response?.isSuccess && response?.bannerData?.length) {
     return <SwiperBanner response={response} />;
-  } else {
-    return <></>;
   }
+
+  return null;
 }
 
 async function getHeroServer(): Promise<{
@@ -17,13 +18,14 @@ async function getHeroServer(): Promise<{
 }> {
   try {
     const response = await fetchHook({
-      url: `v1/banner`,
+      url: "v1/banner",
       init: { next: { revalidate: revalidateTime } },
     });
 
-    console.log(response)
+    console.log(response);
 
     const bannerData = response?.data?.data;
+
     if (!bannerData) {
       return {
         bannerData: [],
