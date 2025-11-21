@@ -9,20 +9,33 @@ interface ProductProps {
   product: ProductType;
 }
 
+function getDiscountedPrice(price: number, discount: number): number {
+  const discountedPrice = price - (price * discount) / 100;
+  return parseFloat(discountedPrice.toFixed(2));
+}
+
 export function Product({ product }: ProductProps) {
-  const descount = product?.discount || "0";
+  const rawDiscount = product?.discount ?? 0;
+  const discountValue =
+    typeof rawDiscount === "number"
+      ? rawDiscount
+      : parseFloat(String(rawDiscount)) || 0;
+
+  const hasDiscount = discountValue > 0;
+
   const imageSrc =
     product?.main_image ||
     product?.gallery_images?.[0] ||
-    product.image ||
+    (product as any).image ||
     "";
+
+  const categoryName = product?.category?.name;
 
   return (
     <div className="flex h-full min-h-[350px] flex-col">
-      {/* Image block */}
       <div className="relative">
         <Link href={`/products/${product?.id}`} className="block">
-          <div className="relative w-full aspect-square">
+          <div className="relative w-full aspect-square overflow-hidden bg-gray-50">
             {imageSrc ? (
               <Image
                 src={imageSrc}
@@ -30,7 +43,7 @@ export function Product({ product }: ProductProps) {
                 fill
                 quality={80}
                 sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                className="object-cover transition-all duration-200 group-hover:brightness-90"
+                className="object-cover transition-all duration-200 group-hover:scale-[1.03] group-hover:brightness-95"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gray-200">
@@ -40,56 +53,94 @@ export function Product({ product }: ProductProps) {
           </div>
         </Link>
 
-        {/* Discount flame */}
-        {+descount > 0 ? (
-          <div className="absolute right-4 top-4">
-            <Flame fill="red" className="h-8 w-8 text-transparent" />
+        {hasDiscount && (
+          <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 shadow-sm">
+            <Flame fill="red" className="h-4 w-4 text-transparent" />
+            <span className="text-xs font-semibold text-orange-600">
+              خصم {discountValue}%
+            </span>
           </div>
-        ) : null}
+        )}
 
-        {/* Add to cart button over image (if not variation) */}
         {!product?.is_variation ? <ButtonAddToCart product={product} /> : null}
       </div>
 
       {/* Content area */}
-      <div className="flex flex-1 flex-col items-start justify-between gap-2 px-4 pb-6 pt-4">
-        <h3 className="my-2 line-clamp-2 text-sm font-semibold sm:text-base">
-          {product.name}
-        </h3>
+      <div className="flex flex-1 flex-col justify-between gap-3 px-4 pb-5 pt-3 sm:pb-6 sm:pt-4">
+        <div className="w-full space-y-1 text-right">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-base">
+            {product.name}
+          </h3>
 
-        <div className="flex w-full items-center justify-between">
-          <div className="flex items-center gap-1">
-            <PriceContent product={product} />
-          </div>
+          {categoryName && (
+            <p className="text-[11px] font-medium text-slate-400 sm:text-xs">
+              {categoryName}
+            </p>
+          )}
         </div>
-        {/* 'عرض المزيد' removed as you requested */}
+
+        <div className="flex w-full items-end justify-between">
+          <PriceContent product={product} />
+        </div>
       </div>
     </div>
   );
 }
 
 function PriceContent({ product }: { product: ProductType }) {
-  const descount = product?.discount || "0";
-  return +descount > 0 ? (
-    <>
-      <span className="ml-1 text-lg font-bold text-orange-500 sm:text-xl">
-        {product.price_after} ج.م
-      </span>
+  const basePrice = Number(product?.price) || 0;
+  const rawDiscount = product?.discount ?? 0;
+  const discountValue =
+    typeof rawDiscount === "number"
+      ? rawDiscount
+      : parseFloat(String(rawDiscount)) || 0;
 
-      {product.price_after !== product.price && (
-        <span className="text-sm text-gray-500 line-through">
-          {product.price} ج.م
-        </span>
-      )}
-      {product?.discount && parseInt(product?.discount) > 0 && (
-        <span className="text-sm font-bold text-green-600">
-          {product.discount}%
-        </span>
-      )}
-    </>
-  ) : (
+  const hasDiscount = basePrice > 0 && discountValue > 0;
+
+  const finalPrice = hasDiscount
+    ? getDiscountedPrice(basePrice, discountValue)
+    : basePrice;
+
+  const saving = hasDiscount ? basePrice - finalPrice : 0;
+
+  const finalPriceDisplay =
+    finalPrice % 1 === 0 ? finalPrice.toString() : finalPrice.toFixed(2);
+  const basePriceDisplay =
+    basePrice % 1 === 0 ? basePrice.toString() : basePrice.toFixed(2);
+  const savingDisplay =
+    saving > 0
+      ? saving % 1 === 0
+        ? saving.toString()
+        : saving.toFixed(2)
+      : null;
+
+  if (hasDiscount) {
+    return (
+      <div className="flex flex-col items-start gap-0.5 text-right">
+        <div className="flex flex-wrap items-baseline gap-1 text-sm sm:text-base">
+          {/* Final price (primary) */}
+          <span className="ml-1 text-lg font-bold text-orange-500 sm:text-xl">
+            {finalPriceDisplay} ج.م
+          </span>
+
+          {/* Original price (crossed out) */}
+          <span className="text-xs text-gray-400 line-through sm:text-sm">
+            {basePriceDisplay} ج.م
+          </span>
+        </div>
+
+        {savingDisplay && (
+          <span className="text-[11px] font-medium text-green-600 sm:text-xs">
+            وفرت {savingDisplay} ج.م
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return (
     <span className="ml-1 text-lg font-bold text-orange-500 sm:text-xl">
-      {product.price} ج.م
+      {basePriceDisplay} ج.م
     </span>
   );
 }

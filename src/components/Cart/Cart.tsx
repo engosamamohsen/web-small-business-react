@@ -19,6 +19,7 @@ type CartItemProps = {
   onProductClick: (productId: string) => void;
 };
 
+// ** Cart Item component **//
 const CartItem: React.FC<CartItemProps> = ({
   item,
   loading,
@@ -27,43 +28,74 @@ const CartItem: React.FC<CartItemProps> = ({
   onProductClick,
 }) => {
   const quantity = parseInt(item.qty);
+  const itemTotal = item.item_total ?? Number(item.unit_price) * quantity;
+
   return (
     <div
       key={item.cart_item_id}
-      className="mb-4 flex w-full items-center justify-between gap-4 rounded-lg bg-white p-4 text-start max-md:flex-col-reverse"
+      className="mb-4 flex w-full flex-col gap-4 rounded-xl bg-white p-4 text-start shadow-sm ring-1 ring-slate-100 transition-shadow max-md:flex-col-reverse md:flex-row md:items-center md:justify-between md:gap-6"
     >
+      {/* Image + info */}
       <div
-        onClick={() => onProductClick(item.product_id)}
-        className="flex w-fit cursor-pointer justify-start gap-4 max-md:w-full max-md:flex-col"
+        onClick={() => onProductClick(String(item.product_id))}
+        className="flex w-full cursor-pointer gap-4 max-md:flex-col"
       >
-        <div className="relative h-24 w-24">
+        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50">
           <Image
-            src={item.product_image || "/placeholder-image.jpg"} // Fallback for undefined image
+            src={item.product_image || "/placeholder-image.jpg"}
             alt={item.product_name || "Product"}
             fill
-            className="rounded object-cover"
+            className="object-cover"
           />
         </div>
-        <div className="flex flex-1 flex-col gap-2">
-          <h3 className="font-semibold">{item.product_name}</h3>
-          <p className="font-bold text-orange-500">{item.unit_price} ج.م</p>
 
-          {/* Display variations if they exist */}
+        <div className="flex flex-1 flex-col gap-2">
+          <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 md:text-base">
+            {item.product_name}
+          </h3>
+
+          {/* Prices */}
+          <div className="flex flex-wrap items-baseline gap-3 text-sm">
+            <span className="font-medium text-orange-500">
+              {item.unit_price} ج.م{" "}
+              <span className="text-xs text-slate-500">(سعر الوحدة)</span>
+            </span>
+
+            <span className="text-xs text-slate-500">
+              الكمية: <span className="font-semibold">{quantity}</span>
+            </span>
+
+            <span className="text-xs font-semibold text-slate-800">
+              الإجمالي:{" "}
+              <span className="text-slate-900">
+                {itemTotal} ج.م
+              </span>
+            </span>
+          </div>
+
+          {/* Variations */}
           {item.variations && item.variations.length > 0 && (
-            <div className="mt-2 flex flex-1 flex-col gap-2 text-sm text-gray-600">
+            <div className="mt-1 flex flex-col gap-1 text-xs text-slate-600">
               {item.variations.map((variation) => (
-                <div key={variation.main_variation_id} className="flex gap-1">
-                  <span className="font-medium">
-                    {variation.main_variation_name} :
+                <div
+                  key={variation.main_variation_id}
+                  className="flex flex-wrap items-center gap-1"
+                >
+                  <span className="font-medium text-slate-700">
+                    {variation.main_variation_name}:
                   </span>
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1">
                     {variation.choices.map((choice) => (
                       <span
                         key={choice.id}
-                        className="rounded bg-gray-100 px-2 py-1 text-xs"
+                        className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px]"
                       >
-                        {choice.name}{" "}
-                        {choice.price > 0 && `(+${choice.price} ج.م)`}
+                        <span>{choice.name}</span>
+                        {choice.price > 0 && (
+                          <span className="text-[10px] text-slate-500">
+                            (+{choice.price} ج.م)
+                          </span>
+                        )}
                       </span>
                     ))}
                   </div>
@@ -72,63 +104,77 @@ const CartItem: React.FC<CartItemProps> = ({
             </div>
           )}
 
-          {/* Show product note if exists */}
+          {/* Product note */}
           {item.product_note && (
-            <div className="mt-1 text-sm italic text-gray-500">
-              ملاحظة: {item.product_note}
+            <div className="mt-1 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800">
+              <span className="font-medium">ملاحظة:</span>{" "}
+              <span>{item.product_note}</span>
             </div>
           )}
         </div>
       </div>
-      <div className="flex w-fit cursor-pointer items-center justify-start gap-8 max-md:w-full max-md:justify-between">
-        <div className="flex items-center gap-2">
+
+      {/* Controls: quantity + remove */}
+      <div className="flex w-full items-center justify-between gap-4 md:w-auto md:flex-col md:items-end">
+        {/* Quantity controls */}
+        <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-1">
           <button
             disabled={loading || quantity <= 1}
             onClick={() =>
               updateCount(item.cart_item_id, quantity - 1, item?.product_name)
             }
             className={cn(
-              "rounded-full p-1 hover:bg-gray-100",
-              (loading || quantity <= 1) && "cursor-not-allowed opacity-50",
+              "flex h-8 w-8 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100",
+              (loading || quantity <= 1) &&
+              "cursor-not-allowed opacity-40 hover:bg-transparent",
             )}
             aria-label={`Decrease quantity of ${item.product_name}`}
           >
             <Minus size={16} />
           </button>
-          <span className="w-8 rounded-md bg-gray-100 text-center">
+
+          <span className="mx-1 min-w-[2.25rem] rounded-md bg-white px-2 py-1 text-center text-sm font-semibold text-slate-800">
             {quantity}
           </span>
+
           <button
             disabled={loading}
             onClick={() =>
               updateCount(item.cart_item_id, quantity + 1, item?.product_name)
             }
             className={cn(
-              "rounded-full p-1 hover:bg-gray-100",
-              loading && "cursor-not-allowed",
+              "flex h-8 w-8 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100",
+              loading && "cursor-not-allowed opacity-60 hover:bg-transparent",
             )}
             aria-label={`Increase quantity of ${item.product_name}`}
           >
             <Plus size={16} />
           </button>
         </div>
+
+        {/* Remove button */}
         <button
           onClick={() => {
             if (!loading) removeFromCart(item);
           }}
           disabled={loading}
           className={cn(
-            "rounded-sm bg-black p-1 text-gray-400 hover:text-red-500",
-            loading && "cursor-not-allowed",
+            "flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-slate-200 transition hover:bg-red-600 hover:text-white",
+            loading && "cursor-not-allowed opacity-60 hover:bg-slate-900",
           )}
           aria-label={`Remove ${item.product_name} from cart`}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
       </div>
     </div>
   );
 };
+
+
+
+// ** Order Summary component **//
+
 
 // Order Summary component
 type OrderSummaryProps = {
@@ -179,23 +225,37 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 // Empty cart component
 const EmptyCart: React.FC = () => (
   <div className="mx-auto flex min-h-[700px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center">
-    <h2 className="mb-4 text-2xl font-bold">عربة التسوق فارغة</h2>
+    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">
+      🛒
+    </div>
+    <h2 className="mb-2 text-2xl font-bold text-slate-900">
+      عربة التسوق فارغة
+    </h2>
+    <p className="mb-4 text-sm text-slate-500">
+      أضف بعض المنتجات لعربة التسوق للمتابعة في عملية الشراء.
+    </p>
     <Link
       href="/"
-      className="font-semibold text-orange-500 hover:text-orange-600"
+      className="rounded-lg border border-orange-500 px-4 py-2 text-sm font-semibold text-orange-500 transition hover:bg-orange-50"
     >
       العودة للتسوق
     </Link>
   </div>
 );
 
+
+
+// ** Main Cart component **//
+
+
 // Main Cart component
 export default function Cart() {
-  // Hooks at the top level as per best practices (adhering to the React hooks rule in memory)
   const router = useRouter();
   const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
   const { loading, removeFromCart, updateCount } = useCartHook();
   const { setCartCount } = useCartStore();
+
+  console.log(cartResponse, "cart response");
 
   useEffect(() => {
     if (cartResponse?.cart_items) {
@@ -210,12 +270,10 @@ export default function Cart() {
     }
   }, [cartResponse, setCartCount]);
 
-  // Conditional rendering based on loading and cart state
   if (cartLoading) {
     return <PageLoader text="جاري تحميل عربة التسوق" />;
   }
 
-  // Handle empty cart case
   if (
     !cartResponse ||
     !cartResponse.cart_items ||
@@ -224,16 +282,13 @@ export default function Cart() {
     return <EmptyCart />;
   }
 
-  // Use the cart items from the response - ensure proper type safety
   const cart_items = cartResponse.cart_items;
   const total_price = cartResponse.total_price;
 
-  // Handle product click to navigate to product details
   const handleProductClick = (productId: string) => {
     router.push(`/products/${productId}`);
   };
 
-  // Handle quantity update
   const handleUpdateCount = async (
     itemId: number,
     newQuantity: number,
@@ -249,7 +304,6 @@ export default function Cart() {
     }
   };
 
-  // Handle item removal
   const handleRemoveFromCart = async (itemId: number) => {
     const response = await removeFromCart({ cart_item_id: itemId });
     if (response?.status) {
@@ -259,12 +313,19 @@ export default function Cart() {
 
   return (
     <div
-      className="mx-auto my-10 min-h-[1000px] max-w-7xl px-4 py-12"
+      className="mx-auto my-10 min-h-[1000px] max-w-7xl px-4 py-8"
       suppressHydrationWarning={true}
     >
-      <h1 className="mb-8 text-3xl font-bold">عربة التسوق</h1>
-      <div className="grid grid-cols-1 gap-8 bg-slate-100 px-6 py-10 lg:grid-cols-3">
-        <div className="max-h-[500px] overflow-y-auto pl-6 lg:col-span-2">
+      <h1 className="mb-2 text-3xl font-bold text-slate-900">
+        عربة التسوق
+      </h1>
+      <p className="mb-6 text-sm text-slate-500">
+        يمكنك تعديل الكمية أو إزالة المنتجات قبل إتمام الطلب.
+      </p>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        {/* Items list */}
+        <div className="max-h-[520px] overflow-y-auto rounded-2xl bg-slate-50 p-4 lg:p-6">
           {cart_items.map((item) => (
             <CartItem
               key={item.cart_item_id}
@@ -276,8 +337,13 @@ export default function Cart() {
             />
           ))}
         </div>
-        <OrderSummary subtotal={total_price} />
+
+        {/* Summary */}
+        <div className="lg:self-start">
+          <OrderSummary subtotal={total_price} />
+        </div>
       </div>
     </div>
   );
 }
+

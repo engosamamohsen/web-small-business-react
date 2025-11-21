@@ -1,62 +1,79 @@
 "use client";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { Skeleton } from "primereact/skeleton";
+
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/autoplay";
+
 import styles from "./style.module.css";
 import { Product } from "../Product/Product";
 
-export default function SwiperBanner({ response }: { response: any }) {
+export default function SwiperOffer({ response }: { response: any }) {
+  const products = response?.data?.data ?? [];
+  const hasProducts = products.length > 0;
+
   return (
-    <div className="">
+    <div>
       <Swiper
         modules={[Navigation, Autoplay]}
-        navigation
-        autoplay={{
-          delay: 3000,
-          disableOnInteraction: false,
-        }}
+        navigation={hasProducts && products.length > 1} // ✅ only if >1 card
+        autoplay={
+          hasProducts
+            ? {
+              delay: 3000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }
+            : false
+        }
         breakpoints={{
           320: {
-            slidesPerView: 1.4,
+            slidesPerView: 1.2,
             spaceBetween: 10,
           },
           480: {
-            slidesPerView: 2.4,
-            spaceBetween: 15,
+            slidesPerView: 1.8,
+            spaceBetween: 14,
           },
           768: {
-            slidesPerView: 3.4,
-            spaceBetween: 20,
+            slidesPerView: 2.6,
+            spaceBetween: 18,
           },
           1024: {
-            slidesPerView: 4.5,
-            spaceBetween: 26,
+            slidesPerView: 3.5,
+            spaceBetween: 22,
+          },
+          1280: {
+            slidesPerView: 4,
+            spaceBetween: 24,
           },
         }}
-        loop={true}
-        className={` ${styles["offer-swiper"]} min-h-[300px]`}
+        loop={hasProducts && products.length > 4}
+        watchOverflow={true} // ✅ detect “no overflow” cases
+        className={`${styles["offer-swiper"]} min-h-[300px]`}
       >
-        {response?.data?.data?.length ? (
-          response?.data?.data?.map((product: any) => {
-            return (
-              <SwiperSlide key={product.id} className="py-4 !h-auto">
-                <div className="group block h-full overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg">
-                  <Product product={product} />
-                </div>
-              </SwiperSlide>
-
-            );
-          })
+        {hasProducts ? (
+          products.map((product: any) => (
+            <SwiperSlide key={product.id} className={styles.slide}>
+              <div className={styles.card}>
+                <Product product={product} />
+              </div>
+            </SwiperSlide>
+          ))
         ) : (
           <>
-            <SwiperSlide>
-              <Skeleton width="100%" height="100%"></Skeleton>
+            <SwiperSlide className={styles.slide}>
+              <div className={styles.skeletonCard}>
+                <Skeleton width="100%" height="100%" />
+              </div>
             </SwiperSlide>
-            <SwiperSlide>
-              <Skeleton width="100%" height="100%"></Skeleton>
+            <SwiperSlide className={styles.slide}>
+              <div className={styles.skeletonCard}>
+                <Skeleton width="100%" height="100%" />
+              </div>
             </SwiperSlide>
           </>
         )}

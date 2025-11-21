@@ -1,15 +1,26 @@
 .heroSwiper .swiper-pagination {
-  width: 100px !important;
-  padding: 10px 0;
-  background-color: var(--main-background);
-  width: fit-content;
+  position: absolute;
+  bottom: 1.1rem;
   left: 50%;
   transform: translateX(-50%);
-  border-radius: 20px;
+
   display: flex !important;
-  justify-content: center !important;
   align-items: center !important;
-  gap: 4px !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+
+  padding: 0.25rem 0.6rem;
+  width: auto; /* ✅ no full width */
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+}
+
+@media (max-width: 640px) {
+  .heroSwiper .swiper-pagination {
+    bottom: 0.9rem;
+    padding: 0.2rem 0.5rem;
+    gap: 0.3rem !important;
+  }
 }
 
 .swiper-pagination-clickable {

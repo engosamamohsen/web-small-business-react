@@ -6,22 +6,18 @@ import { ArrowBigLeftDash } from "lucide-react";
 import styles from "./style.module.css";
 import { cn } from "@/utils/utils";
 import DialogPaymentMethodsForm from "./DialogPaymentMethodsForm";
-/**
- * Displays the current status of an order with a visual progress tracker
- */
+
 export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
   orderStatus,
   orderId,
 }) => {
   const status = getOrderStatus(orderStatus);
-
   const [showDialogPaymentMethods, setShowDialogPaymentMethods] =
     useState(false);
 
-  // Handle cancelled status separately
   if (status.cancelled) {
     return (
-      <div className="mb-4 flex flex-col items-center justify-center rounded-lg bg-red-50 p-8 shadow-md">
+      <div className="mb-6 flex flex-col items-center justify-center rounded-2xl bg-red-50 p-6 shadow-sm ring-1 ring-red-100">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500 text-white">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -46,16 +42,16 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
   }
 
   return (
-    <div className="mb-4 flex flex-col items-center justify-center rounded-lg bg-gray-50 p-8 shadow-md">
+    <div className="mb-6 flex flex-col items-center justify-center rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
       <div className="flex w-full items-center">
-        {/* Waiting for Approval Status */}
+        {/* Waiting for Approval */}
         <div className="flex flex-1 items-center">
           <div
             className={twMerge(
               "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
               status.waitingApproval
                 ? "border-yellow-500 bg-yellow-500 text-white"
-                : "border-gray-200 bg-gray-200",
+                : "border-gray-200 bg-gray-100 text-gray-400",
             )}
           >
             <svg
@@ -76,12 +72,11 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
           <span
             className={twMerge(
               "absolute -ml-8 mt-16 text-xs font-medium",
-              status.waitingApproval ? "text-yellow-500" : "text-gray-400",
+              status.waitingApproval ? "text-yellow-600" : "text-gray-400",
             )}
           >
             بانتظار الموافقة
           </span>
-
           <div
             className={twMerge(
               "h-1 flex-1",
@@ -91,17 +86,17 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
                 ? "bg-yellow-500"
                 : "bg-gray-200",
             )}
-          ></div>
+          />
         </div>
 
-        {/* Waiting for Payment Status */}
+        {/* Waiting for Payment */}
         <div className="flex flex-1 items-center">
           <div
             className={twMerge(
               "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
               status.waitingPayment
                 ? "border-blue-500 bg-blue-500 text-white"
-                : "border-gray-200 bg-gray-200",
+                : "border-gray-200 bg-gray-100 text-gray-400",
             )}
           >
             <svg
@@ -122,12 +117,11 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
           <span
             className={twMerge(
               "absolute -ml-6 mt-16 text-xs font-medium",
-              status.waitingPayment ? "text-blue-500" : "text-gray-400",
+              status.waitingPayment ? "text-blue-600" : "text-gray-400",
             )}
           >
             بانتظار الدفع
           </span>
-
           <div
             className={twMerge(
               "h-1 flex-1",
@@ -135,17 +129,17 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
                 ? "bg-blue-500"
                 : "bg-gray-200",
             )}
-          ></div>
+          />
         </div>
 
-        {/* Waiting for Shipping Status */}
+        {/* Waiting for Shipping */}
         <div className="flex flex-1 items-center">
           <div
             className={twMerge(
               "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
               status.waitingShipping
                 ? "border-orange-400 bg-orange-400 text-white"
-                : "border-gray-200 bg-gray-200",
+                : "border-gray-200 bg-gray-100 text-gray-400",
             )}
           >
             <svg
@@ -171,23 +165,22 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
           >
             بانتظار الشحن
           </span>
-
           <div
             className={twMerge(
               "h-1 flex-1",
               status.delivered ? "bg-orange-500" : "bg-gray-200",
             )}
-          ></div>
+          />
         </div>
 
-        {/* Delivered Status */}
+        {/* Delivered */}
         <div className="flex items-center">
           <div
             className={twMerge(
               "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
               status.delivered
                 ? "border-green-500 bg-green-500 text-white"
-                : "border-gray-200 bg-gray-200",
+                : "border-gray-200 bg-gray-100 text-gray-400",
             )}
           >
             <svg
@@ -208,32 +201,35 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
           <span
             className={twMerge(
               "absolute -ml-6 mt-16 text-xs font-medium",
-              status.delivered ? "text-green-500" : "text-gray-400",
+              status.delivered ? "text-green-600" : "text-gray-400",
             )}
           >
             تم التسليم
           </span>
         </div>
       </div>
-      <p className="mt-10 text-center text-gray-600">
+
+      <p className="mt-6 text-center text-sm text-gray-600">
         طلبك{" "}
         {status.delivered
-          ? "تم التسليم بنجاح"
+          ? "تم تسليمه بنجاح."
           : status.waitingShipping
-            ? "بإنتظار الشحن وسوف يتم توصيله اليك قريبا!"
+            ? "بإنتظار الشحن وسوف يتم توصيله إليك قريباً."
             : status.waitingPayment
-              ? "بإنتظار الدفع"
-              : "بإنتظار الموافقة"}
+              ? "بإنتظار الدفع لإتمام الطلب."
+              : "بإنتظار الموافقة من الإدارة."}
       </p>
+
       {status.waitingPayment && (
         <>
           <button
             onClick={() => setShowDialogPaymentMethods(true)}
-            className="mt-4 flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2 text-white transition-colors hover:bg-blue-600"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
           >
             <ArrowBigLeftDash className={cn(styles["slide-left-right"])} />
             اختر طريقة الدفع
           </button>
+
           <DialogPaymentMethodsForm
             showDialog={showDialogPaymentMethods}
             setShowDialog={setShowDialogPaymentMethods}

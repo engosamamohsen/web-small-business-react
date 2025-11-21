@@ -10,9 +10,8 @@ async function OfferProducts() {
     init: { next: { revalidate: revalidateTime } },
   });
 
-  console.log(response)
+  console.log(response, "offer products response");
 
-  console.log(response)
   if (response?.ok) {
     return (
       <div className="container py-10">

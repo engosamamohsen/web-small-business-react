@@ -7,15 +7,10 @@ import { OrderItems } from "./OrderItems";
 import { useOrderDetailServices } from "@/hooks/order";
 import PageLoader from "@/components/PageLoader/PageLoader";
 
-// Memoized sub-components to prevent unnecessary re-renders
 const MemoizedOrderStatusTracker = React.memo(OrderStatusTracker);
 const MemoizedOrderSummary = React.memo(OrderSummary);
 const MemoizedOrderItems = React.memo(OrderItems);
 
-/**
- * Main OrderDetail component that displays complete order information
- * with status tracker, order summary and items list
- */
 const OrderDetail = ({
   orderId,
 }: {
@@ -23,7 +18,8 @@ const OrderDetail = ({
 }): React.ReactNode => {
   const { loading, data: order } = useOrderDetailServices(orderId);
 
-  // Using useMemo to prevent unnecessary recalculations
+  console.log(order, "order detail data");
+
   const content = useMemo(() => {
     if (loading) {
       return <PageLoader text="جاري تحميل التفاصيل" />;
@@ -32,36 +28,38 @@ const OrderDetail = ({
     if (!order) {
       return (
         <div className="container mt-20 flex min-h-[calc(100vh-300px)] items-center justify-center text-lg font-semibold">
-          ليس لديك أي طلبات
+          لا توجد تفاصيل متاحة لهذا الطلب
         </div>
       );
     }
 
     return (
-      <div className="container mt-20 min-h-[calc(100vh-300px)]">
+      <div className="container mt-16 min-h-[calc(100vh-300px)] pb-10">
         <MemoizedOrderStatusTracker
           orderStatus={order.order_status_id}
           orderId={orderId}
         />
 
-        <div className="overflow-x-auto">
-          <Suspense
-            fallback={
-              <div className="h-32 animate-pulse rounded bg-gray-100"></div>
-            }
-          >
-            <MemoizedOrderSummary order={order} />
-          </Suspense>
-        </div>
+        <div className="mt-6 space-y-4">
+          <div className="overflow-x-auto">
+            <Suspense
+              fallback={
+                <div className="h-32 animate-pulse rounded-lg bg-gray-100" />
+              }
+            >
+              <MemoizedOrderSummary order={order} />
+            </Suspense>
+          </div>
 
-        <div className="overflow-x-auto">
-          <Suspense
-            fallback={
-              <div className="mt-4 h-64 animate-pulse rounded bg-gray-100"></div>
-            }
-          >
-            <MemoizedOrderItems order={order} />
-          </Suspense>
+          <div className="overflow-x-auto">
+            <Suspense
+              fallback={
+                <div className="mt-4 h-64 animate-pulse rounded-lg bg-gray-100" />
+              }
+            >
+              <MemoizedOrderItems order={order} />
+            </Suspense>
+          </div>
         </div>
       </div>
     );

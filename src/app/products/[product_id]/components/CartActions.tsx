@@ -58,6 +58,14 @@ export const CartActions = ({
       const { variations } = selectedVariations;
 
       // Call the API to add the product to cart
+      console.log("Adding to cart payload:", {
+        ...product,
+        count,
+        currentColor,
+        currentSize,
+        product_note: productNote, // Include product note from state
+        variations, // Include variations
+      })
       await addToCart({
         ...product,
         count,

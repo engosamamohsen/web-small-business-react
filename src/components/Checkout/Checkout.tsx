@@ -31,6 +31,8 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState<boolean>(false);
 
+  console.log("cartResponse إتمام الشراء", cartResponse);
+
   const router = useRouter();
   const {
     handleSubmit,

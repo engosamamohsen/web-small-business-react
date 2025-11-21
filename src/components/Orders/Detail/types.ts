@@ -18,6 +18,20 @@ export interface Branch {
   name: string | null;
 }
 
+type VariationChoice = {
+  id: number;
+  name: string;
+  price: number;
+};
+
+type OrderProductVariation = {
+  variation_id: string;
+  variation_name: string;
+  choices: VariationChoice[];
+  total_price: number;
+};
+
+
 export interface OrderProduct {
   id: number;
   order_id: string;
@@ -32,6 +46,12 @@ export interface OrderProduct {
   size: string | null;
   color: string | null;
   name?: string;
+  main_image?: string;
+  product_name?: string;
+  variations?: OrderProductVariation[];
+  product_note?: string;
+  total_price: number;
+  additional_price: number;
 }
 
 export interface OrderDetailType {
@@ -51,11 +71,14 @@ export interface OrderDetailType {
   customer: {
     name: string;
     phone: string;
+    email: string
   };
   delivery: any;
   address: Address;
   branches: Branch[];
   order_products: OrderProduct[];
+  vat: number;
+  order_type_name: string
 }
 
 export interface OrderStatusState {

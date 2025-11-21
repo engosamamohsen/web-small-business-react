@@ -1,72 +1,105 @@
 "use client";
+
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
-// Import Swiper styles
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/autoplay";
+
 import styles from "./style.module.css";
 import "./main.css";
 import HeroContent from "./HeroContent";
 
-export default function SwiperBanner({ response }: { response: any }) {
-  return (
-    <>
-      <div className={styles.heroContainer}>
-        <Swiper
-          modules={[Pagination, Autoplay]}
-          pagination={{
-            clickable: true,
-            dynamicBullets: true,
-          }}
-          autoplay={{
-            delay: 50000000,
-            disableOnInteraction: true,
-          }}
-          loop={true}
-          className={`heroSwiper ${styles.heroSwiper} `}
-        >
-          {response?.bannerData?.length ? (
-            response?.bannerData?.map((slide: any, index: number) => {
-              return (
-                <SwiperSlide key={slide.id}>
-                  <div className={styles.slideContent}>
-                    {/* Background Image */}
-                    <div className={styles.imageContainer}>
-                      <Image
-                        src={slide.image}
-                        alt="Delicious food"
-                        width={800}
-                        height={800}
-                        style={{
-                          objectFit: "contain",
-                          objectPosition: "center top",
-                          minWidth: "100%",
-                          minHeight: "100%",
-                        }}
-                        priority={index === 0}
-                      />
-                      {/* Gradient Overlay */}
-                      <div
-                        className={` ${styles.gradientOverlay} bg-gradient-to-t from-[color-mix(in_srgb,var(--main-color)_80%,transparent)] to-transparent`}
-                        // style={{
-                        //   background: `linear-gradient(to top, ${globalData.mainColor}CC, transparent)`,
-                        // }}
-                      />
-                    </div>
+type SwiperBannerProps = {
+  response: {
+    bannerData?: any[];
+    [key: string]: any;
+  };
+};
 
-                    {/* Content */}
-                    <HeroContent data={slide} />
-                  </div>
-                </SwiperSlide>
-              );
-            })
-          ) : (
-            <></>
-          )}
-        </Swiper>
-      </div>
-    </>
+export default function SwiperBanner({ response }: SwiperBannerProps) {
+  const slides = response?.bannerData || [];
+  const hasMultipleSlides = slides.length > 1;
+
+  if (!slides.length) return null;
+
+  return (
+    <section
+      className={styles.heroContainer}
+      aria-label="Promotional banners"
+    >
+      <Swiper
+        modules={[Pagination, Autoplay, Navigation]}
+        pagination={
+          hasMultipleSlides
+            ? {
+              clickable: true,
+            }
+            : false
+        }
+        autoplay={{
+          delay: 50000000,
+          disableOnInteraction: true,
+        }}
+        loop={hasMultipleSlides}
+        navigation={
+          hasMultipleSlides
+            ? {
+              nextEl: ".hero-next",
+              prevEl: ".hero-prev",
+            }
+            : false
+        }
+        className={`heroSwiper ${styles.heroSwiper}`}
+      >
+        {slides.map((slide: any, index: number) => (
+          <SwiperSlide key={slide.id ?? index}>
+            <div className={styles.slideContent}>
+              <div className={styles.imageContainer}>
+                <Image
+                  src={slide.image}
+                  alt={slide.title || "Banner image"}
+                  fill
+                  sizes="100vw"
+                  priority={index === 0}
+                  className={styles.image}
+                />
+                <div className={styles.gradientOverlay} />
+              </div>
+
+              <HeroContent data={slide} />
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      {hasMultipleSlides && (
+        <>
+          {/* LEFT → swipe LEFT */}
+          <button
+            className={`${styles.navArrow} ${styles.navPrev} hero-next`}
+            aria-label="Next banner"
+            type="button"
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              ›
+            </span>
+          </button>
+
+          {/* RIGHT → swipe RIGHT */}
+          <button
+            className={`${styles.navArrow} ${styles.navNext} hero-prev`}
+            aria-label="Previous banner"
+            type="button"
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              ‹
+            </span>
+          </button>
+        </>
+      )}
+    </section>
   );
 }

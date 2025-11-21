@@ -28,6 +28,8 @@ export default function DetailPage({ product }: { product: ProductType }) {
     currentPrice,
   } = useProductOptions(product);
 
+  console.log("Product details:", product);
+
   return (
     <div className="container flex min-h-screen flex-col items-center justify-center py-10">
       <div className="grid grid-cols-1 gap-8 bg-gray-100 p-8 lg:grid-cols-2">
@@ -52,7 +54,7 @@ export default function DetailPage({ product }: { product: ProductType }) {
               {product?.steps?.map((item) => <li key={item}>{item}</li>)}
             </ul>
           )}
-          
+
           {/* Description steps */}
           {product?.description_steps && product.description_steps.length > 0 && (
             <div className="mt-4">
