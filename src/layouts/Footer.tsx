@@ -1,56 +1,108 @@
 "use client";
-import Image from "next/image";
 
+import Image from "next/image";
 import { Facebook, Instagram } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils/utils";
 
-export default function Footer({ settingsData }: { settingsData: any }) {
+interface FooterProps {
+  settingsData: any;
+  appVersion?: string;
+}
+
+export default function Footer({ settingsData, appVersion }: FooterProps) {
   const pathname = usePathname();
+  const siteName = settingsData?.name || "Business Platform";
+  const year = new Date().getFullYear();
+
+  const hasFacebook = Boolean(settingsData?.facebook_link);
+  const hasInstagram = Boolean(settingsData?.instagram_link);
 
   return (
     <footer
       className={cn(
-        "bg-black py-10 text-white",
+        "mt-10 border-t border-white/10 bg-black/95 text-white",
+        "backdrop-blur",
         pathname.startsWith("/products") ? "max-md:pb-72" : "",
       )}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between gap-6 max-md:flex-col">
-          <p className="text-sm max-md:hidden">جميع الحقوق محفوظة 2020</p>
-          <div className="flex items-center justify-center gap-2 text-center">
-            <h4 className="text-[15px] text-xl font-bold text-[var(--main-color)]">
-              {settingsData?.name ? settingsData?.name : ""}
-            </h4>
+      <div className="container mx-auto px-4 py-8 md:py-10">
+        {/* Top row: logo + name + socials */}
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          {/* Brand block */}
+          <div className="flex items-center gap-3">
             {settingsData?.logo && (
-              <Image
-                src={settingsData?.logo}
-                alt="logo app"
-                width={80}
-                height={80}
-                className="mr-[6px]"
-              />
+              <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10">
+                <Image
+                  src={settingsData.logo}
+                  alt={siteName}
+                  fill
+                  sizes="40px"
+                  className="object-contain p-1.5"
+                />
+              </div>
             )}
+
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold tracking-wide text-[var(--main-color)]">
+                {siteName}
+              </h4>
+              {settingsData?.about_us && (
+                <p className="max-w-md text-xs leading-relaxed text-gray-300">
+                  {settingsData.about_us}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2">
-            <a
-              href={settingsData?.facebook_link}
-              target="_blank"
-              aria-label="Visit our Facebook page"
-              className="transform transition-all duration-300 ease-in-out hover:scale-125 hover:text-orange-500"
-            >
-              <Facebook size={20} />
-            </a>
-            <a
-              href={settingsData?.instagram_link}
-              target="_blank"
-              aria-label="Visit our Instagram page"
-              className="transform transition-all duration-300 ease-in-out hover:scale-125 hover:text-orange-500"
-            >
-              <Instagram size={20} />
-            </a>
+
+          {/* Socials */}
+          {(hasFacebook || hasInstagram) && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400 max-md:hidden">
+                تابعنا على
+              </span>
+              <div className="flex gap-2">
+                {hasFacebook && (
+                  <a
+                    href={settingsData.facebook_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Visit our Facebook page"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-200 transition-all duration-200 hover:border-[var(--main-color)] hover:bg-[var(--main-color)]/15 hover:text-[var(--main-color)]"
+                  >
+                    <Facebook size={18} />
+                  </a>
+                )}
+                {hasInstagram && (
+                  <a
+                    href={settingsData.instagram_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Visit our Instagram page"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-200 transition-all duration-200 hover:border-[var(--main-color)] hover:bg-[var(--main-color)]/15 hover:text-[var(--main-color)]"
+                  >
+                    <Instagram size={18} />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom bar: rights + version */}
+        <div className="mt-6 border-t border-white/10 pt-4">
+          <div className="flex flex-col items-center justify-between gap-3 text-xs text-gray-400 md:flex-row">
+            <p className="text-center md:text-right">
+              © {year} {siteName}. جميع الحقوق محفوظة.
+            </p>
+
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-2 w-2 rounded-full bg-[var(--main-color)]" />
+              <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-gray-200">
+                الإصدار {appVersion ?? "0.0.0"}
+              </span>
+            </div>
           </div>
-          <p className="text-sm md:hidden">جميع الحقوق محفوظة 2020</p>
         </div>
       </div>
     </footer>

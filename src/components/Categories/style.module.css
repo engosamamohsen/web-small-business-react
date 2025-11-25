@@ -1,24 +1,27 @@
+/* === CATEGORY SWIPER ARROWS === */
 .categories-swiper :global(.swiper-button-next),
 .categories-swiper :global(.swiper-button-prev) {
   width: 40px;
   height: 40px;
   background-color: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
 }
 
 .categories-swiper :global(.swiper-button-next:hover),
 .categories-swiper :global(.swiper-button-prev:hover) {
   background-color: #f9fafb;
-  @apply bg-orange-500 !text-white !border-white !transition;
+  @apply !border-white bg-orange-500 !text-white;
+  transform: scale(1.05);
 }
 
 .categories-swiper :global(.swiper-button-next::after),
 .categories-swiper :global(.swiper-button-prev::after) {
   font-size: 18px;
   color: #4b5563;
-  @apply hover:text-white !transition;
+  @apply !transition hover:text-white;
 }
 
 .categories-swiper :global(.swiper-button-disabled) {
@@ -26,9 +29,99 @@
   cursor: default;
 }
 
+/* Mobile: hide arrows */
 @media (max-width: 480px) {
   .categories-swiper :global(.swiper-button-next),
   .categories-swiper :global(.swiper-button-prev) {
     display: none;
+  }
+}
+
+/* Fade edges on main categories to hint horizontal scroll */
+.fade-edges::before,
+.fade-edges::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 36px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.fade-edges::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 1),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+.fade-edges::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    rgba(255, 255, 255, 1),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+@media (min-width: 768px) {
+  .fade-edges::before,
+  .fade-edges::after {
+    display: none;
+  }
+}
+
+/* === SUBCATEGORIES SWIPER – CLEAR VISUAL CUES === */
+
+.subcategories-swiper {
+  position: relative;
+}
+
+/* Scrollbar track */
+.subcategories-swiper :global(.swiper-scrollbar) {
+  height: 4px;
+  border-radius: 999px;
+  background-color: #e5e7eb;
+  margin-top: 4px;
+}
+
+/* Scrollbar thumb */
+.subcategories-swiper :global(.swiper-scrollbar-drag) {
+  border-radius: 999px;
+  background-color: var(--main-color);
+}
+
+/* Optional: slightly fade edges for subcategories on very small screens */
+@media (max-width: 640px) {
+  .subcategories-swiper::before,
+  .subcategories-swiper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 8px;
+    width: 24px;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .subcategories-swiper::before {
+    left: 0;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0)
+    );
+  }
+
+  .subcategories-swiper::after {
+    right: 0;
+    background: linear-gradient(
+      to left,
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0)
+    );
   }
 }

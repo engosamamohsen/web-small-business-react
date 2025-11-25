@@ -3,6 +3,7 @@ import SubCategories from "./SubCategories";
 import { cookies } from "next/headers";
 import { revalidateTime } from "@/constants/constansts";
 import { fetchHook } from "@/hooks/fetch-hook";
+
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function Categories({
@@ -12,58 +13,69 @@ export default async function Categories({
 }) {
   const searchParamsUrl = await searchParams;
   const response = await getCategoriesServer();
+
   const targetFilterCategory = await handleSubCategories({
     categories: response?.categoriesData,
     category_id: searchParamsUrl.category,
   });
-  if (response?.isSuccess) {
-    return (
-      <>
-        <div className="relative overflow-visible bg-gray-50">
-          <div className="container">
-            <h2 className="pt-6 text-right text-2xl font-bold text-gray-800">
-              اكتشف الفئات
-            </h2>
-          </div>
-          <CategorySwiper categories={response} />
-        </div>
-        <div className="container flex items-center justify-between py-8 max-md:flex-col max-md:justify-center max-md:gap-4">
-          <h2 className="text-right text-2xl font-bold text-gray-800">
-            {targetFilterCategory?.isFilterCategory ? (
-              <>{targetFilterCategory?.name}</>
-            ) : (
-              <>المنتجات</>
-            )}
+
+  if (!response?.isSuccess) return null;
+
+  return (
+    <>
+      {/* Featured header + categories swiper */}
+      <section className="relative overflow-visible bg-gradient-to-b from-gray-50 to-white">
+        <div className="container">
+          <h2 className="pt-8 text-right text-2xl font-extrabold tracking-tight text-gray-900 max-md:pt-6 max-md:text-xl">
+            اكتشف الفئات
           </h2>
-          {targetFilterCategory?.isSubCategory && (
-            <div className="flex max-w-full items-center justify-center gap-2 max-md:flex-col">
-              <bdi className="mb-4 text-sm font-bold">
-                {" "}
-                اختر الفئة الفرعية :
-              </bdi>
-              <SubCategories categories={targetFilterCategory?.subcategories} />
-            </div>
-          )}
+          <p className="mt-1 text-right text-sm text-gray-500 max-md:text-xs">
+            اختار الفئة اللي تدور عليها بسرعة
+          </p>
         </div>
-      </>
-    );
-  } else {
-    <></>;
-  }
+
+        <CategorySwiper categories={response} />
+      </section>
+
+      {/* Title + optional subcategories */}
+      <section className="container flex items-center justify-between py-8 max-md:flex-col max-md:items-start max-md:gap-4">
+        <h2 className="text-right text-2xl font-extrabold tracking-tight text-gray-900 max-md:text-xl">
+          {targetFilterCategory?.isFilterCategory
+            ? targetFilterCategory?.name
+            : "المنتجات"}
+        </h2>
+
+        {targetFilterCategory?.isSubCategory && (
+          <div className="flex max-w-full items-center gap-3 max-md:w-full max-md:flex-col max-md:items-start">
+            <bdi className="text-sm font-bold text-gray-700 max-md:text-xs">
+              اختر الفئة الفرعية :
+            </bdi>
+
+            <SubCategories categories={targetFilterCategory?.subcategories} />
+          </div>
+        )}
+      </section>
+    </>
+  );
 }
 
 const handleSubCategories = async ({
   categories,
   category_id,
 }: {
-  categories: any;
+  categories: any[];
   category_id: any;
 }) => {
-  const category = categories?.filter((item: any) => item.id == category_id);
+  if (!category_id) {
+    return { isFilterCategory: false, isSubCategory: false };
+  }
+
+  const category = categories?.find((item: any) => item.id == category_id);
+
   return {
-    ...category[0],
-    isFilterCategory: category_id ? true : false,
-    isSubCategory: category[0]?.subcategories?.length > 0 ? true : false,
+    ...(category || {}),
+    isFilterCategory: true,
+    isSubCategory: (category?.subcategories?.length || 0) > 0,
   };
 };
 
@@ -74,6 +86,7 @@ async function getCategoriesServer(): Promise<{
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("app_token")?.value;
+
     const response = await fetchHook({
       url: `v1/categories`,
       init: { next: { revalidate: revalidateTime } },
@@ -81,22 +94,13 @@ async function getCategoriesServer(): Promise<{
     });
 
     const categoriesData = response?.data?.data;
-    if (!categoriesData) {
-      return {
-        categoriesData: [],
-        isSuccess: true,
-      };
-    }
 
     return {
-      categoriesData,
+      categoriesData: categoriesData || [],
       isSuccess: true,
     };
   } catch (error) {
     console.log(error);
-    return {
-      categoriesData: [],
-      isSuccess: false,
-    };
+    return { categoriesData: [], isSuccess: false };
   }
 }

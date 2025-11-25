@@ -20,94 +20,81 @@ export default function CategorySwiper({ categories }: { categories: any }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const onCategoryClick = (category: any) => {
-    const searchParams = new URLSearchParams(window.location.search);
-    if (category.id.toString() === searchParams?.get("category")) {
-      searchParams.delete("category"); // Clear the category
-      searchParams.delete("sub_category"); // Clear the sub-category
-      searchParams.set("page", "1");
+  const onCategoryClick = (category: CategoryType) => {
+    const sp = new URLSearchParams(window.location.search);
+    const current = sp.get("category");
+    const nextId = category.id.toString();
 
-      router.push(`${window.location.pathname}?${searchParams}`, {
-        scroll: false,
-      });
-    } else {
-      searchParams.delete("sub_category"); // Clear the category
-      searchParams.set("page", "1");
-
-      searchParams.set("category", category.id.toString()); // Set the new category
-      router.push(`${window.location.pathname}?${searchParams}`, {
-        scroll: false,
-      });
-      scrollToProducts({ elementId: "products", top: 270 }); // Scroll to products section
+    if (nextId === current) {
+      // Unselect category
+      sp.delete("category");
+      sp.delete("sub_category");
+      sp.set("page", "1");
+      router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+      return;
     }
 
-    // Update the URL without reloading the page
-    // const newPathname = `${window.location.pathname}?${searchParams}`;
-    // window.history.replaceState({}, "", newPathname);
+    // Switch category
+    sp.delete("sub_category");
+    sp.set("page", "1");
+    sp.set("category", nextId);
+
+    router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+    scrollToProducts({ elementId: "products", top: 270 });
   };
 
   return (
-    <Sticky topOffset={0} stickyClassName="z-[400] bg-gray-50">
-      <div className="container">
-        <Swiper
-          modules={[Navigation, Autoplay]}
-          navigation
-          autoplay={
-            searchParams.get("category")
-              ? false
-              : {
-                  delay: 3000,
+    <Sticky
+      topOffset={0}
+      stickyClassName="z-[400] bg-white/90 backdrop-blur-md shadow-sm"
+    >
+      <div className={cn("relative", styles["fade-edges"])}>
+        <div className="container py-2">
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            navigation
+            autoplay={
+              searchParams.get("category")
+                ? false
+                : {
+                  delay: 2800,
                   disableOnInteraction: true,
                   pauseOnMouseEnter: true,
                 }
-          }
-          onClick={(swiper) => {
-            swiper.autoplay.stop();
-          }}
-          breakpoints={{
-            320: {
-              slidesPerView: 3.4,
-              spaceBetween: 10,
-            },
-            480: {
-              slidesPerView: 4.4,
-              spaceBetween: 10,
-            },
-            640: {
-              slidesPerView: 5.4,
-              spaceBetween: 15,
-            },
-            768: {
-              slidesPerView: 8.5,
-              spaceBetween: 20,
-            },
-            1024: {
-              slidesPerView: 10.5,
-              spaceBetween: 15,
-            },
-            1280: {
-              slidesPerView: 14.5,
-              spaceBetween: 15,
-            },
-          }}
-          loop={true}
-          className={`${styles["categories-swiper"]} min-h-fit`}
-        >
-          {categories?.categoriesData?.map((category: CategoryType) => (
-            <SwiperSlide
-              key={category.id}
-              className={cn("group cursor-pointer overflow-hidden py-4")}
-            >
-              <CategoryBox
-                isActive={
-                  searchParams.get("category") == category.id.toString()
-                }
-                category={category}
-                onClick={() => onCategoryClick(category)}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+            }
+            onTouchStart={(swiper) => swiper.autoplay?.stop()}
+            onClick={(swiper) => swiper.autoplay?.stop()}
+            breakpoints={{
+              320: { slidesPerView: 3.2, spaceBetween: 8 },
+              420: { slidesPerView: 4.2, spaceBetween: 10 },
+              640: { slidesPerView: 6.2, spaceBetween: 12 },
+              768: { slidesPerView: 8.2, spaceBetween: 14 },
+              1024: { slidesPerView: 10.2, spaceBetween: 14 },
+              1280: { slidesPerView: 12.2, spaceBetween: 16 },
+              1536: { slidesPerView: 14.2, spaceBetween: 18 },
+            }}
+            loop
+            className={cn(styles["categories-swiper"], "min-h-fit")}
+          >
+            {categories?.categoriesData?.map((category: CategoryType) => {
+              const isActive =
+                searchParams.get("category") == category.id.toString();
+
+              return (
+                <SwiperSlide
+                  key={category.id}
+                  className="group py-3 max-md:py-2"
+                >
+                  <CategoryBox
+                    category={category}
+                    isActive={isActive}
+                    onClick={() => onCategoryClick(category)}
+                  />
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+        </div>
       </div>
     </Sticky>
   );
@@ -123,34 +110,49 @@ function CategoryBox({
   isActive: boolean;
 }) {
   return (
-    <div
-      className="group flex cursor-pointer flex-col items-center"
+    <button
+      type="button"
       onClick={onClick}
+      className="flex w-full flex-col items-center gap-2 outline-none"
+      aria-pressed={isActive}
+      aria-label={`Category ${category.name}`}
     >
       <div
         className={cn(
-          "relative h-16 w-16 overflow-hidden rounded-full border-2 bg-white p-1 shadow-md transition-all duration-200",
-          isActive && "border-[var(--main-color)]",
+          "relative grid place-items-center rounded-full bg-white transition-all duration-200",
+          // size responsive
+          "h-[68px] w-[68px] max-md:h-[56px] max-md:w-[56px]",
+          // base ring + shadow
+          "ring-1 ring-gray-200 shadow-sm",
+          // hover
+          "group-hover:-translate-y-0.5 group-hover:shadow-md",
+          // active
+          isActive &&
+          "ring-2 ring-[var(--main-color)] shadow-[0_6px_18px_rgba(0,0,0,0.15)] bg-orange-50/40"
         )}
       >
-        <Image
-          src={category?.icon}
-          alt={category?.name}
-          width={60}
-          height={60}
-          className="rounded-full object-cover transition-all duration-200 group-hover:brightness-90"
-          priority={category.id === 1}
-        />
+        <div className="relative h-[85%] w-[85%] overflow-hidden rounded-full">
+          <Image
+            src={category.icon}
+            alt={category.name}
+            fill
+            sizes="80px"
+            className="object-cover transition duration-200 group-hover:brightness-95"
+            priority={category.id === 1}
+          />
+        </div>
       </div>
+
       <span
         className={cn(
-          "mt-3 text-center text-[14px] font-semibold text-gray-700",
-          isActive && "text-[var(--main-color)]",
+          "max-w-[88px] text-center text-[13.5px] font-semibold leading-snug text-gray-800",
+          "max-md:max-w-[72px] max-md:text-[12px]",
+          isActive && "text-[var(--main-color)]"
         )}
       >
         {category.name}
       </span>
-    </div>
+    </button>
   );
 }
 
@@ -162,12 +164,11 @@ export const scrollToProducts = ({
   top?: number;
 }) => {
   const element = document.getElementById(elementId);
-  if (element) {
-    const elementPosition =
-      element.getBoundingClientRect().top + window.scrollY; // Get the absolute position
-    window.scrollTo({
-      top: elementPosition - top, // Adjust by 100 pixels
-      behavior: "smooth",
-    });
-  }
+  if (!element) return;
+
+  const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo({
+    top: elementPosition - top,
+    behavior: "smooth",
+  });
 };
