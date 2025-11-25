@@ -29,9 +29,9 @@ export default async function Categories({
           <h2 className="pt-8 text-right text-2xl font-extrabold tracking-tight text-gray-900 max-md:pt-6 max-md:text-xl">
             اكتشف الفئات
           </h2>
-          <p className="mt-1 text-right text-sm text-gray-500 max-md:text-xs">
+          {/* <p className="mt-1 text-right text-sm text-gray-500 max-md:text-xs">
             اختار الفئة اللي تدور عليها بسرعة
-          </p>
+          </p> */}
         </div>
 
         <CategorySwiper categories={response} />
