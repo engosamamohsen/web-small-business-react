@@ -1,73 +1,81 @@
 "use client";
+
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/scrollbar";
 
-import { FreeMode } from "swiper/modules";
-import { Scrollbar } from "swiper/modules";
+import { FreeMode, Scrollbar } from "swiper/modules";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/utils/utils";
 import { scrollToProducts } from "./CategorySwiper";
+import styles from "./style.module.css";
 
-const SubCategories = ({ categories }: { categories: any }) => {
+const SubCategories = ({ categories }: { categories: any[] }) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const onCategoryClick = (category: any) => {
-    const searchParams = new URLSearchParams(window.location.search);
-    if (category.id.toString() === searchParams.get("sub_category")) {
-      searchParams.set("page", "1");
-      searchParams.delete("sub_category"); // Clear the category
-      router.push(`${window.location.pathname}?${searchParams}`, {
-        scroll: false,
-      });
-    } else {
-      searchParams.set("page", "1");
-      searchParams.set("sub_category", category.id.toString()); // Set the new category
-      router.push(`${window.location.pathname}?${searchParams}`, {
-        scroll: false,
-      });
-      scrollToProducts({ elementId: "products", top: 270 }); // Scroll to products section
+    const sp = new URLSearchParams(window.location.search);
+
+    const current = sp.get("sub_category");
+    const nextId = category.id.toString();
+
+    sp.set("page", "1");
+
+    if (nextId === current) {
+      // unselect subcategory
+      sp.delete("sub_category");
+      router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+      return;
     }
+
+    sp.set("sub_category", nextId);
+    router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+    scrollToProducts({ elementId: "products", top: 270 });
   };
 
+  if (!categories?.length) return null;
+
   return (
-    <div className="w-fit max-w-full sm:max-w-[350px]">
-      <Swiper
-        slidesPerView={2.6} // Number of slides visible at once
-        breakpoints={{
-          480: {
-            slidesPerView: 4.3,
-          },
-          640: {
-            slidesPerView: 3.3,
-          },
-        }}
-        spaceBetween={10} // Space between slides
-        freeMode={true} // Enable free mode
-        modules={[FreeMode, Scrollbar]} // Add required modules
-        scrollbar={{
-          hide: false,
-        }}
-        className="my-swiper-container !pb-4"
-      >
-        {categories?.map((item: any) => (
-          <SwiperSlide key={item.id} className="min-w-fit">
-            <h5
-              onClick={() => onCategoryClick(item)}
-              className={cn(
-                "slide-content flex min-w-[90px] cursor-pointer items-center justify-center truncate text-nowrap rounded-sm border border-gray-300 bg-slate-200 px-2 py-1 text-sm",
-                searchParams.get("sub_category") == item.id &&
-                  "border-[var(--main-color)] text-[var(--main-color)]",
-              )}
-            >
-              {item.name}{" "}
-            </h5>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div className="w-full sm:w-fit sm:max-w-[440px]">
+      <div className="rounded-2xl border border-gray-200 bg-white/80 px-2 py-1 shadow-sm max-md:w-full">
+        <Swiper
+          slidesPerView="auto"
+          spaceBetween={8}
+          freeMode
+          modules={[FreeMode, Scrollbar]}
+          scrollbar={{ hide: false, draggable: true }}
+          className={cn(styles["subcategories-swiper"], "!pb-3")}
+        >
+          {categories.map((item: any) => {
+            const isActive =
+              searchParams.get("sub_category") == item.id?.toString();
+
+            return (
+              <SwiperSlide key={item.id} className="!w-auto">
+                <button
+                  type="button"
+                  onClick={() => onCategoryClick(item)}
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-semibold transition-all",
+                    "rounded-full border bg-gray-100 text-gray-700",
+                    "hover:bg-gray-200 hover:text-gray-900",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--main-color)]",
+                    isActive &&
+                    "border-[var(--main-color)] bg-[var(--main-color)] text-white shadow-sm"
+                  )}
+                >
+                  <span className="block max-w-[150px] truncate text-ellipsis text-center">
+                    {item.name}
+                  </span>
+                </button>
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
+      </div>
     </div>
   );
 };

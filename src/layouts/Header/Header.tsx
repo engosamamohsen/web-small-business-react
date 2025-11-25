@@ -9,19 +9,15 @@ import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { usePathname } from "next/navigation";
 import { cartCountAtom } from "@/Store/cart";
+import SearchBar from "./SearchBar";
 
 export default function Header({ settingsData }: { settingsData: any }) {
-  // Use the cart count atom directly
   const [cartCount] = useAtom(cartCountAtom);
-
-  // Fetch cart data to initialize cart count
   const [token, setToken] = useState<string | undefined>(
     Cookies.get("app_token"),
   );
-
   const pathname = usePathname();
 
-  // Only check for token on the client side
   useEffect(() => {
     if (Cookies.get("app_token")) {
       setToken(Cookies.get("app_token"));
@@ -29,59 +25,83 @@ export default function Header({ settingsData }: { settingsData: any }) {
       setToken(undefined);
     }
   }, [pathname]);
+
   return (
-    <div
-      className="bg-[var(--main-background)]"
+    <header
+      className="
+        sticky top-0 z-40
+        border-b border-black/5
+        bg-[var(--main-background)]/90
+        backdrop-blur supports-[backdrop-filter]:backdrop-blur
+      "
       suppressHydrationWarning={true}
     >
-      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          <Link href="/" aria-label="site home">
-            {settingsData?.logo ? (
-              <Image
-                src={settingsData?.logo}
-                alt="site logo"
-                width={50}
-                height={50}
-                quality={70}
-                style={{ maxHeight: "50px", objectFit: "contain", borderRadius: "50%" }}
-              />
-            ) : (
-              <span className="text-lg font-bold">
-                {settingsData?.name || "Store"}
-              </span>
-            )}
-          </Link>
-          <div className="flex items-center gap-4">
-            {/* <div className="hidden md:block relative">
-              <SearchBar />
-            </div> */}
-            {token && (
-              <Link href="/cart" className="relative" aria-label="site cart">
-                <ShoppingCart className="h-5 w-5 text-[var(--second-font-color)]" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Top row */}
+        <div className="flex h-16 items-center justify-between gap-4">
+          {/* Logo + brand */}
+          <Link
+            href="/"
+            aria-label="العودة للصفحة الرئيسية"
+            className="flex items-center gap-3"
+          >
+            <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm">
+              {settingsData?.logo ? (
+                <Image
+                  src={settingsData.logo}
+                  alt="شعار الموقع"
+                  fill
+                  sizes="44px"
+                  className="object-contain"
+                  priority
+                />
+              ) : (
+                <span className="text-sm font-bold">
+                  {settingsData?.name || "Store"}
+                </span>
+              )}
+            </div>
 
+            {/* {settingsData?.name && (
+              <span className="hidden text-sm font-semibold text-[var(--second-font-color)] sm:inline">
+                {settingsData.name}
+              </span>
+            )} */}
+          </Link>
+
+          {/* Search - center on desktop */}
+          <div className="hidden flex-1 md:flex md:justify-center">
+            <div className="w-full max-w-md">
+              <SearchBar />
+            </div>
+          </div>
+
+          {/* Right side: cart + login */}
+          <div className="flex items-center gap-3">
+            {token && (
+              <Link
+                href="/cart"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
+                aria-label="سلة المشتريات"
+              >
+                <ShoppingCart className="h-4 w-4 text-[var(--second-font-color)]" />
                 {cartCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--main-color)] text-xs text-white">
-                    {cartCount}
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[var(--main-color)] px-[3px] text-[10px] font-semibold text-white">
+                    {cartCount > 99 ? "99+" : cartCount}
                   </span>
                 )}
               </Link>
             )}
-            <LoginButton token={token} setToken={setToken} />
 
-            {/* <button
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? (
-                <X size={24} className="text-orange-600" />
-              ) : (
-                <Menu className="text-orange-600" size={24} />
-              )}
-            </button> */}
+            <LoginButton token={token} setToken={setToken} />
           </div>
         </div>
+
+        {/* Mobile search under header */}
+        <div className="pb-3 pt-1 md:hidden">
+          <SearchBar />
+        </div>
       </div>
-    </div>
+    </header>
   );
 }
