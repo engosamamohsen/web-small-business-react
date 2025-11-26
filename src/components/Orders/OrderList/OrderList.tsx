@@ -57,7 +57,7 @@ function OrderList() {
   };
 
   return (
-    // 🔹 no horizontal padding here → table can span full content width
+    // section can take full width; header has its own padding
     <section className="mt-16 min-h-[calc(100vh-300px)] w-full">
       {/* Header row */}
       <header className="mb-6 flex w-full flex-col gap-2 px-4 text-right sm:px-6 lg:px-8">
@@ -78,49 +78,48 @@ function OrderList() {
         </div>
       </header>
 
-      {/* 🔹 full-width table wrapper */}
-      <div className="w-full overflow-hidden rounded-none border-y border-gray-100 bg-white shadow-sm">
-        {/* Table-like header row (desktop) – now spans full width, no side gap */}
+      {/* full-width table wrapper */}
+      <div className="w-full overflow-hidden rounded-none border-y border-gray-100 bg-gray-50 shadow-sm md:bg-white">
+        {/* Table-like header row (desktop) */}
         <div className="hidden border-b border-gray-100 bg-gray-50/80 py-3 text-[11px] text-gray-500 md:grid md:grid-cols-[1.5fr_1fr_1fr_0.5fr]">
           {/* first column header aligned with rows */}
           <div className="flex items-center gap-2 pr-6">
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col">
               <span className="text-right">الطلب</span>
             </div>
+            {/* invisible icon keeps same width as row icon */}
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full opacity-0">
               <Package className="h-4 w-4" />
             </span>
           </div>
 
-          <span className="flex items-center  pr-6 text-right">
-            التاريخ
-          </span>
+          <span className="flex items-center pr-6 text-right">التاريخ</span>
           <span className="flex items-center pr-6 text-right">
             حالة الطلب
           </span>
-          <span className="flex items-center  pr-6 text-right">
-            الإجمالي
-          </span>
+          <span className="flex items-center pr-6 text-right">الإجمالي</span>
         </div>
 
-        {/* Orders list – same grid, same alignment, full width */}
-        <div className="max-h-[calc(100vh-260px)] w-full overflow-y-auto border-t border-gray-50 md:border-t-0">
+        {/* Orders list – responsive */}
+        <div className="max-h-[calc(100vh-260px)] w-full overflow-y-auto border-t border-gray-50 md:border-t-0 md:bg-white">
           {filteredOrders.map((order) => (
             <article
               key={order.id}
               role="button"
               aria-label={`تفاصيل الطلب رقم ${order.id}`}
               onClick={() => {
-                router.push(`/order/${order.id}`);
+                router.push(`/order/{order.id}`);
               }}
               className={cn(
-                "group flex flex-col gap-3 border-b border-gray-50 py-3 text-right transition",
-                "hover:bg-gray-50/80 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.03)] md:grid md:grid-cols-[1.5fr_1fr_1fr_0.5fr] md:items-center md:gap-4"
+                // 🔹 Mobile: card style with separation
+                "group mx-3 my-2 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-right shadow-sm transition",
+                // 🔹 Desktop: behave like table row (no card look)
+                "md:mx-0 md:my-0 md:rounded-none md:border-0 md:border-b md:border-gray-50 md:px-0 md:shadow-none md:grid md:grid-cols-[1.5fr_1fr_1fr_0.5fr] md:items-center md:gap-4 md:hover:bg-gray-50/80 md:hover:shadow-[0_0_0_1px_rgba(0,0,0,0.03)]"
               )}
             >
               {/* Column 1: order id */}
-              <div className="flex items-center gap-2 pr-6">
-                <div className="flex flex-col ">
+              <div className="flex items-center justify-between gap-2 md:justify-start md:pr-6">
+                <div className="flex flex-col">
                   <span className="text-[11px] text-gray-400">رقم الطلب</span>
                   <span className="text-sm font-semibold text-gray-900">
                     #{order.id}
@@ -132,7 +131,7 @@ function OrderList() {
               </div>
 
               {/* Column 2: date */}
-              <div className="flex flex-col pr-6">
+              <div className="flex flex-col md:pr-6">
                 <span className="text-[11px] text-gray-400">التاريخ</span>
                 <span className="text-xs text-gray-600">
                   {formatDate(order.created_at)}
@@ -140,7 +139,7 @@ function OrderList() {
               </div>
 
               {/* Column 3: status */}
-              <div className="flex flex-col gap-1 pr-6 w-[160px] max-w-[160px]">
+              <div className="flex flex-col gap-1 sm:w-[120px] sm:max-w-[120px] md:w-[160px] md:max-w-[160px] md:pr-6">
                 <span className="text-[11px] text-gray-400">الحالة</span>
                 <span
                   className={cn(
@@ -163,8 +162,8 @@ function OrderList() {
               </div>
 
               {/* Column 4: total + arrow */}
-              <div className="flex items-center  gap-3 pr-6">
-                <div className="flex flex-col  leading-tight">
+              <div className="flex items-center justify-between gap-3 md:justify-start md:pr-6">
+                <div className="flex flex-col leading-tight">
                   <span className="text-[11px] text-gray-400">الإجمالي</span>
                   <span className="text-sm font-semibold text-gray-900">
                     {order.total}{" "}

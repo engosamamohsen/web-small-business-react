@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import Image from "next/image";
 import { fetchHookClient } from "@/hooks/fetch-hook-client";
 
