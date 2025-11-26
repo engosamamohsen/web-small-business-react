@@ -101,14 +101,14 @@ function OrderList() {
         </div>
 
         {/* Orders list – responsive */}
-        <div className="max-h-[calc(100vh-260px)] w-full overflow-y-auto border-t border-gray-50 md:border-t-0 md:bg-white">
+        <div className="max-h-[calc(100vh-260px)] w-full overflow-y-auto border-t border-gray-50 md:border-t-0 md:bg-white" >
           {filteredOrders.map((order) => (
             <article
               key={order.id}
               role="button"
               aria-label={`تفاصيل الطلب رقم ${order.id}`}
               onClick={() => {
-                router.push(`/order/{order.id}`);
+                router.push(`/order/${order.id}`);
               }}
               className={cn(
                 // 🔹 Mobile: card style with separation
