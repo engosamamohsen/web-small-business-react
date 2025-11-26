@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import Image from "next/image";
 import { fetchHookClient } from "@/hooks/fetch-hook-client";
 
@@ -152,7 +152,7 @@ export default function SearchBar() {
                         className="mr-1 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
                         aria-label="مسح البحث"
                     >
-                        <X className="h-4 w-4" />
+                        {/* <X className="h-4 w-4" /> */}
                     </button>
                 )}
             </div>

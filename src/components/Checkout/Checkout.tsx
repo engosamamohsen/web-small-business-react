@@ -53,6 +53,8 @@ export default function CheckoutPage() {
   const onSubmit = async (inputs: any) => {
     setLoading(true);
     const res = await createOrder(inputs);
+    console.log(res, "res order checkout");
+    console.log(inputs, "res order checkout inputs");
     if (res?.status === 200) {
       router.push("/order");
     }

@@ -86,7 +86,7 @@ export interface OrderType {
   delivery_id: number;
   delivery: number;
   table_id: number;
-  date: string;
+  created_at: string;
 }
 
 export type PaymentMethod = {
