@@ -1,16 +1,17 @@
+// src/app/(wherever)/OfferProducts.tsx
 import React from "react";
 import SwiperOffer from "./SwiperOffer";
-import { revalidateTime } from "@/constants/constansts";
 import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
 import { fetchHook } from "@/hooks/fetch-hook";
 
 async function OfferProducts() {
   const response = await fetchHook({
     url: "v1/product?offer=1",
-    init: { next: { revalidate: revalidateTime } },
+    init: {
+      // ✅ cache & dedupe offers list for 60s
+      next: { revalidate: 60 },
+    },
   });
-
-  console.log(response, "offer products response");
 
   if (response?.ok) {
     return (
@@ -23,16 +24,14 @@ async function OfferProducts() {
         )}
       </div>
     );
-  } else {
-    return (
-      <>
-        <section className="container py-10" id="products">
-          <h2 className="mb-8 text-2xl font-bold">العروض</h2>
-          <NotFoundProducts text="عروض" />
-        </section>
-      </>
-    );
   }
+
+  return (
+    <section className="container py-10" id="products">
+      <h2 className="mb-8 text-2xl font-bold">العروض</h2>
+      <NotFoundProducts text="عروض" />
+    </section>
+  );
 }
 
 export default OfferProducts;

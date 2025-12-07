@@ -1,19 +1,32 @@
-import { cookies } from "next/headers";
+import { cache } from "react";
 import { fetchHook } from "./fetch-hook";
 
-export async function fetchSettings() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("app_token")?.value;
+type SettingsResponse = {
+  data?: any;
+  is_login?: boolean;
+  ok: boolean;
+  status?: number;
+  error?: unknown;
+};
+
+export async function fetchSettings(
+  token?: string,
+  { revalidate = 600 }: { revalidate?: number } = {},
+): Promise<SettingsResponse> {
   try {
     const res = await fetchHook({
       url: `v1/setting-profile`,
-      init: { next: { revalidate: 600 } },
+      init: token ? { cache: "no-store" } : { next: { revalidate } },
       token,
     });
-    console.log("res_fetchSettings", res);
-    return res.ok ? { ...res.data, ok: true } : null;
+
+    return res.ok
+      ? { ...res.data, ok: true }
+      : { ok: false, status: res.status, error: res.error, is_login: false };
   } catch (error) {
-    console.log(error);
-    return { ok: false, status: 500, error: error, isLogin: false };
+    return { ok: false, status: 500, error, is_login: false };
   }
 }
+
+// Cache public settings for reuse across server calls like metadata generation.
+export const fetchPublicSettings = cache(async () => fetchSettings(undefined));

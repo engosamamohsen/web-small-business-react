@@ -1,5 +1,5 @@
 import SwiperBanner from "./SwiperBanner";
-import { revalidateTime } from "@/constants/constansts";
+// import { revalidateTime } from "@/constants/constansts";
 import { fetchHook } from "@/hooks/fetch-hook";
 
 export default async function Hero() {
@@ -19,7 +19,7 @@ async function getHeroServer(): Promise<{
   try {
     const response = await fetchHook({
       url: "v1/banner",
-      init: { next: { revalidate: revalidateTime } },
+      init: { next: { revalidate: 0 } },
     });
 
     console.log(response);

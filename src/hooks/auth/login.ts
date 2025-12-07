@@ -20,6 +20,8 @@ export const addUserToDatabase = async (data: any, action: () => void) => {
       Cookies.set("app_token", response?.data?.api_token, {
         expires: 1,
         path: "/",
+        sameSite: "lax",
+        secure: true,
       }); // Expires in 1 day
 
       toast.success("تم تسجيل الدخول بنجاح!", {
@@ -44,7 +46,6 @@ export const addUserToDatabase = async (data: any, action: () => void) => {
 };
 
 function transformUserData(data: any) {
-  console.log("transformUserData", data);
   const formData = new FormData();
   formData.append("register_type", "2");
   formData.append("social_id", data?.uid);
@@ -86,9 +87,15 @@ export const useLoginHook = () => {
       Cookies.set("app_token", response?.data?.api_token, {
         expires: 1,
         path: "/",
+        sameSite: "lax",
+        secure: true,
       }); // Expires in 1 day
-      routes.refresh();
-      routes.push(`/`);
+      if (typeof window !== "undefined") {
+        window.location.replace("/");
+      } else {
+        routes.replace("/");
+        routes.refresh();
+      }
     } catch (error: any) {
       toast.error(` فشل تسجيل الدخول : ${error?.response?.data?.message}`, {
         position: "top-right",

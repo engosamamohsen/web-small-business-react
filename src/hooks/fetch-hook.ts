@@ -1,3 +1,4 @@
+// src/hooks/fetch-hook.ts
 import getSubdomain from "@/app/subdomain";
 
 // utils/fetchingData.ts
@@ -21,7 +22,7 @@ interface FetchingProps {
 /**
  * Safe fetch wrapper for GET-like data requests.
  * - Aborts on timeout
- * - Merges headers (adds JSON + optional Bearer)
+ * - Merges headers (adds JSON Accept + optional Bearer)
  * - Handles empty/204 bodies
  * - Returns a stable shape for success/failure
  */
@@ -42,15 +43,24 @@ export async function fetchHook<T = any>({
   const currentUrl =
     baseUrl ?? `${subdomain}${process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL}`;
   const fullUrl = `${currentUrl}${url}`;
-  console.log("fullUrl", fullUrl);
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
+    const isGet = !init?.method || init.method === "GET";
+
     const headers: HeadersInit = {
-      "Content-Type": "application/json",
+      Accept: "application/json, text/plain, */*",
+      ...(isGet
+        ? {}
+        : {
+          "Content-Type": "application/json",
+        }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {}),
     };
+
     const res = await fetch(fullUrl, {
       ...init,
       // For data-only requests we default to GET unless caller overrides.
@@ -94,6 +104,7 @@ export async function fetchHook<T = any>({
         (typeof body === "string" && body) ||
         res.statusText ||
         "Request failed";
+
       return { data: null, status, ok, error: String(message) };
     }
 

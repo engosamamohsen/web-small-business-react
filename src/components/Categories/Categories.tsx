@@ -1,7 +1,7 @@
 import CategorySwiper from "./CategorySwiper";
 import SubCategories from "./SubCategories";
 import { cookies } from "next/headers";
-import { revalidateTime } from "@/constants/constansts";
+// import { revalidateTime } from "@/constants/constansts";
 import { fetchHook } from "@/hooks/fetch-hook";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -89,7 +89,7 @@ async function getCategoriesServer(): Promise<{
 
     const response = await fetchHook({
       url: `v1/categories`,
-      init: { next: { revalidate: revalidateTime } },
+      init: { cache: "no-store" },
       token,
     });
 

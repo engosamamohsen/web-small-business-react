@@ -1,9 +1,9 @@
 import { MetadataRoute } from 'next';
-import { fetchSettings } from '@/hooks/fetchSettings';
+import { fetchPublicSettings } from '@/hooks/fetchSettings';
 
 // Dynamic sitemap generation using Next.js 15 features
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { data: settings } = await fetchSettings();
+  const { data: settings } = await fetchPublicSettings();
   const baseUrl = settings?.website_url || 'https://example.com';
 
   // Base routes

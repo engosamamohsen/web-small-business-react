@@ -43,7 +43,7 @@ export async function generateMetadata({
     description,
     price && `Starting at $${price}`,
     productData?.features &&
-      `Features: ${productData.features.slice(0, 3).join(", ")}`,
+    `Features: ${productData.features.slice(0, 3).join(", ")}`,
   ]
     .filter(Boolean)
     .join(" | ");
@@ -67,13 +67,13 @@ export async function generateMetadata({
       type: "website",
       images: primaryImage
         ? [
-            {
-              url: primaryImage,
-              width: 1200,
-              height: 630,
-              alt: `${title} - Product Image`,
-            },
-          ]
+          {
+            url: primaryImage,
+            width: 1200,
+            height: 630,
+            alt: `${title} - Product Image`,
+          },
+        ]
         : [],
       siteName: "Your Store Name", // You can make this dynamic from settings
       locale: "en_US",

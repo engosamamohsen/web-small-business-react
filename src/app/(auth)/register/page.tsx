@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import RegisterForm from "./RegisterForm";
-import { fetchSettings } from "@/hooks/fetchSettings";
+import { fetchPublicSettings } from "@/hooks/fetchSettings";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settingResponse = await fetchSettings();
+  const settingResponse = await fetchPublicSettings();
 
   if (!settingResponse?.ok) {
     return {
@@ -40,6 +40,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Register() {
-  const settingResponse = await fetchSettings();
+  const settingResponse = await fetchPublicSettings();
   return <RegisterForm initSettings={settingResponse?.data} />;
 }

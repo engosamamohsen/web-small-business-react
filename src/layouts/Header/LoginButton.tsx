@@ -3,37 +3,40 @@
 import { cn } from "@/utils/utils";
 import Cookies from "js-cookie";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { useRef } from "react";
+import { useMemo, useRef, useState } from "react";
+import { $api } from "@/client";
 
 const LoginButton = ({
   token,
   setToken,
+  isLogin,
+  pathname,
 }: {
   token: string | undefined;
   setToken: (token: string | undefined) => void;
+  isLogin?: boolean;
+  pathname: string | null;
 }) => {
-  // const { onOpen, isOpen } = useDialogStore((state) => state);
-  const pathname = usePathname();
   const router = useRouter();
   const op = useRef<OverlayPanel>(null);
+  const loggedIn = useMemo(() => Boolean(token || isLogin), [token, isLogin]);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   const refButton = useRef<HTMLButtonElement>(null);
   const switchToggle = (e: any) => {
-    console.log(refButton);
     refButton.current = e;
     op?.current?.toggle(refButton.current as any);
   };
+
   return (
-    <div suppressHydrationWarning={true}>
-      {/* Only render content after client-side hydration */}
+    <div>
       <button
         ref={refButton}
         className={cn(
           "text-sm font-medium text-[var(--main-color)]",
-          token !== undefined && token ? "" : "hidden",
+          loggedIn ? "" : "hidden",
         )}
         aria-label="User Menu"
         onClick={switchToggle}
@@ -48,7 +51,7 @@ const LoginButton = ({
             className="text-sm text-[var(--font-color)]"
           >
             الطلبات
-          </Link>{" "}
+          </Link>
           <Link
             href={"/profile"}
             aria-label="site profile"
@@ -58,19 +61,28 @@ const LoginButton = ({
           </Link>
           <button
             type="button"
-            onClick={() => {
-              Cookies.remove("app_token");
-              setToken(undefined);
-              router.refresh();
-              switchToggle(refButton.current as any);
+            onClick={async () => {
+              try {
+                setLogoutLoading(true);
+                await $api.post("logout");
+              } catch (e) {
+                throw e;
+              } finally {
+                Cookies.remove("app_token");
+                setToken(undefined);
+                router.refresh();
+                switchToggle(refButton.current as any);
+                setLogoutLoading(false);
+              }
             }}
             className="text-sm text-[var(--font-color)]"
+            disabled={logoutLoading}
           >
             تسجيل الخروج
           </button>
         </div>
       </OverlayPanel>
-      {!token && pathname !== "/login" && pathname !== "/register" && (
+      {!loggedIn && pathname !== "/login" && pathname !== "/register" && (
         <Link
           href={"/login"}
           aria-label="site login"

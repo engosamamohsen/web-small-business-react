@@ -1,4 +1,4 @@
-import { revalidateTime } from "@/constants/constansts";
+// import { revalidateTime } from "@/constants/constansts";
 import ProductsGrid from "./ProductsGrid";
 import Pagination from "../Pagination/Pagination";
 import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
@@ -16,9 +16,8 @@ export default async function Products({
   const currentPage = Number(searchParamsUrl?.page) || 1;
   const limit = Number(searchParamsUrl?.limit) || 10;
 
-  const url = `v1/product${
-    searchParamsUrl?.category ? `?category_id=${searchParamsUrl?.category}` : ""
-  }${searchParamsUrl?.sub_category ? `&sub_category_id=${searchParamsUrl?.sub_category}` : ""}${searchParamsUrl?.sub_category || searchParamsUrl?.category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
+  const url = `v1/product${searchParamsUrl?.category ? `?category_id=${searchParamsUrl?.category}` : ""
+    }${searchParamsUrl?.sub_category ? `&sub_category_id=${searchParamsUrl?.sub_category}` : ""}${searchParamsUrl?.sub_category || searchParamsUrl?.category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
 
   const response = await getProductsServer(url);
   if (response?.isSuccess) {
@@ -60,7 +59,7 @@ async function getProductsServer(url: string) {
   try {
     const response = await fetchHook({
       url: url,
-      init: { next: { revalidate: revalidateTime } },
+      init: { cache: "no-store" },
     });
 
     const data = response?.data?.data;

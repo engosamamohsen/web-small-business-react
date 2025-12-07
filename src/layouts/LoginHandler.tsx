@@ -1,12 +1,10 @@
 "use client";
 import Cookies from "js-cookie";
-import { useUpdateEffect } from "react-use";
+import { useEffect } from "react";
 
-export default function LoginHandler({ isLogin }: { isLogin: boolean }) {
-  useUpdateEffect(() => {
-    if (isLogin !== undefined && isLogin !== true) {
-      console.log("remove app_token", isLogin);
-
+export default function LoginHandler({ isLogin }: { isLogin?: boolean }) {
+  useEffect(() => {
+    if (isLogin === false) {
       Cookies.remove("app_token");
     }
   }, [isLogin]);

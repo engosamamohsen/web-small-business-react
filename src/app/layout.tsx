@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import dynamic from "next/dynamic";
-import { fetchSettings } from "@/hooks/fetchSettings";
+import { fetchPublicSettings, fetchSettings } from "@/hooks/fetchSettings";
+import { cookies } from "next/headers";
 const cairo = Cairo({ subsets: ["arabic"] });
-import { getDefaultStore } from "jotai";
-import { settingsDataAtom } from "@/lib/stores/settingsData";
 import ColorHandler from "@/layouts/ColorHandler";
 import packageJson from "../../package.json";
 
@@ -41,9 +40,7 @@ function buildWhatsAppLink(phone?: string | null): string | null {
 
 // Generate dynamic metadata with enhanced SEO
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await fetchSettings();
-
-  console.log(settings);
+  const settings = await fetchPublicSettings();
 
   if (!settings?.ok) {
     return {
@@ -112,24 +109,22 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const settingResponse = await fetchSettings();
-  const store = getDefaultStore();
+  const cookieStore = await cookies();
+  const token = cookieStore.get("app_token")?.value;
+  const settingResponse = await fetchSettings(token);
+  const settingsData = settingResponse?.data;
+  const isLogin = settingResponse?.ok
+    ? Boolean(settingResponse?.is_login)
+    : undefined;
 
-  store.set(settingsDataAtom, {
-    ...store.get(settingsDataAtom),
-    ...settingResponse?.data,
-  });
-
-  const whatsappLink = buildWhatsAppLink(
-    settingResponse?.data?.whatsapp_phone,
-  );
+  const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
 
   return (
     <html lang="ar" dir="rtl">
       <body className={`relative ${cairo.className}`}>
-        <LoginHandler isLogin={settingResponse?.is_login ?? false} />
-        <ColorHandler globalData={settingResponse?.data} />
-        <Header settingsData={settingResponse?.data} />
+        <LoginHandler isLogin={isLogin} />
+        <ColorHandler globalData={settingsData} />
+        <Header settingsData={settingsData} token={token} isLogin={isLogin} />
 
         {children}
 
@@ -171,7 +166,7 @@ export default async function RootLayout({
           </a>
         )}
 
-        <Footer settingsData={settingResponse?.data} appVersion={appVersion} />
+        <Footer settingsData={settingsData} appVersion={appVersion} />
 
         <ToastContainer position="bottom-right" rtl />
       </body>

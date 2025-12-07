@@ -4,27 +4,42 @@ import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import LoginButton from "./LoginButton";
-import Cookies from "js-cookie";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAtom } from "jotai";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cartCountAtom } from "@/Store/cart";
 import SearchBar from "./SearchBar";
+import Cookies from "js-cookie";
 
-export default function Header({ settingsData }: { settingsData: any }) {
+export default function Header({
+  settingsData,
+  token: initialToken,
+  isLogin,
+}: {
+  settingsData: any;
+  token?: string;
+  isLogin?: boolean;
+}) {
   const [cartCount] = useAtom(cartCountAtom);
-  const [token, setToken] = useState<string | undefined>(
-    Cookies.get("app_token"),
-  );
+  const [token, setToken] = useState<string | undefined>(initialToken);
   const pathname = usePathname();
+  const router = useRouter();
+  const loggedIn = useMemo(() => Boolean(token || isLogin), [token, isLogin]);
 
+  // Keep client token state in sync if the server passes a new one (e.g., after refresh).
   useEffect(() => {
-    if (Cookies.get("app_token")) {
-      setToken(Cookies.get("app_token"));
-    } else {
-      setToken(undefined);
+    if (initialToken !== token) {
+      setToken(initialToken);
     }
-  }, [pathname]);
+  }, [initialToken, token]);
+
+  // Ensure client sees updated auth state after login without hard refresh.
+  useEffect(() => {
+    const cookieToken = Cookies.get("app_token");
+    if (cookieToken && cookieToken !== token) {
+      setToken(cookieToken);
+    }
+  }, [pathname, token]);
 
   return (
     <header
@@ -34,7 +49,6 @@ export default function Header({ settingsData }: { settingsData: any }) {
         bg-[var(--main-background)]/90
         backdrop-blur supports-[backdrop-filter]:backdrop-blur
       "
-      suppressHydrationWarning={true}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Top row */}
@@ -42,14 +56,14 @@ export default function Header({ settingsData }: { settingsData: any }) {
           {/* Logo + brand */}
           <Link
             href="/"
-            aria-label="العودة للصفحة الرئيسية"
+            aria-label="OU,O1U^O_Oc U,U,OæU?O-Oc OU,OñOÝUSO3USOc"
             className="flex items-center gap-3"
           >
             <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm">
               {settingsData?.logo ? (
                 <Image
                   src={settingsData.logo}
-                  alt="شعار الموقع"
+                  alt="O'O1OOñ OU,U.U^U,O1"
                   fill
                   sizes="44px"
                   className="object-contain"
@@ -61,12 +75,6 @@ export default function Header({ settingsData }: { settingsData: any }) {
                 </span>
               )}
             </div>
-
-            {/* {settingsData?.name && (
-              <span className="hidden text-sm font-semibold text-[var(--second-font-color)] sm:inline">
-                {settingsData.name}
-              </span>
-            )} */}
           </Link>
 
           {/* Search - center on desktop */}
@@ -78,22 +86,31 @@ export default function Header({ settingsData }: { settingsData: any }) {
 
           {/* Right side: cart + login */}
           <div className="flex items-center gap-3">
-            {token && (
-              <Link
-                href="/cart"
-                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
-                aria-label="سلة المشتريات"
-              >
-                <ShoppingCart className="h-4 w-4 text-[var(--second-font-color)]" />
-                {cartCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[var(--main-color)] px-[3px] text-[10px] font-semibold text-white">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </Link>
-            )}
+            <Link
+              href={loggedIn ? "/cart" : "/login"}
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
+              aria-label="O3U,Oc OU,U.O'O¦OñUSOO¦"
+              onClick={(e) => {
+                if (!loggedIn) {
+                  e.preventDefault();
+                  router.push("/login");
+                }
+              }}
+            >
+              <ShoppingCart className="h-4 w-4 text-[var(--second-font-color)]" />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[var(--main-color)] px-[3px] text-[10px] font-semibold text-white">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Link>
 
-            <LoginButton token={token} setToken={setToken} />
+            <LoginButton
+              token={token}
+              setToken={setToken}
+              isLogin={isLogin}
+              pathname={pathname}
+            />
           </div>
         </div>
 
