@@ -12,6 +12,9 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
   const router = useRouter();
   const token = Cookies.get("app_token");
   const { loading, addToCart } = useCartHook();
+
+
+
   return (
     <Button
       aria-label="Add product to cart"
@@ -19,15 +22,17 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
       loading={loading}
       loadingIcon="pi pi-spin pi-spinner absolute"
       onClick={async () => {
+
+
         if (product?.is_variation) {
           router.push(`/products/${product?.id}`);
         } else {
-          if (!token) router.push("/login");
-          else {
+          if (!token) {
+            router.push("/login");
+          } else {
             try {
               await addToCart(product);
             } catch (error: any) {
-              console.error("error", error);
               return;
             }
           }

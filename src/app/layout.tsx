@@ -47,7 +47,7 @@ function buildWhatsAppLink(phone?: string | null): string | null {
  */
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchPublicSettings();
-
+  console.log('Settings for metadata:', settings);
   const defaultMeta: Metadata = {
     title: "Business Platform",
     description: "Small business management platform",
@@ -114,6 +114,8 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get("app_token")?.value;
   const settingResponse = await getSettings();
+
+  console.log('Settings for layout:', settingResponse);
 
   const settingsData = settingResponse?.data;
   const isLogin = settingResponse?.ok ? Boolean(settingResponse?.is_login) : undefined;

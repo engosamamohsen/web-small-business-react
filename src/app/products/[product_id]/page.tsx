@@ -166,6 +166,8 @@ const getProductDetailServices = cache(async ({
       productData,
     };
   } catch (error) {
+    // Server component - log error on server
+    console.error("Error fetching product details:", error);
     return {
       productData: {},
     };

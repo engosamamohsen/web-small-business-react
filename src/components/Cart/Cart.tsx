@@ -58,7 +58,7 @@ const CartItem: React.FC<CartItemProps> = ({
           {/* Prices */}
           <div className="flex flex-wrap items-baseline gap-3 text-sm">
             <span className="font-medium text-orange-500">
-              {item.unit_price} ج.م{" "}
+              {item.unit_price} ج.م
               <span className="text-xs text-slate-500">(سعر الوحدة)</span>
             </span>
 
@@ -67,7 +67,7 @@ const CartItem: React.FC<CartItemProps> = ({
             </span>
 
             <span className="text-xs font-semibold text-slate-800">
-              الإجمالي:{" "}
+              الإجمالي:
               <span className="text-slate-900">{itemTotal} ج.م</span>
             </span>
           </div>
@@ -106,7 +106,7 @@ const CartItem: React.FC<CartItemProps> = ({
           {/* Product note */}
           {item.product_note && (
             <div className="mt-1 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800">
-              <span className="font-medium">ملاحظة:</span>{" "}
+              <span className="font-medium">ملاحظة:</span>
               <span>{item.product_note}</span>
             </div>
           )}

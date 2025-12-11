@@ -1,7 +1,6 @@
 import { ProductType } from "@/lib/types";
 import { Product } from "./Product";
 export default function ProductsGrid({ products }: { products: any }) {
-  console.log(products);
   return (
     <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">

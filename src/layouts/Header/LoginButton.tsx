@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { useMemo, useRef, useState } from "react";
 import { $api } from "@/client";
+import { toast } from "react-toastify";
 
 const LoginButton = ({
   token,
@@ -66,9 +67,16 @@ const LoginButton = ({
                 setLogoutLoading(true);
                 // Try to logout from server (401 errors are OK - token might be expired)
                 await $api.post("logout");
-              } catch (e) {
-                // Ignore API errors - we'll logout locally anyway
-                // This handles cases where token is already expired or invalid
+              } catch (error: any) {
+                // Show toast for unexpected errors (not 401)
+                if (error?.response?.status !== 401) {
+                  toast.error("حدث خطأ أثناء تسجيل الخروج", {
+                    position: "top-right",
+                    autoClose: 2000,
+                    rtl: true,
+                  });
+                }
+                // 401 errors are OK - token expired, continue with local logout
               } finally {
                 // Always clear local token and redirect, even if API call fails
                 Cookies.remove("app_token");
