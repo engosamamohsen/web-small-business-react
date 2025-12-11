@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Minus, Plus, X } from "lucide-react";
@@ -8,7 +9,7 @@ import { cn } from "@/utils/utils";
 import React, { useEffect } from "react";
 import PageLoader from "../PageLoader/PageLoader";
 import { CartItemType } from "@/types/types";
-import { useCartStore } from "@/Store/cart";
+import { useCartStore } from "@/lib/stores";
 
 // CartItem component for better separation of concerns
 type CartItemProps = {
@@ -67,9 +68,7 @@ const CartItem: React.FC<CartItemProps> = ({
 
             <span className="text-xs font-semibold text-slate-800">
               الإجمالي:{" "}
-              <span className="text-slate-900">
-                {itemTotal} ج.م
-              </span>
+              <span className="text-slate-900">{itemTotal} ج.م</span>
             </span>
           </div>
 
@@ -126,7 +125,7 @@ const CartItem: React.FC<CartItemProps> = ({
             className={cn(
               "flex h-8 w-8 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100",
               (loading || quantity <= 1) &&
-              "cursor-not-allowed opacity-40 hover:bg-transparent",
+              "cursor-not-allowed opacity-40 hover:bg-transparent"
             )}
             aria-label={`Decrease quantity of ${item.product_name}`}
           >
@@ -144,7 +143,7 @@ const CartItem: React.FC<CartItemProps> = ({
             }
             className={cn(
               "flex h-8 w-8 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100",
-              loading && "cursor-not-allowed opacity-60 hover:bg-transparent",
+              loading && "cursor-not-allowed opacity-60 hover:bg-transparent"
             )}
             aria-label={`Increase quantity of ${item.product_name}`}
           >
@@ -160,7 +159,7 @@ const CartItem: React.FC<CartItemProps> = ({
           disabled={loading}
           className={cn(
             "flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-slate-200 transition hover:bg-red-600 hover:text-white",
-            loading && "cursor-not-allowed opacity-60 hover:bg-slate-900",
+            loading && "cursor-not-allowed opacity-60 hover:bg-slate-900"
           )}
           aria-label={`Remove ${item.product_name} from cart`}
         >
@@ -171,10 +170,7 @@ const CartItem: React.FC<CartItemProps> = ({
   );
 };
 
-
-
 // ** Order Summary component **//
-
 
 // Order Summary component
 type OrderSummaryProps = {
@@ -220,8 +216,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   );
 };
 
-// Loading state component
-
 // Empty cart component
 const EmptyCart: React.FC = () => (
   <div className="mx-auto flex min-h-[700px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center">
@@ -243,27 +237,22 @@ const EmptyCart: React.FC = () => (
   </div>
 );
 
-
-
 // ** Main Cart component **//
-
 
 // Main Cart component
 export default function Cart() {
   const router = useRouter();
   const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
   const { loading, removeFromCart, updateCount } = useCartHook();
-  const { setCartCount } = useCartStore();
+  const setCartCount = useCartStore((state) => state.setCartCount);
 
-  console.log(cartResponse, "cart response");
-
+  // Sync cart count when cart data changes
   useEffect(() => {
     if (cartResponse?.cart_items) {
       const totalCount = cartResponse.cart_items.reduce(
         (sum: number, item: CartItemType) => sum + Number(item.qty ?? 0),
-        0,
+        0
       );
-
       setCartCount(totalCount);
     } else {
       setCartCount(0);
@@ -292,7 +281,7 @@ export default function Cart() {
   const handleUpdateCount = async (
     itemId: number,
     newQuantity: number,
-    productName: string,
+    productName: string
   ) => {
     const response = await updateCount({
       cart_item_id: itemId,
@@ -316,9 +305,7 @@ export default function Cart() {
       className="mx-auto my-10 min-h-[1000px] max-w-7xl px-4 py-8"
       suppressHydrationWarning={true}
     >
-      <h1 className="mb-2 text-3xl font-bold text-slate-900">
-        عربة التسوق
-      </h1>
+      <h1 className="mb-2 text-3xl font-bold text-slate-900">عربة التسوق</h1>
       <p className="mb-6 text-sm text-slate-500">
         يمكنك تعديل الكمية أو إزالة المنتجات قبل إتمام الطلب.
       </p>
@@ -346,4 +333,3 @@ export default function Cart() {
     </div>
   );
 }
-

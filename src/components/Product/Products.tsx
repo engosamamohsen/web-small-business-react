@@ -43,7 +43,6 @@ export default async function Products({
   } else {
     return (
       <>
-        {" "}
         <section className="py-10" id="products">
           <div className="container">
             <div className="flex w-full items-center justify-between max-sm:flex-col max-sm:justify-center max-sm:gap-4"></div>

@@ -131,7 +131,7 @@ export const CartActions = ({
           )}
           aria-label="Add product to cart"
         >
-          <span>أضف إلى السلة</span>{" "}
+          <span>أضف إلى السلة</span>
           <span>
             {discount > 0 ? getDiscountedPrice(product?.price, discount) : totalPrice * count} <span>جنية</span>
           </span>

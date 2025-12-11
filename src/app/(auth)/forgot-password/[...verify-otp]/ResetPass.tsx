@@ -53,7 +53,7 @@ export default function ResetPasswordForm({
     >
       <div className="text-center">
         <h2 className="mt-6 text-center text-xl font-extrabold text-gray-900">
-          يمكنك الآن إعادة تعيين كلمة المرور{" "}
+          يمكنك الآن إعادة تعيين كلمة المرور
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           <span className="text-primary-600 block font-medium">

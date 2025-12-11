@@ -5,9 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import LoginButton from "./LoginButton";
 import { useEffect, useMemo, useState } from "react";
-import { useAtom } from "jotai";
 import { usePathname, useRouter } from "next/navigation";
-import { cartCountAtom } from "@/Store/cart";
+import { useCartCount } from "@/lib/stores";
 import SearchBar from "./SearchBar";
 import Cookies from "js-cookie";
 
@@ -20,7 +19,8 @@ export default function Header({
   token?: string;
   isLogin?: boolean;
 }) {
-  const [cartCount] = useAtom(cartCountAtom);
+  // Using Zustand selector for optimized re-renders
+  const cartCount = useCartCount();
   const [token, setToken] = useState<string | undefined>(initialToken);
   const pathname = usePathname();
   const router = useRouter();
@@ -56,14 +56,14 @@ export default function Header({
           {/* Logo + brand */}
           <Link
             href="/"
-            aria-label="OU,O1U^O_Oc U,U,OæU?O-Oc OU,OñOÝUSO3USOc"
+            aria-label="الذهاب للصفحة الرئيسية"
             className="flex items-center gap-3"
           >
             <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm">
               {settingsData?.logo ? (
                 <Image
                   src={settingsData.logo}
-                  alt="O'O1OOñ OU,U.U^U,O1"
+                  alt="شعار المتجر"
                   fill
                   sizes="44px"
                   className="object-contain"
@@ -89,7 +89,7 @@ export default function Header({
             <Link
               href={loggedIn ? "/cart" : "/login"}
               className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
-              aria-label="O3U,Oc OU,U.O'O¦OñUSOO¦"
+              aria-label="سلة المشتريات"
               onClick={(e) => {
                 if (!loggedIn) {
                   e.preventDefault();

@@ -2,15 +2,34 @@ import type { NextConfig } from "next";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
-    domains: [
-      "source.unsplash.com",
-      "emend.cashierthru.com",
-      "cdn.pixabay.com",
-      "source.unsplash.com",
-      "staging.fawaterk.com",
-      "i.ibb.co",
+    // Using remotePatterns instead of deprecated 'domains'
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "source.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "emend.cashierthru.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.pixabay.com",
+      },
+      {
+        protocol: "https",
+        hostname: "staging.fawaterk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.ibb.co",
+      },
+      {
+        // Allow any subdomain of cashierthru.com
+        protocol: "https",
+        hostname: "*.cashierthru.com",
+      },
     ],
   },
 };

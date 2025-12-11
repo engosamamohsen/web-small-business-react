@@ -166,7 +166,7 @@ function OrderList() {
                 <div className="flex flex-col leading-tight">
                   <span className="text-[11px] text-gray-400">الإجمالي</span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {order.total}{" "}
+                    {order.total}
                     <span className="text-[11px] text-gray-500">ج.م</span>
                   </span>
                 </div>

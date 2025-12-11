@@ -249,7 +249,6 @@ const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
           className="flex items-center gap-4 border-t border-gray-200 py-4 max-sm:items-start"
         >
           <div className="flex flex-1 items-start justify-start gap-4 max-sm:flex-col">
-            {" "}
             <div className="relative h-20 w-20">
               <Image
                 src={item.product_image}
@@ -261,7 +260,7 @@ const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
             <div className="flex-1">
               <h3 className="font-semibold">{item.product_name}</h3>
               <p className="mt-2 text-end text-sm text-gray-800">
-                {item.qty} ×{" "}
+                {item.qty} ×
                 {(
                   item.item_total -
                   (item.variations?.reduce(
@@ -273,12 +272,12 @@ const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
                       ),
                     0,
                   ) || 0)
-                ).toFixed(1)}{" "}
+                ).toFixed(1)}
                 ج.م
               </p>
               {item.product_note && (
                 <p className="mt-1 text-xs text-gray-500">
-                  <span className="font-medium">ملاحظة:</span>{" "}
+                  <span className="font-medium">ملاحظة:</span>
                   {item.product_note}
                 </p>
               )}
@@ -290,7 +289,7 @@ const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
                       className="flex items-center justify-between gap-1 text-xs text-gray-500"
                     >
                       <span className="font-medium">
-                        {variation.main_variation_name}:{" "}
+                        {variation.main_variation_name}:
                       </span>
                       {variation.choices.map((choice, idx) => (
                         <React.Fragment key={choice.id}>

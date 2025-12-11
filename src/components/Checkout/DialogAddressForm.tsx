@@ -64,7 +64,6 @@ function DialogAddressForm({
   };
   return (
     <>
-      {" "}
       <Dialog
         visible={showDialog}
         modal
@@ -97,7 +96,6 @@ function DialogAddressForm({
                   className="w-full space-y-4"
                 >
                   <>
-                    {" "}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -118,7 +116,7 @@ function DialogAddressForm({
                       </div>
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                          رقم الهاتف (واتساب){" "}
+                          رقم الهاتف (واتساب)
                         </label>
                         <InputText
                           type="tel"
@@ -171,7 +169,7 @@ function DialogAddressForm({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                          المدينة{" "}
+                          المدينة
                         </label>
                         <SelectInput
                           name="governorate"
@@ -183,7 +181,7 @@ function DialogAddressForm({
                           optionLabel="name"
                           placeholder="اختر المحافظة"
                           setError={setError}
-                        />{" "}
+                        />
                         {errors.governorate && (
                           <p className="mt-1 text-sm text-red-600">
                             {errors.governorate.message as any}
@@ -192,7 +190,7 @@ function DialogAddressForm({
                       </div>
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                          المنطقه{" "}
+                          المنطقه
                         </label>
                         <SelectInput
                           name="city"
@@ -238,7 +236,7 @@ function DialogAddressForm({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                          الشارع{" "}
+                          الشارع
                         </label>
                         <InputText
                           type="text"

@@ -210,7 +210,7 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
       </div>
 
       <p className="mt-6 text-center text-sm text-gray-600">
-        طلبك{" "}
+        طلبك
         {status.delivered
           ? "تم تسليمه بنجاح."
           : status.waitingShipping

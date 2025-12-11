@@ -24,7 +24,7 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
         </h3>
         {hasProducts && (
           <span className="text-xs text-slate-500">
-            عدد العناصر:{" "}
+            عدد العناصر:
             <span className="font-semibold">
               {order.order_products.length}
             </span>
@@ -121,7 +121,7 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
                         {/* Product note */}
                         {item.product_note && (
                           <div className="mt-1 rounded-md bg-amber-50 px-2 py-1 text-[11px] text-amber-800">
-                            <span className="font-medium">ملاحظة:</span>{" "}
+                            <span className="font-medium">ملاحظة:</span>
                             <span>{item.product_note}</span>
                           </div>
                         )}

@@ -30,7 +30,7 @@ export const PriceDisplay = ({ product, currentPrice }: PriceDisplayProps) => {
         <bdi className="mb-2 text-xl font-bold text-gray-900">
           <bdi>السعر بعد الخصم</bdi> <span> : </span>
           <span>
-            {priceDiscount} {currency}{" "}
+            {priceDiscount} {currency}
           </span>
         </bdi>
         <bdi className="flex items-center text-lg font-semibold text-green-600">
@@ -54,7 +54,7 @@ export const PriceDisplay = ({ product, currentPrice }: PriceDisplayProps) => {
       <bdi className="mb-2 text-lg font-normal text-[var(--second-color)]">
         <bdi>السعر</bdi> <span> : </span>
         <span>
-          {currentPrice} {currency}{" "}
+          {currentPrice} {currency}
         </span>
       </bdi>
     </div>
