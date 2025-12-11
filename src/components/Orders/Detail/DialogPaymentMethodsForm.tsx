@@ -59,7 +59,6 @@ function DialogPaymentMethodsForm({
   };
   return (
     <>
-      {" "}
       <Dialog
         visible={showDialog}
         modal
@@ -74,7 +73,7 @@ function DialogPaymentMethodsForm({
               <div className="absolute top-1 flex w-full items-center justify-between gap-2 px-4 text-[var(--second-font-color)]">
                 <div className="flex w-full items-center gap-1">
                   <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
-                    اختر طريقة الدفع{" "}
+                    اختر طريقة الدفع
                   </h4>
                 </div>
                 <Button

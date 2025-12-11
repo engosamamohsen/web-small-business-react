@@ -73,7 +73,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
           <div>
             <p className="text-xs text-gray-500">تفاصيل إضافية</p>
             <p className="text-sm text-slate-800">
-              مبنى {order.address?.building || "-"}، طابق{" "}
+              مبنى {order.address?.building || "-"}، طابق
               {order.address?.floor ?? "-"}، شقة {order.address?.flat ?? "-"}
             </p>
             <p className="mt-1 text-[11px] text-slate-500">

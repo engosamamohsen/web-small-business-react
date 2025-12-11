@@ -61,11 +61,11 @@ export default function AddressList({
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <p className="font-medium">
-                  {address.city_name}, {address.area_name},{" "}
+                  {address.city_name}, {address.area_name},
                   {address.branch_name}
                 </p>
                 <p className="text-sm text-gray-600">
-                  شارع: {address.street}, عمارة: {address.building}, طابق:{" "}
+                  شارع: {address.street}, عمارة: {address.building}, طابق:
                   {address.floor}, شقة: {address.flat}
                 </p>
                 {address.special_sign && (
