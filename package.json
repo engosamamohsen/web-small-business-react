@@ -1,9 +1,9 @@
 {
   "name": "alelm-v2-website",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -15,7 +15,6 @@
     "clsx": "^2.1.1",
     "firebase": "^11.2.0",
     "html-react-parser": "^5.2.2",
-    "jotai": "^2.11.3",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.446.0",
     "next": "15.5.7",

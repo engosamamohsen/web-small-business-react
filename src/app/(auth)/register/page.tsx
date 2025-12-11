@@ -2,44 +2,47 @@ import { Metadata } from "next";
 import RegisterForm from "./RegisterForm";
 import { fetchPublicSettings } from "@/hooks/fetchSettings";
 
+// Generate metadata - uses cached settings
 export async function generateMetadata(): Promise<Metadata> {
-  const settingResponse = await fetchPublicSettings();
+  const settings = await fetchPublicSettings();
 
-  if (!settingResponse?.ok) {
-    return {
-      title: "إنشاء حساب جديد",
-      description: "إنشاء حساب جديد للوصول إلى جميع ميزات موقعنا",
-      icons: [],
-      keywords: ["تسجيل", "حساب جديد", "إنشاء حساب"],
-      openGraph: {
-        title: "إنشاء حساب جديد",
-        description: "Register",
-        images: [],
-      },
-    };
-  }
-  return {
-    title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
-    description:
-      settingResponse?.data?.about_us ||
-      "أنشئ حساب جديد للوصول إلى جميع ميزات موقعنا",
-    icons: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
-    keywords: [
-      ...(settingResponse?.data?.keywords || []),
-      "تسجيل",
-      "حساب جديد",
-      "إنشاء حساب",
-    ],
+  const defaultMeta: Metadata = {
+    title: "إنشاء حساب جديد",
+    description: "إنشاء حساب جديد للوصول إلى جميع ميزات موقعنا",
+    icons: [],
+    keywords: ["تسجيل", "حساب جديد", "إنشاء حساب"],
     openGraph: {
-      title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
-      description:
-        settingResponse?.data?.about_us || "انضم إلينا واحصل على تجربة مميزة",
-      images: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
+      title: "إنشاء حساب جديد",
+      description: "Register",
+      images: [],
+    },
+  };
+
+  if (!settings?.ok || !settings?.data) {
+    return defaultMeta;
+  }
+
+  const { data } = settings;
+  const siteName = data.name || "";
+  const logo = data.logo ? [data.logo] : [];
+
+  return {
+    title: `إنشاء حساب جديد | ${siteName}`,
+    description: data.about_us || "أنشئ حساب جديد للوصول إلى جميع ميزات موقعنا",
+    icons: logo,
+    keywords: [...(data.keywords || []), "تسجيل", "حساب جديد", "إنشاء حساب"],
+    openGraph: {
+      title: `إنشاء حساب جديد | ${siteName}`,
+      description: data.about_us || "انضم إلينا واحصل على تجربة مميزة",
+      images: logo,
     },
   };
 }
 
+// Page component - reuses cached settings from metadata
 export default async function Register() {
-  const settingResponse = await fetchPublicSettings();
-  return <RegisterForm initSettings={settingResponse?.data} />;
+  // This call is deduped with the generateMetadata call above
+  const settings = await fetchPublicSettings();
+
+  return <RegisterForm initSettings={settings?.data} />;
 }

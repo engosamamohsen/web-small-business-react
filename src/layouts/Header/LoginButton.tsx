@@ -64,10 +64,13 @@ const LoginButton = ({
             onClick={async () => {
               try {
                 setLogoutLoading(true);
+                // Try to logout from server (401 errors are OK - token might be expired)
                 await $api.post("logout");
               } catch (e) {
-                throw e;
+                // Ignore API errors - we'll logout locally anyway
+                // This handles cases where token is already expired or invalid
               } finally {
+                // Always clear local token and redirect, even if API call fails
                 Cookies.remove("app_token");
                 setToken(undefined);
                 router.refresh();

@@ -31,6 +31,8 @@ const nextConfig: NextConfig = {
         hostname: "*.cashierthru.com",
       },
     ],
+    // Image quality levels for Next.js 16+ compatibility
+    qualities: [75, 80, 90, 100],
   },
 };
 

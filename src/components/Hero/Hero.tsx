@@ -22,7 +22,7 @@ async function getHeroServer(): Promise<{
       init: { next: { revalidate: 0 } },
     });
 
-    console.log(response);
+    console.log(response, "banner");
 
     const bannerData = response?.data?.data;
 
