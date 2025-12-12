@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { cache } from "react";
 
 /**
@@ -5,14 +6,12 @@ import { cache } from "react";
  * Cached to prevent multiple calls per request
  */
 export const getSubdomain = cache(async (): Promise<string> => {
-  // In production, you can use dynamic host detection:
-  // import { headers } from "next/headers";
-  // const headersList = await headers();
-  // const host = headersList.get("host") || "";
-  // return `https://${host}`;
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  return `https://${host}`;
 
   // For now, return static URL
-  return "https://emend.cashierthru.com";
+  // return "https://emend.cashierthru.com";
 });
 
 
