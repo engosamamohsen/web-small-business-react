@@ -20,6 +20,10 @@ export default function CategorySwiper({ categories }: { categories: any }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Only enable loop if we have enough slides (more than max slidesPerView)
+  const categoryCount = categories?.categoriesData?.length || 0;
+  const enableLoop = categoryCount > 14;
+
   const onCategoryClick = (category: CategoryType) => {
     const sp = new URLSearchParams(window.location.search);
     const current = sp.get("category");
@@ -73,7 +77,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
               1280: { slidesPerView: 12.2, spaceBetween: 16 },
               1536: { slidesPerView: 14.2, spaceBetween: 18 },
             }}
-            loop
+            loop={enableLoop}
             className={cn(styles["categories-swiper"], "min-h-fit")}
           >
             {categories?.categoriesData?.map((category: CategoryType) => {

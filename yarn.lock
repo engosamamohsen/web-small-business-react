@@ -2493,9 +2493,9 @@ jiti@*, jiti@^1.21.6:
   integrity sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==
 
 jotai@^2.11.3:
-  version "2.12.1"
-  resolved "https://registry.npmjs.org/jotai/-/jotai-2.12.1.tgz"
-  integrity sha512-VUW0nMPYIru5g89tdxwr9ftiVdc/nGV9jvHISN8Ucx+m1vI9dBeHemfqYzEuw5XSkmYjD/MEyApN9k6yrATsZQ==
+  version "2.11.3"
+  resolved "https://registry.npmjs.org/jotai/-/jotai-2.11.3.tgz"
+  integrity sha512-B/PsewAQ0UOS5e2+TTWegUPQ3SCLPCjPY24LYUjfn2EorGlluTA2dFjVLgF1+xHLjK9Jit3y5mKHyMG3Xq/GZg==
 
 js-cookie@^2.2.1:
   version "2.2.1"

@@ -22,7 +22,7 @@ export const cookieConsent = {
       maxAge: 365,
       httpOnly: false, // Allows client-side JavaScript to access the cookie
       path: "/",
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
     },
     preferences: {
       theme: "light",

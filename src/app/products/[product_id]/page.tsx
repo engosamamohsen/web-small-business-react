@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ProductType } from "@/lib/types";
 import { Metadata } from "next";
 import { fetchHook } from "@/hooks/fetch-hook";
+import { cache } from "react";
 
 export async function generateMetadata({
   params,
@@ -139,13 +140,15 @@ async function page({ params }: PageProps) {
 
 export default page;
 
-async function getProductDetailServices({
+// Cached product detail fetcher - prevents duplicate API calls
+// between generateMetadata() and page() component
+const getProductDetailServices = cache(async ({
   productId,
 }: {
   productId: string;
 }): Promise<{
   productData: any;
-}> {
+}> => {
   try {
     const response = await fetchHook({
       url: `v1/product-details?product_id=${productId}`,
@@ -153,7 +156,6 @@ async function getProductDetailServices({
     });
 
     const productData = response?.data?.data;
-    // console.log("productData-detail", productData);
     if (!productData) {
       return {
         productData: {},
@@ -164,9 +166,10 @@ async function getProductDetailServices({
       productData,
     };
   } catch (error) {
-    console.log(error);
+    // Server component - log error on server
+    console.error("Error fetching product details:", error);
     return {
       productData: {},
     };
   }
-}
+});

@@ -27,8 +27,6 @@ export async function fetchHookClient<T = any>({
     const subdomain = "https://emend.cashierthru.com";
     const lastRoute = process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL ?? "";
 
-    console.log(url, "fetch url")
-
     // if caller passes baseUrl, use it; otherwise build like server hook
     const currentUrl = baseUrl ?? `${subdomain}${lastRoute}`;
 
@@ -36,8 +34,6 @@ export async function fetchHookClient<T = any>({
     const fullUrl = url.startsWith("http")
         ? url
         : `${currentUrl}${url.startsWith("/") ? url : `/${url}`}`;
-
-    console.log("fetchHookClient fullUrl:", fullUrl);
 
     const authToken = token ?? Cookies.get("app_token") ?? undefined;
 

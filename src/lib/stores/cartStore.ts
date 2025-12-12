@@ -1,4 +1,17 @@
 import { create } from "zustand";
+
+/**
+ * Zustand Cart Store
+ * 
+ * This is a BACKUP store that can be used alongside the Context.
+ * The SettingsProvider/useCart is preferred for most cases.
+ * 
+ * Use this store when:
+ * - You need cart state outside of React components
+ * - You need to persist cart to localStorage
+ * - You're in a non-React context
+ */
+
 interface CartState {
     cartCount: number;
 }
@@ -13,10 +26,8 @@ interface CartActions {
 type CartStore = CartState & CartActions;
 
 export const useCartStore = create<CartStore>((set) => ({
-    // State
     cartCount: 0,
 
-    // Actions
     setCartCount: (count) => set({ cartCount: count }),
 
     incrementCartCount: () =>
@@ -28,5 +39,5 @@ export const useCartStore = create<CartStore>((set) => ({
     resetCartCount: () => set({ cartCount: 0 }),
 }));
 
-// Selector hooks for optimized re-renders
+// Selector for just the count (optimized re-renders)
 export const useCartCount = () => useCartStore((state) => state.cartCount);

@@ -78,7 +78,8 @@ async function getProductsServer(url: string) {
       pagination: response?.data?.pagination,
     };
   } catch (error) {
-    console.log(error);
+    // Server component - log error on server
+    console.error("Error fetching products:", error);
     return {
       data: [],
       isSuccess: false,
