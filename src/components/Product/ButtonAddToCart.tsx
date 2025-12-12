@@ -33,6 +33,7 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
             try {
               await addToCart(product);
             } catch (error: any) {
+              console.error("Error adding to cart:", error);
               return;
             }
           }
