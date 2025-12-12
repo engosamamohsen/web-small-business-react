@@ -1,25 +1,24 @@
 "use client";
-import Cookies from "js-cookie";
+
+import { useAuth } from "@/providers/SettingsProvider";
 import { useEffect } from "react";
 
-export default function LoginHandler({ isLogin }: { isLogin?: boolean }) {
+interface LoginHandlerProps {
+  isLogin?: boolean;
+}
+
+/**
+ * LoginHandler - Syncs server auth state with client
+ * This component doesn't render anything, it just syncs state
+ */
+export default function LoginHandler({ isLogin }: LoginHandlerProps) {
+  const { setIsLogin } = useAuth();
+
   useEffect(() => {
-    // DISABLED: This was causing issues where cookies were being removed immediately after login
-    // Token expiry is already handled by API error responses (403/401) in useCartHook and other hooks
-
-    // TODO: Re-enable with better logic if needed, but for now rely on:
-    // - API 403 errors to trigger logout (already implemented in hooks)
-    // - Cookie expiry (set to 1 day)
-
-    // console.log("🔐 LoginHandler: isLogin =", isLogin);
-
-    // COMMENTED OUT - was removing cookies too aggressively
-    // const hasToken = !!Cookies.get("app_token");
-    // if (isLogin === false && hasToken) {
-    //   console.log("🔒 LoginHandler: Removing expired/invalid token");
-    //   Cookies.remove("app_token");
-    // }
-  }, [isLogin]);
+    if (typeof isLogin === "boolean") {
+      setIsLogin(isLogin);
+    }
+  }, [isLogin, setIsLogin]);
 
   return null;
 }

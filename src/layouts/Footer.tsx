@@ -4,19 +4,25 @@ import Image from "next/image";
 import { Facebook, Instagram } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils/utils";
+import { useSettingsData } from "@/providers/SettingsProvider";
 
 interface FooterProps {
-  settingsData: any;
+  settingsData?: any; // Keep for backwards compatibility
   appVersion?: string;
 }
 
 export default function Footer({ settingsData, appVersion }: FooterProps) {
   const pathname = usePathname();
-  const siteName = settingsData?.name || "Business Platform";
+
+  // ✅ Prefer context over props (new logic)
+  const contextSettings = useSettingsData();
+  const settings = contextSettings || settingsData;
+
+  const siteName = settings?.name || "Business Platform";
   const year = new Date().getFullYear();
 
-  const hasFacebook = Boolean(settingsData?.facebook_link);
-  const hasInstagram = Boolean(settingsData?.instagram_link);
+  const hasFacebook = Boolean(settings?.facebook_link);
+  const hasInstagram = Boolean(settings?.instagram_link);
 
   return (
     <footer
@@ -31,10 +37,10 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           {/* Brand block */}
           <div className="flex items-center gap-3">
-            {settingsData?.logo && (
+            {settings?.logo && (
               <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10">
                 <Image
-                  src={settingsData.logo}
+                  src={settings.logo}
                   alt={siteName}
                   fill
                   sizes="40px"
@@ -47,9 +53,9 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
               <h4 className="text-sm font-semibold tracking-wide text-[var(--main-color)]">
                 {siteName}
               </h4>
-              {settingsData?.about_us && (
+              {settings?.about_us && (
                 <p className="max-w-md text-xs leading-relaxed text-gray-300">
-                  {settingsData.about_us}
+                  {settings.about_us}
                 </p>
               )}
             </div>
@@ -64,7 +70,7 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
               <div className="flex gap-2">
                 {hasFacebook && (
                   <a
-                    href={settingsData.facebook_link}
+                    href={settings.facebook_link}
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Visit our Facebook page"
@@ -75,7 +81,7 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
                 )}
                 {hasInstagram && (
                   <a
-                    href={settingsData.instagram_link}
+                    href={settings.instagram_link}
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Visit our Instagram page"
@@ -96,12 +102,14 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
               © {year} {siteName}. جميع الحقوق محفوظة.
             </p>
 
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-2 w-2 rounded-full bg-[var(--main-color)]" />
-              <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-gray-200">
-                الإصدار {appVersion ?? "0.0.0"}
-              </span>
-            </div>
+            {appVersion && (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-2 w-2 rounded-full bg-[var(--main-color)]" />
+                <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-gray-200">
+                  الإصدار {appVersion}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

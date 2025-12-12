@@ -1,70 +1,112 @@
 import { cache } from "react";
-import { cookies } from "next/headers";
-import { fetchHook } from "./fetch-hook";
 
-type SettingsResponse = {
+// ===== Types =====
+export type SettingsResponse = {
   data?: any;
   is_login?: boolean;
+  cart_count?: number;
   ok: boolean;
   status?: number;
   error?: unknown;
 };
 
-/**
- * Base fetch function - NOT cached, used internally
- */
-async function fetchSettingsBase(
-  token?: string,
-  revalidate: number = 600
-): Promise<SettingsResponse> {
-  try {
-    const res = await fetchHook({
-      url: `v1/setting-profile`,
-      // Only skip cache if we have a token AND need fresh auth state
-      init: token
-        ? { next: { revalidate: 60 } } // Revalidate every 60s for authenticated users
-        : { next: { revalidate } },     // 10 min cache for public
-      token,
-    });
+// ===== Config =====
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://emend.cashierthru.com";
+const FETCH_TIMEOUT = 10000; // 10 seconds
 
-    return res.ok
-      ? { ...res.data, ok: true }
-      : { ok: false, status: res.status, error: res.error, is_login: false };
+/**
+ * Fetch with timeout to prevent hanging requests
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeout: number
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
   } catch (error) {
-    return { ok: false, status: 500, error, is_login: false };
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
+/**
+ * Base fetch function - NOT cached
+ */
+async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
+  const url = `${API_BASE_URL}/v1/setting-profile`;
+
+  try {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetchWithTimeout(
+      url,
+      {
+        headers,
+        next: { revalidate: token ? 60 : 300 }, // 1 min for auth, 5 min for public
+      },
+      FETCH_TIMEOUT
+    );
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        status: response.status,
+        error: `HTTP ${response.status}`,
+      };
+    }
+
+    const result = await response.json();
+
+    return {
+      data: result.data,
+      is_login: result.is_login ?? false,
+      cart_count: result.cart_count ?? 0,
+      ok: true,
+      status: response.status,
+    };
+  } catch (error: any) {
+    // Handle timeout
+    if (error.name === "AbortError") {
+      console.error("[fetchSettings] Request timed out");
+      return { ok: false, status: 408, error: "Request timeout" };
+    }
+
+    console.error("[fetchSettings] Error:", error.message);
+    return { ok: false, status: 500, error: error.message };
   }
 }
 
 /**
  * Cached public settings - for metadata and unauthenticated requests
- * This is cached across the entire request lifecycle
+ * Deduped within the same request using React cache()
  */
-export const fetchPublicSettings = cache(
-  async (): Promise<SettingsResponse> => {
-    return fetchSettingsBase(undefined, 600);
-  }
-);
+export const fetchPublicSettings = cache(async (): Promise<SettingsResponse> => {
+  return fetchSettingsBase(undefined);
+});
 
 /**
- * Cached authenticated settings - for layout and authenticated requests
- * Uses React's cache() to dedupe within the same request
+ * Cached settings - for authenticated requests
+ * Each unique token gets its own cache entry
  */
-export const fetchSettings = cache(
-  async (token?: string): Promise<SettingsResponse> => {
-    // If no token, use public settings (already cached)
-    if (!token) {
-      return fetchPublicSettings();
-    }
-    return fetchSettingsBase(token, 60);
+export const fetchSettings = cache(async (token?: string): Promise<SettingsResponse> => {
+  if (!token) {
+    return fetchPublicSettings();
   }
-);
-
-/**
- * Helper to get settings with token from cookies
- * Use this in Server Components to avoid passing token around
- */
-export const getSettings = cache(async (): Promise<SettingsResponse> => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("app_token")?.value;
-  return fetchSettings(token);
+  return fetchSettingsBase(token);
 });

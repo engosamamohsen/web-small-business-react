@@ -1,47 +1,92 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ProgressSpinner } from "primereact/progressspinner";
 import { useCookies } from "react-cookie";
-import { useCartStore } from "@/lib/stores";
 
-function ColorHandler({ globalData }: { globalData: any }) {
+import { useSettings, useCart } from "@/providers";
+
+interface ColorHandlerProps {
+  globalData?: any; // Keep for backwards compatibility, but prefer context
+}
+
+export default function ColorHandler({ globalData }: ColorHandlerProps) {
   const effectRan = useRef(false);
   const [, setCookie] = useCookies(["app_data"]);
-  const setCartCount = useCartStore((state) => state.setCartCount);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Apply theme colors immediately on mount without blocking UI
-  useEffect(() => {
-    if (effectRan.current || !globalData?.status) {
+  // Get data from context
+  const { settings } = useSettings();
+  const { setCartCount } = useCart();
+
+  // Use context data if available, fallback to props
+  const data = settings || globalData?.data;
+  const cartCount = globalData?.cart_count;
+
+  // Set CSS variables for theme colors
+  useLayoutEffect(() => {
+    if (effectRan.current) {
+      setIsLoading(false);
       return;
     }
 
-    // Set theme colors on document root
-    if (typeof window !== "undefined" && window.document.documentElement) {
-      const root = window.document.documentElement;
-      root.style.setProperty(
-        "--main-color",
-        globalData?.data?.mainColor || "#FC7643"
-      );
-      root.style.setProperty(
-        "--second-color",
-        globalData?.data?.main_font_color || "#FC7643"
-      );
+    if (!data || typeof window === "undefined") {
+      setIsLoading(false);
+      return;
     }
 
-    // Set cookie with app data
-    setCookie("app_data", { ...globalData?.data });
+    const root = document.documentElement;
+
+    // 🔸 Use old version color logic with fallbacks
+    const mainColor =
+      data?.mainColor ?? data?.main_color ?? "#FC7643"; // support both mainColor & main_color
+    const secondColor = data?.main_font_color ?? "#FC7643";
+
+    root.style.setProperty("--main-color", mainColor);
+    root.style.setProperty("--second-color", secondColor);
+
+    // Keep your new background support if available
+    if (data.main_bg) {
+      root.style.setProperty("--main-background", data.main_bg);
+    }
+
+    // Store settings in cookie for client-side access
+    setCookie("app_data", data, { path: "/", maxAge: 86400 });
+
     effectRan.current = true;
-  }, [globalData, setCookie]);
+    setIsLoading(false);
+  }, [data, setCookie]);
 
-  // Sync cart count from server data
+  // Sync cart count from server
   useEffect(() => {
-    if (globalData?.cart_count !== undefined) {
-      setCartCount(globalData.cart_count);
+    if (typeof cartCount === "number") {
+      setCartCount(cartCount);
     }
-  }, [globalData, setCartCount]);
+  }, [cartCount, setCartCount]);
 
-  // Don't render any blocking UI
+  // Show loading spinner only on initial mount
+  if (isLoading) {
+    return <LoadingOverlay />;
+  }
+
   return null;
 }
 
-export default ColorHandler;
+function LoadingOverlay() {
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50"
+      suppressHydrationWarning
+    >
+      <div className="flex flex-col items-center gap-3">
+        <ProgressSpinner
+          style={{ width: "40px", height: "40px" }}
+          strokeWidth="4"
+          animationDuration=".5s"
+          aria-label="Loading"
+        />
+        <span className="text-lg text-gray-600">جاري التحميل...</span>
+      </div>
+    </div>
+  );
+}

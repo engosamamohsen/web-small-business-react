@@ -85,25 +85,12 @@ export const useLoginHook = () => {
         rtl: true,
       });
 
-      console.log("🔐 Setting cookie with token:", response?.data?.api_token ? "***" + response.data.api_token.slice(-8) : "null");
-      console.log("🌍 Environment:", process.env.NODE_ENV);
-      console.log("🔒 Secure flag:", process.env.NODE_ENV === "production");
-
       Cookies.set("app_token", response?.data?.api_token, {
         expires: 1,
         path: "/",
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
       }); // Expires in 1 day
-
-      // Verify cookie was set
-      const verifyToken = Cookies.get("app_token");
-      console.log("✅ Cookie set successfully:", !!verifyToken);
-      if (verifyToken) {
-        console.log("✅ Verified token:", "***" + verifyToken.slice(-8));
-      } else {
-        console.error("❌ Cookie was NOT set!");
-      }
 
       if (typeof window !== "undefined") {
         window.location.replace("/");
