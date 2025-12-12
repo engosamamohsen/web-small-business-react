@@ -1,97 +1,88 @@
 "use client";
 
-import { cn } from "@/utils/utils";
-import Cookies from "js-cookie";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { OverlayPanel } from "primereact/overlaypanel";
-import { useMemo, useRef, useState } from "react";
-import { $api } from "@/client";
+import { User, LogOut } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
-const LoginButton = ({
-  token,
-  setToken,
-  isLogin,
-  pathname,
-}: {
-  token: string | undefined;
-  setToken: (token: string | undefined) => void;
-  isLogin?: boolean;
-  pathname: string | null;
-}) => {
-  const router = useRouter();
-  const op = useRef<OverlayPanel>(null);
-  const loggedIn = useMemo(() => Boolean(token || isLogin), [token, isLogin]);
-  const [logoutLoading, setLogoutLoading] = useState(false);
+interface LoginButtonProps {
+  isLoggedIn: boolean;
+  onLogout: () => void;
+}
 
-  const refButton = useRef<HTMLButtonElement>(null);
-  const switchToggle = (e: any) => {
-    refButton.current = e;
-    op?.current?.toggle(refButton.current as any);
-  };
+export default function LoginButton({ isLoggedIn, onLogout }: LoginButtonProps) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  return (
-    <div>
-      <button
-        ref={refButton}
-        className={cn(
-          "text-sm font-medium text-[var(--main-color)]",
-          loggedIn ? "" : "hidden",
-        )}
-        aria-label="User Menu"
-        onClick={switchToggle}
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Not logged in - show login button
+  if (!isLoggedIn) {
+    return (
+      <Link
+        href="/login"
+        className="flex h-9 items-center gap-2 rounded-full bg-[var(--main-color)] px-4 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
       >
-        <i className="pi pi-ellipsis-v"></i>
+        <User className="h-4 w-4" />
+        <span className="hidden sm:inline">تسجيل الدخول</span>
+      </Link>
+    );
+  }
+
+  // Logged in - show user dropdown
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setShowDropdown(!showDropdown)}
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--main-color)] text-white shadow-sm transition hover:opacity-90"
+        aria-label="قائمة المستخدم"
+      >
+        <User className="h-4 w-4" />
       </button>
-      <OverlayPanel ref={op} className="">
-        <div className="flex w-full flex-col items-start justify-center gap-2">
-          <Link
-            href={"/order"}
-            aria-label="site order"
-            className="text-sm text-[var(--font-color)]"
-          >
-            الطلبات
-          </Link>
-          <Link
-            href={"/profile"}
-            aria-label="site profile"
-            className="text-sm text-[var(--font-color)]"
-          >
-            الملف الشخصي
-          </Link>
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                setLogoutLoading(true);
-                await $api.post("logout");
-              } catch (e) {
-                throw e;
-              } finally {
-                Cookies.remove("app_token");
-                setToken(undefined);
-                router.refresh();
-                switchToggle(refButton.current as any);
-                setLogoutLoading(false);
-              }
-            }}
-            className="text-sm text-[var(--font-color)]"
-            disabled={logoutLoading}
-          >
-            تسجيل الخروج
-          </button>
+
+      {/* Dropdown Menu */}
+      {showDropdown && (
+        <div className="absolute left-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5">
+          <div className="py-1">
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+              onClick={() => setShowDropdown(false)}
+            >
+              <User className="h-4 w-4" />
+              الملف الشخصي
+            </Link>
+            <Link
+              href="/order"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+              onClick={() => setShowDropdown(false)}
+            >
+              <span className="i pi pi-shopping-bag h-4 w-4" />
+              طلباتي
+            </Link>
+            <hr className="my-1 border-gray-100" />
+            <button
+              onClick={() => {
+                setShowDropdown(false);
+                onLogout();
+              }}
+              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4" />
+              تسجيل الخروج
+            </button>
+          </div>
         </div>
-      </OverlayPanel>
-      {!loggedIn && pathname !== "/login" && pathname !== "/register" && (
-        <Link
-          href={"/login"}
-          aria-label="site login"
-          className="text-sm font-medium text-[var(--main-color)] underline-offset-4 hover:underline"
-        >
-          تسجيل الدخول
-        </Link>
       )}
     </div>
   );
-};
-export default LoginButton;
+}

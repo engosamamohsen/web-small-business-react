@@ -1,13 +1,24 @@
 "use client";
-import Cookies from "js-cookie";
+
+import { useAuth } from "@/providers/SettingsProvider";
 import { useEffect } from "react";
 
-export default function LoginHandler({ isLogin }: { isLogin?: boolean }) {
+interface LoginHandlerProps {
+  isLogin?: boolean;
+}
+
+/**
+ * LoginHandler - Syncs server auth state with client
+ * This component doesn't render anything, it just syncs state
+ */
+export default function LoginHandler({ isLogin }: LoginHandlerProps) {
+  const { setIsLogin } = useAuth();
+
   useEffect(() => {
-    if (isLogin === false) {
-      Cookies.remove("app_token");
+    if (typeof isLogin === "boolean") {
+      setIsLogin(isLogin);
     }
-  }, [isLogin]);
+  }, [isLogin, setIsLogin]);
 
   return null;
 }

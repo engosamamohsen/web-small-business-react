@@ -14,19 +14,15 @@ function UseDeviceDetected() {
     const userAgent = navigator.userAgent || navigator.vendor || window?.opera;
 
     if (/iPhone/.test(userAgent)) {
-      console.log("Device detected: iPhone");
       setDeviceType("iPhone");
     } else if (/Macintosh|MacIntel|MacPPC|Mac68K/.test(userAgent)) {
-      console.log("Device detected: Mac");
       setDeviceType("Mac");
     } else {
-      console.log("Device detected: Other");
       setDeviceType("Other");
     }
   };
 
   useLayoutEffect(() => {
-    console.log("useLayoutEffect");
     detectDevice();
   }, []);
   return { deviceType };

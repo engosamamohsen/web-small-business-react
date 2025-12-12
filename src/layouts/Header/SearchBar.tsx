@@ -64,8 +64,6 @@ export default function SearchBar() {
                     },
                 });
 
-                console.log(response, "search products response");
-
                 if (!response?.ok) {
                     setResults([]);
                     return;

@@ -2,45 +2,47 @@ import { Metadata } from "next";
 import LoginForm from "./LoginForm";
 import { fetchPublicSettings } from "@/hooks/fetchSettings";
 
+// Generate metadata - uses cached settings
 export async function generateMetadata(): Promise<Metadata> {
-  const settingResponse = await fetchPublicSettings();
+  const settings = await fetchPublicSettings();
 
-  if (!settingResponse?.ok) {
-    return {
-      title: "تسجيل الدخول",
-      description: "تسجيل الدخول للوصول إلى جميع ميزات موقعنا",
-      icons: [],
-      keywords: ["تسجيل", "دخول", "تسجيل الدخول"],
-      openGraph: {
-        title: "تسجيل الدخول",
-        description: "Login",
-        images: [],
-      },
-    };
-  }
-  return {
-    title: `إنشاء حساب جديد | ${settingResponse?.data?.name || ""}`,
-    description:
-      settingResponse?.data?.about_us ||
-      "أنشئ حساب جديد للوصول إلى جميع ميزات موقعنا",
-    icons: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
-    keywords: [
-      ...(settingResponse?.data?.keywords || []),
-      "تسجيل",
-      "حساب جديد",
-      "إنشاء حساب",
-    ],
+  const defaultMeta: Metadata = {
+    title: "تسجيل الدخول",
+    description: "تسجيل الدخول للوصول إلى جميع ميزات موقعنا",
+    icons: [],
+    keywords: ["تسجيل", "دخول", "تسجيل الدخول"],
     openGraph: {
-      title: `تسجيل الدخول | ${settingResponse?.data?.name || ""}`,
-      description:
-        settingResponse?.data?.about_us || "انضم إلينا واحصل على تجربة مميزة",
-      images: settingResponse?.data?.logo ? [settingResponse?.data.logo] : [],
+      title: "تسجيل الدخول",
+      description: "Login",
+      images: [],
+    },
+  };
+
+  if (!settings?.ok || !settings?.data) {
+    return defaultMeta;
+  }
+
+  const { data } = settings;
+  const siteName = data.name || "";
+  const logo = data.logo ? [data.logo] : [];
+
+  return {
+    title: `تسجيل الدخول | ${siteName}`,
+    description: data.about_us || "انضم إلينا واحصل على تجربة مميزة",
+    icons: logo,
+    keywords: [...(data.keywords || []), "تسجيل", "دخول", "تسجيل الدخول"],
+    openGraph: {
+      title: `تسجيل الدخول | ${siteName}`,
+      description: data.about_us || "انضم إلينا واحصل على تجربة مميزة",
+      images: logo,
     },
   };
 }
 
+// Page component - reuses cached settings from metadata
 export default async function Login() {
-  const settingResponse = await fetchPublicSettings();
+  // This call is deduped with the generateMetadata call above
+  const settings = await fetchPublicSettings();
 
-  return <LoginForm initSettings={settingResponse?.data} />;
+  return <LoginForm initSettings={settings?.data} />;
 }

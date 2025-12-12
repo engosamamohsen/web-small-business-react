@@ -3,43 +3,47 @@
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import LoginButton from "./LoginButton";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useCartCount } from "@/lib/stores";
-import SearchBar from "./SearchBar";
 import Cookies from "js-cookie";
 
-export default function Header({
-  settingsData,
-  token: initialToken,
-  isLogin,
-}: {
-  settingsData: any;
-  token?: string;
-  isLogin?: boolean;
-}) {
-  // Using Zustand selector for optimized re-renders
-  const cartCount = useCartCount();
-  const [token, setToken] = useState<string | undefined>(initialToken);
+import { useSettings } from "@/providers";
+import LoginButton from "./LoginButton";
+import SearchBar from "./SearchBar";
+
+export default function Header() {
+  // Get data from context - NO API calls!
+  const { settings, isLogin: initialIsLogin, cartCount } = useSettings();
+
+  // const [token, setToken] = useState<string | undefined>(initialToken);
+  const [isLoggedIn, setIsLoggedIn] = useState(initialIsLogin);
+
   const pathname = usePathname();
   const router = useRouter();
-  const loggedIn = useMemo(() => Boolean(token || isLogin), [token, isLogin]);
 
-  // Keep client token state in sync if the server passes a new one (e.g., after refresh).
-  useEffect(() => {
-    if (initialToken !== token) {
-      setToken(initialToken);
-    }
-  }, [initialToken, token]);
-
-  // Ensure client sees updated auth state after login without hard refresh.
+  // Sync auth state from cookies - only on mount and pathname change
   useEffect(() => {
     const cookieToken = Cookies.get("app_token");
-    if (cookieToken && cookieToken !== token) {
-      setToken(cookieToken);
+    // setToken(cookieToken);
+    setIsLoggedIn(Boolean(cookieToken));
+  }, [pathname]); // Only depend on pathname, not token
+
+  // Handle logout - called from LoginButton
+  const handleLogout = useCallback(() => {
+    Cookies.remove("app_token");
+    // setToken(undefined);
+    setIsLoggedIn(false);
+    router.push("/login");
+    router.refresh(); // Refresh to update server state
+  }, [router]);
+
+  // Handle cart click
+  const handleCartClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      router.push("/login");
     }
-  }, [pathname, token]);
+  };
 
   return (
     <header
@@ -53,17 +57,17 @@ export default function Header({
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Top row */}
         <div className="flex h-16 items-center justify-between gap-4">
-          {/* Logo + brand */}
+          {/* Logo */}
           <Link
             href="/"
             aria-label="الذهاب للصفحة الرئيسية"
             className="flex items-center gap-3"
           >
             <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm">
-              {settingsData?.logo ? (
+              {settings?.logo ? (
                 <Image
-                  src={settingsData.logo}
-                  alt="شعار المتجر"
+                  src={settings.logo}
+                  alt={settings?.name || "شعار المتجر"}
                   fill
                   sizes="44px"
                   className="object-contain"
@@ -71,10 +75,15 @@ export default function Header({
                 />
               ) : (
                 <span className="text-sm font-bold">
-                  {settingsData?.name || "Store"}
+                  {settings?.name?.charAt(0) || "S"}
                 </span>
               )}
             </div>
+            {settings?.name && (
+              <span className="hidden text-lg font-semibold text-[var(--main-font-color)] sm:block">
+                {settings.name}
+              </span>
+            )}
           </Link>
 
           {/* Search - center on desktop */}
@@ -86,16 +95,12 @@ export default function Header({
 
           {/* Right side: cart + login */}
           <div className="flex items-center gap-3">
+            {/* Cart Button */}
             <Link
-              href={loggedIn ? "/cart" : "/login"}
+              href={isLoggedIn ? "/cart" : "/login"}
               className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
               aria-label="سلة المشتريات"
-              onClick={(e) => {
-                if (!loggedIn) {
-                  e.preventDefault();
-                  router.push("/login");
-                }
-              }}
+              onClick={handleCartClick}
             >
               <ShoppingCart className="h-4 w-4 text-[var(--second-font-color)]" />
               {cartCount > 0 && (
@@ -105,16 +110,15 @@ export default function Header({
               )}
             </Link>
 
+            {/* Login Button */}
             <LoginButton
-              token={token}
-              setToken={setToken}
-              isLogin={isLogin}
-              pathname={pathname}
+              isLoggedIn={isLoggedIn}
+              onLogout={handleLogout}
             />
           </div>
         </div>
 
-        {/* Mobile search under header */}
+        {/* Mobile search */}
         <div className="pb-3 pt-1 md:hidden">
           <SearchBar />
         </div>

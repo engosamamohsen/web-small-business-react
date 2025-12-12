@@ -19,10 +19,8 @@ async function getHeroServer(): Promise<{
   try {
     const response = await fetchHook({
       url: "v1/banner",
-      init: { next: { revalidate: 0 } },
+      init: { next: { revalidate: 60 } }, // Cache for 60 seconds
     });
-
-    console.log(response);
 
     const bannerData = response?.data?.data;
 
@@ -38,7 +36,8 @@ async function getHeroServer(): Promise<{
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    // Server component - log error on server
+    console.error("Error fetching banner data:", error);
     return {
       bannerData: [],
       isSuccess: false,

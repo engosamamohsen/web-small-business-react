@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import withBundleAnalyzer from "@next/bundle-analyzer";
+// import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const nextConfig: NextConfig = {
   images: {
@@ -31,11 +31,13 @@ const nextConfig: NextConfig = {
         hostname: "*.cashierthru.com",
       },
     ],
+    // Image quality levels for Next.js 16+ compatibility
+    qualities: [75, 80, 90, 100],
   },
 };
 
-const withBundleAnalyzerConfig = withBundleAnalyzer({
-  enabled: process.env.ANALYZE === "true",
-});
+// const withBundleAnalyzerConfig = withBundleAnalyzer({
+//   enabled: process.env.ANALYZE === "true",
+// });
 
-export default withBundleAnalyzerConfig(nextConfig);
+export default nextConfig;
