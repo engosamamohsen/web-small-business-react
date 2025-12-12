@@ -35,12 +35,11 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
       {/* Items table */}
       <table className="w-full border-separate border-spacing-0 text-sm">
         <colgroup>
-          <col className="w-[40%]" /> {/* المنتج */}
-          <col className="w-[10%]" /> {/* الكمية */}
-          <col className="w-[25%]" /> {/* سعر الوحدة */}
-          <col className="w-[25%]" /> {/* الإجمالي */}
+          <col className="w-[40%]" />
+          <col className="w-[10%]" />
+          <col className="w-[25%]" />
+          <col className="w-[25%]" />
         </colgroup>
-
         <thead>
           <tr className="border-b bg-slate-50 text-xs text-slate-500">
             <th className="py-2 px-4 text-start font-medium">المنتج</th>
