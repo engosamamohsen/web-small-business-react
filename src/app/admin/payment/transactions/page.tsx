@@ -2,6 +2,9 @@ import TransactionsPage from "@/components/Payment/Transactions/TransactionsPage
 import { fetchHook } from "@/hooks/fetch-hook";
 import { notFound } from "next/navigation";
 
+// Force dynamic rendering to prevent build-time errors
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Payment Transactions",
   description: "View payment transaction status",

@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import { cookies } from "next/headers";
 import { ToastContainer } from "react-toastify";
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
 
 // ===== Local Imports =====
 import { fetchSettings, fetchPublicSettings } from "@/hooks/fetchSettings";
@@ -19,6 +19,10 @@ import Header from "@/layouts/Header/Header";
 import LoginHandler from "@/layouts/LoginHandler";
 import ColorHandler from "@/layouts/ColorHandler";
 import packageJson from "../../package.json";
+
+// ===== Route Configuration =====
+// Force dynamic rendering to prevent build-time errors with cookies()
+export const dynamic = "force-dynamic";
 
 // ===== Font Configuration =====
 const cairo = Cairo({
@@ -29,7 +33,7 @@ const cairo = Cairo({
 });
 
 // ===== Dynamic Imports =====
-const Footer = dynamic(() => import("@/layouts/Footer"), {
+const Footer = dynamicImport(() => import("@/layouts/Footer"), {
   ssr: true,
   loading: () => <footer className="h-40 animate-pulse bg-gray-50" />,
 });

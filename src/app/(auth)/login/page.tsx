@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import LoginForm from "./LoginForm";
 import { fetchPublicSettings } from "@/hooks/fetchSettings";
 
+// Force dynamic rendering to prevent build-time API fetch retries
+export const dynamic = "force-dynamic";
+
 // Generate metadata - uses cached settings
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchPublicSettings();

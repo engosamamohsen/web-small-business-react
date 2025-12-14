@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
+import path from "path";
+
 // import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const nextConfig: NextConfig = {
+  // Fix: Silence multiple lockfiles warning
+  // Project is at /var/www/emend, but there's also a lockfile at /var/www
+  outputFileTracingRoot: path.join(__dirname, "../../"),
   images: {
     // Using remotePatterns instead of deprecated 'domains'
     remotePatterns: [

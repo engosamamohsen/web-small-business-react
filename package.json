@@ -1,6 +1,6 @@
 {
   "name": "alelm-v2-website",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -37,8 +37,8 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@next/bundle-analyzer": "^15.3.4",
-    "@types/node": "^20.17.16",
-    "@types/react": "^19",
+    "@types/node": "^20.19.27",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
@@ -50,6 +50,6 @@
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "5.9.3"
   }
 }

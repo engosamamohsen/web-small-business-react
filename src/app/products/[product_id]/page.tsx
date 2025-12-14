@@ -6,6 +6,9 @@ import { Metadata } from "next";
 import { fetchHook } from "@/hooks/fetch-hook";
 import { cache } from "react";
 
+// Force dynamic rendering to prevent build-time API fetch retries
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
