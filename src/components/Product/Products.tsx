@@ -58,7 +58,7 @@ async function getProductsServer(url: string) {
   try {
     const response = await fetchHook({
       url: url,
-      init: { cache: "no-store" },
+      init: { next: { revalidate: 60 } }, // Cache for 1 minute
     });
 
     const data = response?.data?.data;
@@ -78,8 +78,7 @@ async function getProductsServer(url: string) {
       pagination: response?.data?.pagination,
     };
   } catch (error) {
-    // Server component - log error on server
-    console.error("Error fetching products:", error);
+    // Error handling - products will show NotFoundProducts component
     return {
       data: [],
       isSuccess: false,

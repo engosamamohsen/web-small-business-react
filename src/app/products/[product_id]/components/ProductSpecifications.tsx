@@ -1,5 +1,5 @@
 import { cn } from "@/utils/utils";
-import React from "react";
+import React, { memo } from "react";
 
 export type SpecificationType = {
   id: number;
@@ -15,7 +15,7 @@ interface ProductSpecificationsProps {
   className?: string;
 }
 
-export const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({
+export const ProductSpecifications = memo<ProductSpecificationsProps>(({
   specifications,
   className,
 }) => {
@@ -62,4 +62,6 @@ export const ProductSpecifications: React.FC<ProductSpecificationsProps> = ({
       </div>
     </div>
   );
-};
+});
+
+ProductSpecifications.displayName = "ProductSpecifications";

@@ -3,6 +3,7 @@ import parse from "html-react-parser";
 import { ProductType } from "@/lib/types";
 import { useProductOptions } from "./hooks/useProductOptions";
 import type { FormattedVariations } from "./hooks/useProductOptions";
+import { useMemo } from "react";
 
 // Import all components
 import {
@@ -28,7 +29,10 @@ export default function DetailPage({ product }: { product: ProductType }) {
     currentPrice,
   } = useProductOptions(product);
 
-  console.log("Product details:", product);
+  // Memoize the parsed HTML description
+  const parsedDescription = useMemo(() => {
+    return parse(product?.description || "");
+  }, [product?.description]);
 
   return (
     <div className="container flex min-h-screen flex-col items-center justify-center py-10">
@@ -48,7 +52,7 @@ export default function DetailPage({ product }: { product: ProductType }) {
           <PriceDisplay product={product} currentPrice={product?.price || 0} />
 
           {/* Product description */}
-          <div className="mt-4">{parse(product?.description || "")}</div>
+          <div className="mt-4">{parsedDescription}</div>
           {product?.steps?.length && (
             <ul className="mt-4 list-disc">
               {product?.steps?.map((item) => <li key={item}>{item}</li>)}

@@ -1,4 +1,5 @@
 import { SizeOption, ColorOption } from "@/lib/types";
+import { memo } from "react";
 
 interface ProductOptionsProps {
   sizes?: SizeOption[];
@@ -9,7 +10,7 @@ interface ProductOptionsProps {
   onColorSelect: (color: ColorOption) => void;
 }
 
-export const ProductOptions = ({
+export const ProductOptions = memo(({
   sizes,
   colors,
   selectedSize,
@@ -64,4 +65,6 @@ export const ProductOptions = ({
       )}
     </>
   );
-};
+});
+
+ProductOptions.displayName = "ProductOptions";

@@ -115,7 +115,6 @@ export default async function RootLayout({
   const cartCount = settingsResponse?.cart_count ?? 0;
   const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
 
-  console.log("Settings Data:", settingsData);
   return (
     <html lang="ar" dir="rtl" className={cairo.variable}>
       <body className={`relative ${cairo.className}`}>

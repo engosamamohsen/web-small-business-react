@@ -36,8 +36,7 @@ async function getHeroServer(): Promise<{
       isSuccess: true,
     };
   } catch (error) {
-    // Server component - log error on server
-    console.error("Error fetching banner data:", error);
+    // Error handling - banner will not display
     return {
       bannerData: [],
       isSuccess: false,

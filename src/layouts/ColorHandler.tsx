@@ -38,8 +38,7 @@ export default function ColorHandler({ globalData }: ColorHandlerProps) {
     const root = document.documentElement;
 
     // 🔸 Use old version color logic with fallbacks
-    const mainColor =
-      data?.mainColor ?? data?.main_color ?? "#FC7643"; // support both mainColor & main_color
+    const mainColor = "#FC7643"; // support both mainColor & main_color
     const secondColor = data?.main_font_color ?? "#FC7643";
 
     root.style.setProperty("--main-color", mainColor);

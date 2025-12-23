@@ -1,22 +1,22 @@
 import { currency } from "@/constants/constansts";
 import { ProductType } from "@/lib/types";
+import { memo, useMemo } from "react";
+import { getDiscountedPrice } from "@/lib/pricing-utils";
 
 interface PriceDisplayProps {
   product: ProductType;
   currentPrice: number;
 }
 
-// Helper function to calculate discounted price
-function getDiscountedPrice(price: number, discount: number): number {
-  const discountedPrice = price - (price * discount) / 100;
-  return parseFloat(discountedPrice.toFixed(2));
-}
-
-export const PriceDisplay = ({ product, currentPrice }: PriceDisplayProps) => {
+export const PriceDisplay = memo(({ product, currentPrice }: PriceDisplayProps) => {
   const discount = product.discount ? parseInt(product.discount, 10) : 0;
 
+  // Memoize the discounted price calculation
+  const priceDiscount = useMemo(() => {
+    return discount > 0 ? getDiscountedPrice(currentPrice, discount) : 0;
+  }, [currentPrice, discount]);
+
   if (discount > 0) {
-    const priceDiscount = getDiscountedPrice(currentPrice, discount);
     return (
       <div className="flex flex-col items-start justify-start gap-1">
         <div className="mb-2 text-lg text-gray-500">
@@ -59,4 +59,6 @@ export const PriceDisplay = ({ product, currentPrice }: PriceDisplayProps) => {
       </bdi>
     </div>
   );
-};
+});
+
+PriceDisplay.displayName = "PriceDisplay";

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
+import { memo } from "react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -11,7 +12,7 @@ interface ProductGalleryProps {
   product: ProductType;
 }
 
-export const ProductGallery = ({ product }: ProductGalleryProps) => {
+export const ProductGallery = memo(({ product }: ProductGalleryProps) => {
   return (
     <Swiper
       modules={[Navigation]}
@@ -20,7 +21,7 @@ export const ProductGallery = ({ product }: ProductGalleryProps) => {
       autoplay
       className={`${styles["product-swiper"]} !h-[608px] max-md:!h-80`}
     >
-      {product?.gallery_images?.map((data) => (
+      {product?.gallery_images?.map((data, index) => (
         <SwiperSlide key={data}>
           <div className="relative aspect-square h-full w-full">
             <Image
@@ -28,7 +29,8 @@ export const ProductGallery = ({ product }: ProductGalleryProps) => {
               alt={product?.name || "Product image"}
               width={321}
               height={400}
-              priority
+              priority={index === 0}
+              loading={index === 0 ? undefined : "lazy"}
               className="h-[608px] !w-full !max-w-full object-contain transition-all duration-200 group-hover:brightness-90 max-md:max-h-80"
             />
           </div>
@@ -36,4 +38,6 @@ export const ProductGallery = ({ product }: ProductGalleryProps) => {
       ))}
     </Swiper>
   );
-};
+});
+
+ProductGallery.displayName = "ProductGallery";

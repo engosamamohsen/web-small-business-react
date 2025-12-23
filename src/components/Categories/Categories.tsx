@@ -89,7 +89,7 @@ async function getCategoriesServer(): Promise<{
 
     const response = await fetchHook({
       url: `v1/categories`,
-      init: { cache: "no-store" },
+      init: { next: { revalidate: 300 } }, // Cache for 5 minutes
       token,
     });
 
@@ -100,7 +100,7 @@ async function getCategoriesServer(): Promise<{
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    // Error handling - categories will return empty array
     return { categoriesData: [], isSuccess: false };
   }
 }

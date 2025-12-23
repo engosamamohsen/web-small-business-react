@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { Button } from "primereact/button";
 import { useCartHook } from "@/hooks/cart/cart";
 import { ProductType, SizeOption, ColorOption } from "@/lib/types";
@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import { useUpdateEffect } from "react-use";
 import { cn } from "@/utils/utils";
 import { InputTextarea } from "primereact/inputtextarea";
+import { getDiscountedPrice } from "@/lib/pricing-utils";
 
 interface FormattedVariation {
   main_variation_id: string;
@@ -26,7 +27,7 @@ interface CartActionsProps {
   productVariations: { is_required?: boolean; id?: string }[];
 }
 
-export const CartActions = ({
+export const CartActions = memo(({
   product,
   currentColor,
   currentSize,
@@ -42,12 +43,7 @@ export const CartActions = ({
   const { loading, addToCart } = useCartHook();
   const discount = product.discount ? parseInt(product.discount, 10) : 0;
 
-  function getDiscountedPrice(price: number, discount: number): number {
-    const discountedPrice = price - (price * discount) / 100;
-    return parseFloat(discountedPrice.toFixed(2));
-  }
-
-  const handleAddToCart = async () => {
+  const handleAddToCart = useCallback(async () => {
     if (!token) {
       router.push("/login");
       return;
@@ -70,9 +66,9 @@ export const CartActions = ({
       // Clear product note after successful addition
       setProductNote("");
     } catch (error) {
-      console.error("Failed to add product to cart:", error);
+      // Error is already handled by useCartHook
     }
-  };
+  }, [token, router, selectedVariations, addToCart, product, count, currentColor, currentSize, productNote]);
 
   /**
    * Updates the availability state of the product based on selected variations.
@@ -149,4 +145,6 @@ export const CartActions = ({
       </div>
     </div>
   );
-};
+});
+
+CartActions.displayName = "CartActions";

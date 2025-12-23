@@ -1,5 +1,6 @@
 import { Variation } from "@/lib/types";
 import { currency } from "@/constants/constansts";
+import { memo } from "react";
 
 interface VariationsSelectorProps {
   variations: Variation[];
@@ -8,7 +9,7 @@ interface VariationsSelectorProps {
   isChoiceSelected: (variationId: string, choiceId: string) => boolean;
 }
 
-export const VariationsSelector = ({
+export const VariationsSelector = memo(({
   variations,
   handleRadioChange,
   handleCheckboxChange,
@@ -93,4 +94,6 @@ export const VariationsSelector = ({
       ))}
     </>
   );
-};
+});
+
+VariationsSelector.displayName = "VariationsSelector";

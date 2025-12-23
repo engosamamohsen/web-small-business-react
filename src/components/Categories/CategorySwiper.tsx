@@ -8,7 +8,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import Sticky from "react-sticky-el";
 import { cn } from "@/utils/utils";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 interface CategoryType {
   id: number;
@@ -18,6 +18,7 @@ interface CategoryType {
 
 export default function CategorySwiper({ categories }: { categories: any }) {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
 
   // Only enable loop if we have enough slides (more than max slidesPerView)
@@ -25,7 +26,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
   const enableLoop = categoryCount > 14;
 
   const onCategoryClick = (category: CategoryType) => {
-    const sp = new URLSearchParams(window.location.search);
+    const sp = new URLSearchParams(searchParams.toString());
     const current = sp.get("category");
     const nextId = category.id.toString();
 
@@ -34,7 +35,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
       sp.delete("category");
       sp.delete("sub_category");
       sp.set("page", "1");
-      router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+      router.push(`${pathname}?${sp}`, { scroll: false });
       return;
     }
 
@@ -43,7 +44,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
     sp.set("page", "1");
     sp.set("category", nextId);
 
-    router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+    router.push(`${pathname}?${sp}`, { scroll: false });
     scrollToProducts({ elementId: "products", top: 270 });
   };
 
