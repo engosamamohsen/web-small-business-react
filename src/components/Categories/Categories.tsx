@@ -99,8 +99,9 @@ async function getCategoriesServer(): Promise<{
       categoriesData: categoriesData || [],
       isSuccess: true,
     };
-  } catch (error) {
+  } catch {
     // Error handling - categories will return empty array
+    // Silently fail as this is not critical for page render
     return { categoriesData: [], isSuccess: false };
   }
 }

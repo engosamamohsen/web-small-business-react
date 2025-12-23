@@ -43,6 +43,7 @@ const CartItem = ({
             src={item.product_image || "/placeholder-image.jpg"}
             alt={item.product_name || "Product"}
             fill
+            sizes="96px"
             className="object-cover"
           />
         </div>

@@ -35,8 +35,9 @@ async function getHeroServer(): Promise<{
       bannerData,
       isSuccess: true,
     };
-  } catch (error) {
+  } catch {
     // Error handling - banner will not display
+    // Silently fail as this is not critical for page render
     return {
       bannerData: [],
       isSuccess: false,

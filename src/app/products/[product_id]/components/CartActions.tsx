@@ -8,6 +8,7 @@ import { useUpdateEffect } from "react-use";
 import { cn } from "@/utils/utils";
 import { InputTextarea } from "primereact/inputtextarea";
 import { getDiscountedPrice } from "@/lib/pricing-utils";
+import { toast } from "react-toastify";
 
 interface FormattedVariation {
   main_variation_id: string;
@@ -66,7 +67,10 @@ export const CartActions = memo(({
       // Clear product note after successful addition
       setProductNote("");
     } catch (error) {
-      // Error is already handled by useCartHook
+      // Show error toast notification
+      toast.error(
+        error instanceof Error ? error.message : "فشل إضافة المنتج إلى السلة"
+      );
     }
   }, [token, router, selectedVariations, addToCart, product, count, currentColor, currentSize, productNote]);
 

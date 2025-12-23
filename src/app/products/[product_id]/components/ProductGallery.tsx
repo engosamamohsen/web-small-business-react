@@ -13,10 +13,14 @@ interface ProductGalleryProps {
 }
 
 export const ProductGallery = memo(({ product }: ProductGalleryProps) => {
+  // Only enable loop if there are enough images (2 or more)
+  const imageCount = product?.gallery_images?.length || 0;
+  const enableLoop = imageCount >= 2;
+
   return (
     <Swiper
       modules={[Navigation]}
-      loop={true}
+      loop={enableLoop}
       navigation
       autoplay
       className={`${styles["product-swiper"]} !h-[608px] max-md:!h-80`}

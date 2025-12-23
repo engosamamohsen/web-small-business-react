@@ -77,8 +77,9 @@ async function getProductsServer(url: string) {
       isSuccess: true,
       pagination: response?.data?.pagination,
     };
-  } catch (error) {
+  } catch {
     // Error handling - products will show NotFoundProducts component
+    // Silently fail and show NotFoundProducts UI
     return {
       data: [],
       isSuccess: false,
