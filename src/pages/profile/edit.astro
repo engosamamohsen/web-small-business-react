@@ -1,0 +1,27 @@
+---
+/**
+ * Edit Profile Page - Update user information
+ * 
+ * Protected: Requires authentication
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import EditProfile from '@/components/Profile/EditProfile';
+
+// Hybrid rendering for dynamic user data
+export const prerender = false;
+
+const pageTitle = 'تعديل الملف الشخصي';
+---
+
+<BaseLayout title={pageTitle} noindex={true}>
+  <main class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+      <h1 class="mb-8 text-2xl font-bold text-[var(--second-font-color)]">
+        {pageTitle}
+      </h1>
+      
+      <!-- Edit Profile Component - React Island -->
+      <EditProfile client:load />
+    </div>
+  </main>
+</BaseLayout>

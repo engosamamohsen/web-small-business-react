@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --main-background: white;
+  --second-background: #fff1ec;
+  --main-color: #fc7643;
+  --second-font-color: rgb(34, 34, 34);
+  --font-color: black;
+  --second-color: black;
+}
+
+.swiper {
+  height: 100%;
+}
+
+.boxFrom {
+  box-shadow:
+    rgba(17, 17, 26, 0.1) 0px 4px 16px,
+    rgba(17, 17, 26, 0.05) 0px 8px 32px;
+}
+
+.password .p-input-icon {
+  @apply left-[.75rem] right-auto;
+}
+
+.password div {
+  width: 100%;
+}
+
+img {
+  user-select: none;
+}
+
+.card {
+  background: var(--surface-card);
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.my-swiper-container.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.my-swiper-container .swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+
+  /* Center slide text vertically */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.my-swiper-container .swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#nprogress {
+  @apply fixed start-0 top-0 w-full;
+}
+
+#nprogress {
+  z-index: 1000000 !important;
+}
+
+#nprogress .bar {
+  @apply bg-blue-500;
+}
+
+#nprogress .spinner {
+  @apply right-auto start-2 top-2 lg:start-4 lg:top-4;
+}
+
+#nprogress .spinner-icon {
+  @apply h-6 w-6 border-l-blue-500 border-t-blue-500;
+}
+
+.boxFrom {
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+.container_input_otp input {
+  padding: 10px;
+}
+
+/* Product Detail Swiper Styles */
+.product-swiper .swiper-button-next,
+.product-swiper .swiper-button-prev {
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.product-swiper .swiper-button-next:hover,
+.product-swiper .swiper-button-prev:hover {
+  background-color: #f9fafb;
+  @apply !border-white bg-orange-500 !text-white !transition;
+}
+
+.product-swiper .swiper-button-next::after,
+.product-swiper .swiper-button-prev::after {
+  font-size: 18px;
+  color: #4b5563;
+  @apply !transition;
+}
+
+.product-swiper .swiper-button-next:hover::after,
+.product-swiper .swiper-button-prev:hover::after {
+  color: white;
+}
+
+.product-swiper .swiper-button-disabled {
+  opacity: 0;
+  cursor: default;
+}
+
+.p-fileupload-choose {
+  @apply gap-2 bg-[var(--second-color)] text-sm;
+}
+.p-fileupload-choose svg {
+  @apply h-4 w-4;
+}
+
+/* View Transitions API for smooth page navigation */
+@view-transition {
+  navigation: auto;
+}
+
+/* Fade animation for page transitions */
+::view-transition-old(root) {
+  animation: fade-out 0.15s ease-out;
+}
+
+::view-transition-new(root) {
+  animation: fade-in 0.15s ease-in;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

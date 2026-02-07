@@ -1,0 +1,86 @@
+---
+/**
+ * Home Page - Main landing page
+ *
+ * Displays:
+ * - Hero banner carousel
+ * - Featured/offer products
+ * - Product categories
+ * - Main product grid with pagination
+ *
+ * SEO: Static generation with on-demand revalidation
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero/Hero';
+import OfferProducts from '@/components/OfferProducts/OfferProducts';
+import Categories from '@/components/Categories/Categories';
+import Products from '@/components/Products/Products';
+import { fetchHook } from '@/lib/fetch-hook';
+
+// Get search params for filtering
+const url = new URL(Astro.request.url);
+const category = url.searchParams.get('category') || '';
+const subCategory = url.searchParams.get('sub_category') || '';
+const page = url.searchParams.get('page') || '1';
+const limit = url.searchParams.get('limit') || '10';
+
+// Build products URL with filters (matching Next.js API structure)
+let productsUrl = `v1/product?page=${page}&limit=${limit}`;
+if (category) {
+  productsUrl += `&category_id=${category}`;
+}
+if (subCategory) {
+  productsUrl += `&sub_category_id=${subCategory}`;
+}
+
+// Fetch data at build/request time
+const [bannersRes, categoriesRes, productsRes, offersRes] = await Promise.all([
+  fetchHook({ url: 'v1/banner' }),
+  fetchHook({ url: 'v1/categories' }),
+  fetchHook({ url: productsUrl }),
+  fetchHook({ url: 'v1/product?offer=1&limit=8' }),
+]);
+console.log('bannersRes', bannersRes);
+// Extract data - API may return { data: [...] } or direct array
+const banners = bannersRes.ok
+  ? bannersRes.data?.data || bannersRes.data || []
+  : [];
+const categories = categoriesRes.ok
+  ? categoriesRes.data?.data || categoriesRes.data || []
+  : [];
+const products = productsRes.ok
+  ? productsRes.data
+  : { data: [], total: 0, last_page: 1 };
+const offerProducts = offersRes.ok
+  ? offersRes.data?.data || offersRes.data || []
+  : [];
+
+// Export for hybrid rendering - this page uses SSR for search params
+export const prerender = false;
+---
+
+<BaseLayout>
+  <main>
+    <!-- Hero Banner - React Island for Swiper carousel -->
+    <Hero client:load banners={banners} />
+
+    <!-- Offer Products Section - React Island for interactivity -->
+    <OfferProducts client:visible products={offerProducts} />
+
+    <!-- Categories Section - React Island for filtering -->
+    <Categories
+      client:visible
+      categories={categories}
+      selectedCategory={category}
+    />
+
+    <!-- Products Grid - React Island for pagination and cart actions -->
+    <Products
+      client:visible
+      products={products.data || products}
+      currentPage={parseInt(page)}
+      totalPages={products.last_page || 1}
+      selectedCategory={category}
+    />
+  </main>
+</BaseLayout>

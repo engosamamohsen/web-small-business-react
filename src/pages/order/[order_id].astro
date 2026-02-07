@@ -1,0 +1,45 @@
+---
+/**
+ * Order Detail Page - Single order view
+ * 
+ * Features:
+ * - Order items list
+ * - Order status
+ * - Delivery address
+ * - Payment information
+ * 
+ * Protected: Requires authentication
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import OrderDetail from '@/components/Orders/OrderDetail';
+
+// Get order ID from URL
+const { order_id } = Astro.params;
+
+// Hybrid rendering for dynamic order data
+export const prerender = false;
+
+const pageTitle = `الطلب #${order_id}`;
+---
+
+<BaseLayout title={pageTitle} noindex={true}>
+  <main class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+      <div class="mb-8 flex items-center gap-4">
+        <a 
+          href="/order" 
+          class="text-[var(--main-color)] hover:underline"
+          aria-label="العودة للطلبات"
+        >
+          ← العودة للطلبات
+        </a>
+        <h1 class="text-2xl font-bold text-[var(--second-font-color)]">
+          {pageTitle}
+        </h1>
+      </div>
+      
+      <!-- Order Detail Component - React Island -->
+      <OrderDetail client:load orderId={order_id} />
+    </div>
+  </main>
+</BaseLayout>

@@ -1,0 +1,66 @@
+---
+/**
+ * Admin Payment Transactions Page
+ * 
+ * Displays payment transaction status (success/failed/pending)
+ * Fetches invoice data based on invoice_number query param
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import TransactionsPage from '@/components/Payment/TransactionsPage';
+import { fetchHook } from '@/lib/fetch-hook';
+
+export const prerender = false;
+
+// Get query params
+const invoiceNumber = Astro.url.searchParams.get('invoice_number');
+
+// Fetch invoice data
+let invoiceData = null;
+
+if (invoiceNumber) {
+  try {
+    const response = await fetchHook({
+      url: `invoices?invoice_number=${invoiceNumber}`,
+    });
+    
+    if (response.ok && response.data?.data) {
+      const data = response.data.data;
+      invoiceData = {
+        ...data.invoice,
+        ...data.customer,
+      };
+    }
+  } catch (error) {
+    console.error('Failed to fetch invoice:', error);
+  }
+}
+
+// Get status from query params
+const status = Astro.url.searchParams.get('status') || 'success';
+const invoiceId = Astro.url.searchParams.get('invoice_id');
+---
+
+<BaseLayout title="Payment Transactions" description="View payment transaction status">
+  {invoiceData ? (
+    <TransactionsPage 
+      client:load 
+      invoiceData={invoiceData} 
+      status={status}
+      invoiceId={invoiceId}
+    />
+  ) : (
+    <div class="flex min-h-[80vh] items-center justify-center px-4">
+      <div class="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl">
+        <div class="mb-4 text-6xl">❌</div>
+        <h2 class="mb-2 text-xl font-medium text-gray-800">Invoice Not Found</h2>
+        <p class="text-gray-600">The requested invoice could not be found.</p>
+        <a 
+          href="/" 
+          class="mt-6 inline-block rounded bg-[var(--main-color)] px-6 py-2 text-white hover:opacity-90"
+        >
+          Go Home
+        </a>
+      </div>
+    </div>
+  )}
+</BaseLayout>

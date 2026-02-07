@@ -1,0 +1,38 @@
+---
+/**
+ * Forgot Password Page - Password reset request
+ * 
+ * Features:
+ * - Email input
+ * - Send reset code
+ * - Redirect to reset page
+ */
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import ForgotPasswordForm from '@/components/Auth/ForgotPasswordForm';
+
+// Static page
+export const prerender = true;
+---
+
+<AuthLayout title="نسيت كلمة المرور">
+  <div class="w-full max-w-md">
+    <div class="boxFrom rounded-lg bg-white p-8 shadow-lg">
+      <h1 class="mb-6 text-center text-2xl font-bold text-[var(--second-font-color)]">
+        نسيت كلمة المرور
+      </h1>
+      
+      <p class="mb-6 text-center text-gray-600">
+        أدخل بريدك الإلكتروني وسنرسل لك رمز إعادة تعيين كلمة المرور
+      </p>
+      
+      <!-- Forgot Password Form - React Island -->
+      <ForgotPasswordForm client:load />
+      
+      <div class="mt-6 text-center text-sm text-gray-600">
+        <a href="/login" class="text-[var(--main-color)] hover:underline">
+          العودة لتسجيل الدخول
+        </a>
+      </div>
+    </div>
+  </div>
+</AuthLayout>

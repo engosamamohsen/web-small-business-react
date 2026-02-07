@@ -1,0 +1,38 @@
+---
+/**
+ * Email Verification Page - OTP verification after registration
+ * 
+ * Features:
+ * - OTP input
+ * - Resend code functionality
+ * - Redirect to login on success
+ */
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import VerifyEmail from '@/components/Auth/VerifyEmail';
+
+// Get email from URL params
+const { email } = Astro.params;
+const decodedEmail = decodeURIComponent(email || '');
+
+// Hybrid rendering for dynamic email parameter
+export const prerender = false;
+---
+
+<AuthLayout title="تأكيد البريد الإلكتروني">
+  <div class="w-full max-w-md">
+    <div class="boxFrom rounded-lg bg-white p-8 shadow-lg">
+      <h1 class="mb-6 text-center text-2xl font-bold text-[var(--second-font-color)]">
+        تأكيد البريد الإلكتروني
+      </h1>
+      
+      <p class="mb-6 text-center text-gray-600">
+        تم إرسال رمز التحقق إلى
+        <br />
+        <span class="font-medium text-[var(--main-color)]">{decodedEmail}</span>
+      </p>
+      
+      <!-- Verify Email Form - React Island -->
+      <VerifyEmail client:load email={decodedEmail} />
+    </div>
+  </div>
+</AuthLayout>

@@ -1,0 +1,34 @@
+---
+/**
+ * Checkout Page - Order completion flow
+ *
+ * Features:
+ * - Address selection/creation
+ * - Order summary
+ * - Payment method selection
+ * - Order confirmation
+ *
+ * Protected: Requires authentication
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CheckoutComponent from '@/components/Checkout/Checkout';
+
+// Hybrid rendering for dynamic checkout
+export const prerender = false;
+
+// Checkout page title
+const pageTitle = 'إتمام الطلب';
+---
+
+<BaseLayout title={pageTitle} noindex={true}>
+  <main class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+      <h1 class="mb-8 text-2xl font-bold text-[var(--second-font-color)]">
+        {pageTitle}
+      </h1>
+
+      <!-- Checkout Component - React Island for multi-step form -->
+      <CheckoutComponent client:load />
+    </div>
+  </main>
+</BaseLayout>

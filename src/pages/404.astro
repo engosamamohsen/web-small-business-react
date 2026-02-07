@@ -1,0 +1,31 @@
+---
+/**
+ * 404 Not Found Page
+ * 
+ * Static page displayed when route is not found
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+// Static page
+export const prerender = true;
+---
+
+<BaseLayout title="الصفحة غير موجودة" noindex={true}>
+  <main class="flex min-h-[60vh] items-center justify-center">
+    <div class="text-center">
+      <h1 class="mb-4 text-6xl font-bold text-[var(--main-color)]">404</h1>
+      <h2 class="mb-4 text-2xl font-semibold text-[var(--second-font-color)]">
+        الصفحة غير موجودة
+      </h2>
+      <p class="mb-8 text-gray-600">
+        عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها
+      </p>
+      <a
+        href="/"
+        class="inline-block rounded-lg bg-[var(--main-color)] px-6 py-3 text-white transition-opacity hover:opacity-90"
+      >
+        العودة للصفحة الرئيسية
+      </a>
+    </div>
+  </main>
+</BaseLayout>

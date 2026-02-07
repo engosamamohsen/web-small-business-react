@@ -1,0 +1,109 @@
+---
+/**
+ * AuthLayout - Layout for authentication pages (login, register, verify, forgot-password)
+ * 
+ * Features:
+ * - Simplified header without cart
+ * - Centered content layout
+ * - SEO meta tags for auth pages
+ */
+import { fetchSettings } from '@/lib/fetchSettings';
+
+import '@/styles/globals.css';
+import 'primeicons/primeicons.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+
+// Fetch settings at build/request time
+const settingsResponse = await fetchSettings();
+const settings = settingsResponse?.data;
+
+// Dynamic SEO values
+const siteName = settings?.name || 'Business Platform';
+const pageTitle = title ? `${title} | ${siteName}` : siteName;
+const siteDescription = description || settings?.about_us || 'Small business management platform';
+const siteUrl = settings?.website_url || Astro.site?.toString() || 'https://example.com';
+---
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{pageTitle}</title>
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={siteDescription} />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={Astro.url.href} />
+    
+    <!-- Favicon -->
+    {settings?.logo && <link rel="icon" type="image/x-icon" href={settings.logo} />}
+    
+    <!-- Robots - No index for auth pages -->
+    <meta name="robots" content="noindex, nofollow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={siteDescription} />
+    {settings?.logo && <meta property="og:image" content={settings.logo} />}
+    <meta property="og:locale" content="ar_SA" />
+    
+    <!-- Google Fonts - Cairo for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap"
+      rel="stylesheet"
+    />
+    
+    <style is:global>
+      body {
+        font-family: 'Cairo', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="relative min-h-screen bg-[var(--second-background)]">
+    <!-- Simplified Header for Auth -->
+    <header class="bg-[var(--main-background)] py-4">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-center">
+          <a href="/" aria-label="site home">
+            {settings?.logo ? (
+              <img
+                src={settings.logo}
+                alt="site logo"
+                width="100"
+                height="50"
+                style="max-height: 50px; object-fit: contain;"
+              />
+            ) : (
+              <span class="text-lg font-bold">
+                {settings?.name || 'Store'}
+              </span>
+            )}
+          </a>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex min-h-[calc(100vh-200px)] items-center justify-center py-10">
+      <slot />
+    </main>
+    
+    <!-- Minimal Footer -->
+    <footer class="bg-black py-6 text-center text-white">
+      <p class="text-sm">جميع الحقوق محفوظة 2020</p>
+    </footer>
+  </body>
+</html>

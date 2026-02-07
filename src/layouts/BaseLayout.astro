@@ -1,0 +1,154 @@
+---
+/**
+ * BaseLayout - Main layout wrapper for all pages
+ *
+ * Features:
+ * - RTL Arabic support
+ * - Cairo font (Google Fonts)
+ * - Dynamic theming via CSS variables
+ * - SEO meta tags
+ * - Toast notifications (React Island)
+ */
+import { fetchSettings } from '@/lib/fetchSettings';
+import Header from '@/components/Header/Header';
+import Footer from '@/components/Footer/Footer.astro';
+import ColorHandler from '@/components/ColorHandler';
+import ToastContainer from '@/components/ToastContainer';
+
+import '@/styles/globals.css';
+import 'primeicons/primeicons.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  noindex?: boolean;
+}
+
+const { title, description, image, canonical, noindex = false } = Astro.props;
+
+// Fetch settings at build/request time
+const settingsResponse = await fetchSettings();
+const settings = settingsResponse?.data;
+
+// Dynamic SEO values
+const siteName = title || settings?.name || 'Business Platform';
+const siteDescription =
+  description || settings?.about_us || 'Small business management platform';
+const siteImage = image || settings?.logo || '';
+const siteUrl =
+  settings?.website_url || Astro.site?.toString() || 'https://example.com';
+const canonicalUrl = canonical || Astro.url.href;
+---
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta Tags -->
+    <title>{siteName}</title>
+    <meta name="title" content={siteName} />
+    <meta name="description" content={siteDescription} />
+    {
+      settings?.keywords && (
+        <meta
+          name="keywords"
+          content={
+            Array.isArray(settings.keywords)
+              ? settings.keywords.join(', ')
+              : settings.keywords
+          }
+        />
+      )
+    }
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Favicon -->
+    {
+      settings?.logo && (
+        <link rel="icon" type="image/x-icon" href={settings.logo} />
+      )
+    }
+
+    <!-- Robots -->
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta
+          name="robots"
+          content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        />
+      )
+    }
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={siteName} />
+    <meta property="og:description" content={siteDescription} />
+    {siteImage && <meta property="og:image" content={siteImage} />}
+    <meta property="og:locale" content="ar_SA" />
+    <meta property="og:site_name" content={siteName} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalUrl} />
+    <meta property="twitter:title" content={siteName} />
+    <meta property="twitter:description" content={siteDescription} />
+    {siteImage && <meta property="twitter:image" content={siteImage} />}
+
+    <!-- Google Fonts - Cairo for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Preload critical assets -->
+    {settings?.logo && <link rel="preload" as="image" href={settings.logo} />}
+
+    <!-- View Transitions API for smooth navigation -->
+    <meta name="view-transition" content="same-origin" />
+
+    <style is:global>
+      body {
+        font-family: 'Cairo', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="relative">
+    <!-- Color Handler - React Island for dynamic theming -->
+    <ColorHandler
+      client:load
+      globalData={settings ?? undefined}
+      isLogin={settingsResponse?.is_login ?? false}
+      cartCount={settingsResponse?.cart_count ?? 0}
+    />
+
+    <!-- Header - React Island for interactivity -->
+    <Header client:load settingsData={settings ?? undefined} />
+
+    <!-- Main Content -->
+    <slot />
+
+    <!-- Footer - Static Astro component -->
+    <Footer settingsData={settings ?? undefined} />
+
+    <!-- Version Footer -->
+    <div
+      class="flex w-full items-center justify-center bg-gray-500 py-4 text-center text-white"
+    >
+      v.0.0.1
+    </div>
+
+    <!-- Toast Container - React Island -->
+    <ToastContainer client:load />
+  </body>
+</html>

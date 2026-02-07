@@ -1,0 +1,75 @@
+---
+/**
+ * Footer Component - Static Astro component
+ * 
+ * No JavaScript shipped to client - pure static HTML/CSS
+ * Displays business info, social links, and copyright
+ */
+import { Facebook, Instagram } from 'lucide-react';
+
+interface Props {
+  settingsData?: {
+    name?: string;
+    logo?: string;
+    facebook_link?: string;
+    instagram_link?: string;
+  };
+}
+
+const { settingsData } = Astro.props;
+const pathname = Astro.url.pathname;
+const isProductPage = pathname.startsWith('/products');
+---
+
+<footer
+  class:list={[
+    'bg-black py-10 text-white',
+    isProductPage && 'max-md:pb-72',
+  ]}
+>
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between gap-6 max-md:flex-col">
+      <p class="text-sm max-md:hidden">جميع الحقوق محفوظة 2020</p>
+      <div class="flex items-center justify-center gap-2 text-center">
+        <h4 class="text-[15px] text-xl font-bold text-[var(--main-color)]">
+          {settingsData?.name || ''}
+        </h4>
+        {settingsData?.logo && (
+          <img
+            src={settingsData.logo}
+            alt="logo app"
+            width="80"
+            height="80"
+            class="mr-[6px]"
+            loading="lazy"
+          />
+        )}
+      </div>
+      <div class="flex gap-2">
+        {settingsData?.facebook_link && (
+          <a
+            href={settingsData.facebook_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit our Facebook page"
+            class="transform transition-all duration-300 ease-in-out hover:scale-125 hover:text-orange-500"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+        )}
+        {settingsData?.instagram_link && (
+          <a
+            href={settingsData.instagram_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit our Instagram page"
+            class="transform transition-all duration-300 ease-in-out hover:scale-125 hover:text-orange-500"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+          </a>
+        )}
+      </div>
+      <p class="text-sm md:hidden">جميع الحقوق محفوظة 2020</p>
+    </div>
+  </div>
+</footer>

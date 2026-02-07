@@ -1,0 +1,114 @@
+---
+/**
+ * Product Detail Page - Dynamic product page with full SEO
+ *
+ * Features:
+ * - Product gallery
+ * - Variations selector (sizes, colors)
+ * - Add to cart functionality
+ * - Technical information
+ * - Related products
+ *
+ * SEO: Dynamic metadata with Open Graph, Twitter Cards, Product Schema
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProductDetail from '@/components/Products/ProductDetail';
+import { fetchHook } from '@/lib/fetch-hook';
+import { fetchSettings } from '@/lib/fetchSettings';
+
+// Get product ID from URL
+const { product_id } = Astro.params;
+
+// Fetch product data - API returns { data: product }
+const productRes = await fetchHook({
+  url: `v1/product-details?product_id=${product_id}`,
+});
+const product = productRes.ok ? productRes.data?.data || productRes.data : null;
+
+// Fetch settings for SEO
+const settingsRes = await fetchSettings();
+const settings = settingsRes?.data;
+
+// Handle 404
+if (!product) {
+  return Astro.redirect('/404');
+}
+
+// Build SEO metadata
+const productName = product.name || 'Product';
+const productDescription =
+  product.description?.replace(/<[^>]*>/g, '') || settings?.about_us || '';
+const productImage =
+  product.logo ||
+  product.main_image ||
+  product.gallery_images?.[0] ||
+  product.image ||
+  settings?.logo ||
+  '';
+const productPrice = product.price_after || product.price || 0;
+const brandName = product.brand || settings?.name || 'Store';
+const categoryName = product.category?.name || '';
+const siteUrl =
+  settings?.website_url || Astro.site?.toString() || 'https://example.com';
+const canonicalUrl = `${siteUrl}/products/${product_id}`;
+
+// Hybrid rendering for dynamic product pages
+export const prerender = false;
+
+// Generate static paths for known products (optional optimization)
+// export async function getStaticPaths() {
+//   const products = await fetchHook({ url: 'v1/products?limit=100' });
+//   return products.data?.data?.map((p: any) => ({ params: { product_id: p.id } })) || [];
+// }
+---
+
+<BaseLayout
+  title={`${productName} | ${brandName}`}
+  description={productDescription.slice(0, 160)}
+  image={productImage}
+  canonical={canonicalUrl}
+>
+  <!-- Additional Product-specific SEO -->
+  <Fragment slot="head">
+    <!-- Product Schema.org structured data -->
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: productName,
+        description: productDescription,
+        image: productImage,
+        brand: {
+          '@type': 'Brand',
+          name: brandName,
+        },
+        offers: {
+          '@type': 'Offer',
+          price: productPrice,
+          priceCurrency: 'EGP',
+          availability:
+            product.is_available !== false
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+          url: canonicalUrl,
+        },
+      })}
+    />
+
+    <!-- Additional Open Graph for products -->
+    <meta property="og:type" content="product" />
+    <meta property="product:price:amount" content={String(productPrice)} />
+    <meta property="product:price:currency" content="EGP" />
+    {
+      product.category_name && (
+        <meta property="product:category" content={product.category_name} />
+      )
+    }
+  </Fragment>
+
+  <main>
+    <!-- Product Detail - React Island for interactivity -->
+    <ProductDetail client:load product={product} settings={settings} />
+  </main>
+</BaseLayout>

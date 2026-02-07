@@ -1,0 +1,43 @@
+---
+/**
+ * Login Page - User authentication
+ * 
+ * Features:
+ * - Email/password login
+ * - Social login (Google via Firebase)
+ * - Link to register
+ * - Link to forgot password
+ */
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import LoginForm from '@/components/Auth/LoginForm';
+
+// Static page - login form handles auth client-side
+export const prerender = true;
+---
+
+<AuthLayout title="تسجيل الدخول">
+  <div class="w-full max-w-md">
+    <div class="boxFrom rounded-lg bg-white p-8 shadow-lg">
+      <h1 class="mb-6 text-center text-2xl font-bold text-[var(--second-font-color)]">
+        تسجيل الدخول
+      </h1>
+      
+      <!-- Login Form - React Island for form handling -->
+      <LoginForm client:load />
+      
+      <div class="mt-6 text-center text-sm text-gray-600">
+        <p>
+          ليس لديك حساب؟{' '}
+          <a href="/register" class="text-[var(--main-color)] hover:underline">
+            إنشاء حساب جديد
+          </a>
+        </p>
+        <p class="mt-2">
+          <a href="/forgot-password" class="text-[var(--main-color)] hover:underline">
+            نسيت كلمة المرور؟
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</AuthLayout>

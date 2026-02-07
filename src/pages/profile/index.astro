@@ -1,0 +1,32 @@
+---
+/**
+ * Profile Page - User account management
+ * 
+ * Features:
+ * - View profile information
+ * - Link to edit profile
+ * - View orders link
+ * 
+ * Protected: Requires authentication
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Profile from '@/components/Profile/Profile';
+
+// Hybrid rendering for dynamic user data
+export const prerender = false;
+
+const pageTitle = 'الملف الشخصي';
+---
+
+<BaseLayout title={pageTitle} noindex={true}>
+  <main class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+      <h1 class="mb-8 text-2xl font-bold text-[var(--second-font-color)]">
+        {pageTitle}
+      </h1>
+      
+      <!-- Profile Component - React Island -->
+      <Profile client:load />
+    </div>
+  </main>
+</BaseLayout>

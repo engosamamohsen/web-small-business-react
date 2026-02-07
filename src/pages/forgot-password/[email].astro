@@ -1,0 +1,46 @@
+---
+/**
+ * Forgot Password OTP Verification Page
+ * 
+ * Features:
+ * - OTP input (4 digits)
+ * - Resend OTP functionality
+ * - Redirect to reset page on success
+ * 
+ * Route: /forgot-password/{email}
+ */
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import ForgotPasswordVerify from '@/components/Auth/ForgotPasswordVerify';
+
+// Get email from URL params
+const { email } = Astro.params;
+const decodedEmail = decodeURIComponent(email || '');
+
+// Hybrid rendering for dynamic email parameter
+export const prerender = false;
+---
+
+<AuthLayout title="التحقق من البريد الإلكتروني">
+  <div class="w-full max-w-md">
+    <div class="boxFrom rounded-lg bg-white p-8 shadow-lg">
+      <div class="text-center">
+        <h1 class="mb-2 text-2xl font-bold text-[var(--second-font-color)]">
+          التحقق من البريد الإلكتروني
+        </h1>
+        <p class="mb-6 text-sm text-gray-600">
+          تم إرسال رمز تحقق مكون من 4 أرقام إلى
+          <span class="block font-medium text-[var(--main-color)]">{decodedEmail}</span>
+        </p>
+      </div>
+      
+      <!-- Forgot Password Verify Form - React Island -->
+      <ForgotPasswordVerify client:load email={decodedEmail} />
+      
+      <div class="mt-6 text-center text-sm text-gray-600">
+        <a href="/login" class="text-[var(--main-color)] hover:underline">
+          العودة لتسجيل الدخول
+        </a>
+      </div>
+    </div>
+  </div>
+</AuthLayout>

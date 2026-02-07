@@ -1,0 +1,35 @@
+---
+/**
+ * Cart Page - Shopping cart management
+ *
+ * Features:
+ * - View cart items
+ * - Update quantities
+ * - Remove items
+ * - Calculate totals
+ * - Proceed to checkout
+ *
+ * Protected: Requires authentication
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CartComponent from '@/components/Cart/Cart';
+
+// Hybrid rendering for dynamic cart data
+export const prerender = false;
+
+// Cart page title
+const pageTitle = 'سلة التسوق';
+---
+
+<BaseLayout title={pageTitle} noindex={true}>
+  <main class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+      <h1 class="mb-8 text-2xl font-bold text-[var(--second-font-color)]">
+        {pageTitle}
+      </h1>
+
+      <!-- Cart Component - React Island for full interactivity -->
+      <CartComponent client:load />
+    </div>
+  </main>
+</BaseLayout>

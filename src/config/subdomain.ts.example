@@ -1,0 +1,31 @@
+/**
+ * Subdomain Configuration (Multi-tenant support)
+ * 
+ * This file determines the API base URL based on the current tenant.
+ * Create a copy as subdomain.ts and configure for your deployment.
+ * 
+ * IMPORTANT: subdomain.ts is gitignored for security.
+ */
+
+/**
+ * Returns the API base URL for the current tenant
+ * 
+ * @example
+ * // Option 1: Environment variable (simple deployment)
+ * export default function getSubdomain(): string {
+ *   return import.meta.env.PUBLIC_API_BASE_URL || '';
+ * }
+ * 
+ * // Option 2: Dynamic subdomain extraction (multi-tenant)
+ * export default function getSubdomain(): string {
+ *   if (typeof window !== 'undefined') {
+ *     const host = window.location.host;
+ *     const subdomain = host.split('.')[0];
+ *     return `https://${subdomain}.api.example.com`;
+ *   }
+ *   return import.meta.env.PUBLIC_API_BASE_URL || '';
+ * }
+ */
+export default function getSubdomain(): string {
+  return import.meta.env.PUBLIC_API_BASE_URL || '';
+}

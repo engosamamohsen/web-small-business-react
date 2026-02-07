@@ -1,0 +1,46 @@
+---
+/**
+ * Reset Password Page
+ * 
+ * Features:
+ * - New password input
+ * - Password confirmation
+ * - Token-based authentication
+ * 
+ * Route: /forgot-password/{email}/reset
+ */
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import ResetPasswordForm from '@/components/Auth/ResetPasswordForm';
+
+// Get email from URL params
+const { email } = Astro.params;
+const decodedEmail = decodeURIComponent(email || '');
+
+// Hybrid rendering for dynamic email parameter
+export const prerender = false;
+---
+
+<AuthLayout title="إعادة تعيين كلمة المرور">
+  <div class="w-full max-w-md">
+    <div class="boxFrom rounded-lg bg-white p-8 shadow-lg">
+      <div class="text-center">
+        <h1 class="mb-2 text-2xl font-bold text-[var(--second-font-color)]">
+          إعادة تعيين كلمة المرور
+        </h1>
+        <p class="mb-6 text-sm text-gray-600">
+          يمكنك الآن إعادة تعيين كلمة المرور لـ
+          <span class="block font-medium text-[var(--main-color)]">{decodedEmail}</span>
+        </p>
+      </div>
+      
+      <!-- Reset Password Form - React Island -->
+      <ResetPasswordForm client:load email={decodedEmail} />
+      
+      <div class="mt-6 text-center text-sm text-gray-600">
+        <a href="/login" class="text-[var(--main-color)] hover:underline">
+          العودة لتسجيل الدخول
+        </a>
+      </div>
+    </div>
+  </div>
+</AuthLayout>

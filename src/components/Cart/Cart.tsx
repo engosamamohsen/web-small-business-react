@@ -1,267 +1,194 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { Minus, Plus, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCartHook, useCartServices } from "@/hooks/cart/cart";
-import { cn } from "@/utils/utils";
-import React from "react";
-import PageLoader from "../PageLoader/PageLoader";
-import { CartItemType } from "@/types/types";
+/**
+ * Cart Component - React Island
+ * 
+ * Shopping cart with:
+ * - Item listing
+ * - Quantity controls
+ * - Remove functionality
+ * - Total calculation
+ */
+import { useState, useEffect } from 'react';
+import { useAtom } from 'jotai';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { cartCountAtom } from '@/stores/cart';
+import { fetchHook } from '@/lib/fetch-hook';
 
-// CartItem component for better separation of concerns
-type CartItemProps = {
-  item: CartItemType;
-  loading: boolean;
-  updateCount: (itemId: number, quantity: number, productName: string) => void;
-  removeFromCart: (item: any) => void;
-  onProductClick: (productId: string) => void;
-};
+interface CartItem {
+  id: string;
+  product_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  variations?: Record<string, string>;
+}
 
-const CartItem: React.FC<CartItemProps> = ({
-  item,
-  loading,
-  updateCount,
-  removeFromCart,
-  onProductClick,
-}) => {
-  const quantity = parseInt(item.qty);
-  return (
-    <div
-      key={item.cart_item_id}
-      className="mb-4 flex w-full items-center justify-between gap-4 rounded-lg bg-white p-4 text-start max-md:flex-col-reverse"
-    >
-      <div
-        onClick={() => onProductClick(item.product_id)}
-        className="flex w-fit cursor-pointer justify-start gap-4 max-md:w-full max-md:flex-col"
-      >
-        <div className="relative h-24 w-24">
-          <Image
-            src={item.product_image || "/placeholder-image.jpg"} // Fallback for undefined image
-            alt={item.product_name || "Product"}
-            fill
-            className="rounded object-cover"
-          />
-        </div>
-        <div className="flex flex-1 flex-col gap-2">
-          <h3 className="font-semibold">{item.product_name}</h3>
-          <p className="font-bold text-orange-500">{item.unit_price} ج.م</p>
-
-          {/* Display variations if they exist */}
-          {item.variations && item.variations.length > 0 && (
-            <div className="mt-2 flex flex-1 flex-col gap-2 text-sm text-gray-600">
-              {item.variations.map((variation) => (
-                <div key={variation.main_variation_id} className="flex gap-1">
-                  <span className="font-medium">
-                    {variation.main_variation_name} :
-                  </span>
-                  <div className="flex gap-1">
-                    {variation.choices.map((choice) => (
-                      <span
-                        key={choice.id}
-                        className="rounded bg-gray-100 px-2 py-1 text-xs"
-                      >
-                        {choice.name}{" "}
-                        {choice.price > 0 && `(+${choice.price} ج.م)`}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Show product note if exists */}
-          {item.product_note && (
-            <div className="mt-1 text-sm italic text-gray-500">
-              ملاحظة: {item.product_note}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex w-fit cursor-pointer items-center justify-start gap-8 max-md:w-full max-md:justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            disabled={loading || quantity <= 1}
-            onClick={() =>
-              updateCount(item.cart_item_id, quantity - 1, item?.product_name)
-            }
-            className={cn(
-              "rounded-full p-1 hover:bg-gray-100",
-              (loading || quantity <= 1) && "cursor-not-allowed opacity-50",
-            )}
-            aria-label={`Decrease quantity of ${item.product_name}`}
-          >
-            <Minus size={16} />
-          </button>
-          <span className="w-8 rounded-md bg-gray-100 text-center">
-            {quantity}
-          </span>
-          <button
-            disabled={loading}
-            onClick={() =>
-              updateCount(item.cart_item_id, quantity + 1, item?.product_name)
-            }
-            className={cn(
-              "rounded-full p-1 hover:bg-gray-100",
-              loading && "cursor-not-allowed",
-            )}
-            aria-label={`Increase quantity of ${item.product_name}`}
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-        <button
-          onClick={() => {
-            if (!loading) removeFromCart(item);
-          }}
-          disabled={loading}
-          className={cn(
-            "rounded-sm bg-black p-1 text-gray-400 hover:text-red-500",
-            loading && "cursor-not-allowed",
-          )}
-          aria-label={`Remove ${item.product_name} from cart`}
-        >
-          <X size={20} />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Order Summary component
-type OrderSummaryProps = {
-  subtotal: number;
-  shipping?: number;
-  tax?: number;
-};
-
-const OrderSummary: React.FC<OrderSummaryProps> = ({
-  subtotal,
-  shipping = 30,
-  tax = 20,
-}) => {
-  const total = subtotal + shipping + tax;
-
-  return (
-    <div className="h-fit rounded-lg bg-white p-6">
-      <h2 className="mb-4 text-xl font-bold">ملخص الطلب</h2>
-      <div className="mb-4 space-y-2">
-        <div className="flex justify-between">
-          <span>إجمالي المنتجات</span>
-          <span>{subtotal?.toFixed(2)} ج.م</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>الضريبة</span>
-          <span>{tax} ج.م</span>
-        </div>
-        <div className="mt-2 border-t pt-2">
-          <div className="flex justify-between font-bold">
-            <span>الإجمالي</span>
-            <span>{total?.toFixed(2)} ج.م</span>
-          </div>
-        </div>
-      </div>
-      <Link
-        href="/checkout"
-        className="block w-full rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
-      >
-        إتمام الشراء
-      </Link>
-    </div>
-  );
-};
-
-// Loading state component
-
-// Empty cart component
-const EmptyCart: React.FC = () => (
-  <div className="mx-auto flex min-h-[700px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center">
-    <h2 className="mb-4 text-2xl font-bold">عربة التسوق فارغة</h2>
-    <Link
-      href="/"
-      className="font-semibold text-orange-500 hover:text-orange-600"
-    >
-      العودة للتسوق
-    </Link>
-  </div>
-);
-
-// Main Cart component
 export default function Cart() {
-  // Hooks at the top level as per best practices (adhering to the React hooks rule in memory)
-  const router = useRouter();
-  const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
-  const { loading, removeFromCart, updateCount } = useCartHook();
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [, setCartCount] = useAtom(cartCountAtom);
+  const token = Cookies.get('app_token');
 
-  // Conditional rendering based on loading and cart state
-  if (cartLoading) {
-    return <PageLoader text="جاري تحميل عربة التسوق" />;
-  }
+  useEffect(() => {
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+    fetchCart();
+  }, [token]);
 
-  // Handle empty cart case
-  if (
-    !cartResponse ||
-    !cartResponse.cart_items ||
-    cartResponse.cart_items.length === 0
-  ) {
-    return <EmptyCart />;
-  }
-
-  // Use the cart items from the response - ensure proper type safety
-  const cart_items = cartResponse.cart_items;
-  const total_price = cartResponse.total_price;
-
-  // Handle product click to navigate to product details
-  const handleProductClick = (productId: string) => {
-    router.push(`/products/${productId}`);
-  };
-
-  // Handle quantity update
-  const handleUpdateCount = async (
-    itemId: number,
-    newQuantity: number,
-    productName: string,
-  ) => {
-    const response = await updateCount({
-      cart_item_id: itemId,
-      qty: newQuantity,
-      product_name: productName,
+  const fetchCart = async () => {
+    setIsLoading(true);
+    const response = await fetchHook<{ data: CartItem[] }>({
+      url: 'v1/basket',
+      token,
     });
-    if (response?.status) {
-      retry();
+    if (response.ok && response.data) {
+      const cartItems = response.data.data || response.data;
+      setItems(Array.isArray(cartItems) ? cartItems : []);
+    }
+    setIsLoading(false);
+  };
+
+  const updateQuantity = async (itemId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    
+    const response = await fetchHook({
+      url: `v1/basket/${itemId}`,
+      init: {
+        method: 'PUT',
+        body: JSON.stringify({ quantity: newQuantity }),
+      },
+      token,
+    });
+
+    if (response.ok) {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    } else {
+      toast.error('حدث خطأ في تحديث الكمية');
     }
   };
 
-  // Handle item removal
-  const handleRemoveFromCart = async (itemId: number) => {
-    const response = await removeFromCart({ cart_item_id: itemId });
-    if (response?.status) {
-      retry();
+  const removeItem = async (itemId: string) => {
+    const response = await fetchHook({
+      url: `v1/basket/${itemId}`,
+      init: { method: 'DELETE' },
+      token,
+    });
+
+    if (response.ok) {
+      setItems((prev) => prev.filter((item) => item.id !== itemId));
+      setCartCount((prev) => Math.max(0, prev - 1));
+      toast.success('تم حذف المنتج');
+    } else {
+      toast.error('حدث خطأ في الحذف');
     }
   };
+
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--main-color)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
+        <ShoppingBag className="mb-4 h-16 w-16 text-gray-300" />
+        <h2 className="mb-2 text-xl font-medium text-gray-600">السلة فارغة</h2>
+        <p className="mb-4 text-gray-400">لم تضف أي منتجات بعد</p>
+        <a
+          href="/"
+          className="rounded-lg bg-[var(--main-color)] px-6 py-3 text-white hover:opacity-90"
+        >
+          تصفح المنتجات
+        </a>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="mx-auto my-10 min-h-[1000px] max-w-7xl px-4 py-12"
-      suppressHydrationWarning={true}
-    >
-      <h1 className="mb-8 text-3xl font-bold">عربة التسوق</h1>
-      <div className="grid grid-cols-1 gap-8 bg-slate-100 px-6 py-10 lg:grid-cols-3">
-        <div className="max-h-[500px] overflow-y-auto pl-6 lg:col-span-2">
-          {cart_items.map((item) => (
-            <CartItem
-              key={item.cart_item_id}
-              item={item}
-              loading={loading}
-              updateCount={handleUpdateCount}
-              removeFromCart={handleRemoveFromCart}
-              onProductClick={handleProductClick}
-            />
+    <div className="grid gap-8 lg:grid-cols-3">
+      {/* Cart Items */}
+      <div className="lg:col-span-2">
+        <div className="divide-y divide-gray-100 rounded-lg bg-white shadow">
+          {items.map((item) => (
+            <div key={item.id} className="flex gap-4 p-4">
+              {item.image && (
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="h-24 w-24 rounded object-cover"
+                />
+              )}
+              <div className="flex flex-1 flex-col">
+                <h3 className="font-medium text-[var(--second-font-color)]">
+                  {item.name}
+                </h3>
+                {item.variations && Object.keys(item.variations).length > 0 && (
+                  <p className="text-sm text-gray-500">
+                    {Object.values(item.variations).join(' / ')}
+                  </p>
+                )}
+                <p className="mt-auto font-bold text-[var(--main-color)]">
+                  {item.price} ج.م
+                </p>
+              </div>
+              <div className="flex flex-col items-end justify-between">
+                <button
+                  onClick={() => removeItem(item.id)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-[24px] text-center">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
-        <OrderSummary subtotal={total_price} />
+      </div>
+
+      {/* Order Summary */}
+      <div className="lg:col-span-1">
+        <div className="sticky top-4 rounded-lg bg-white p-6 shadow">
+          <h3 className="mb-4 text-lg font-bold text-[var(--second-font-color)]">
+            ملخص الطلب
+          </h3>
+          <div className="mb-4 flex justify-between border-b pb-4">
+            <span>الإجمالي</span>
+            <span className="font-bold text-[var(--main-color)]">{total} ج.م</span>
+          </div>
+          <a
+            href="/checkout"
+            className="block w-full rounded-lg bg-[var(--main-color)] py-3 text-center font-medium text-white hover:opacity-90"
+          >
+            إتمام الطلب
+          </a>
+        </div>
       </div>
     </div>
   );
