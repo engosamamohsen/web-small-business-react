@@ -1,0 +1,28 @@
+# Robots.txt for Alelm V2 Astro E-Commerce Platform
+# https://www.robotstxt.org/
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order/
+
+# Disallow authentication pages
+Disallow: /login
+Disallow: /register
+Disallow: /verify/
+Disallow: /forgot-password/
+
+# Allow product pages for indexing
+Allow: /products/
+
+# Sitemap location
+Sitemap: https://example.com/sitemap-index.xml
+
+# Crawl delay (optional, adjust based on server capacity)
+Crawl-delay: 1

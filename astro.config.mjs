@@ -11,6 +11,7 @@ export default defineConfig({
 
   // Output mode: 'static' for full SSG, 'server' for SSR, 'hybrid' for mixed
   output: 'hybrid',
+  // output: 'static',
 
   // Node adapter for SSR
   adapter: node({

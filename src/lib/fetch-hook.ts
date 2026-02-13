@@ -58,7 +58,7 @@ export async function fetchHook<T = any>({
 
   const currentUrl =
     baseUrl ??
-    `${subdomain}${import.meta.env.PUBLIC_LAST_ROUTE_API_URL || '/admin/api/'}`;
+    `${subdomain}${import.meta.env.PUBLIC_LAST_ROUTE_API_URL || '/api/'}`;
   const fullUrl = `${currentUrl}${url}`;
   console.log('fullUrl', fullUrl);
   const controller = new AbortController();
