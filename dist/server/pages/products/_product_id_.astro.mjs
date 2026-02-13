@@ -1,7 +1,7 @@
 /* empty css                                           */
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, k as Fragment$1, i as addAttribute, u as unescapeHTML, m as maybeRenderHead } from '../../chunks/astro/server_DZHAztx_.mjs';
 import 'kleur/colors';
-import { c as cartCountAtom, $ as $$BaseLayout } from '../../chunks/BaseLayout_DGf6_HP9.mjs';
+import { c as cartCountAtom, $ as $$BaseLayout } from '../../chunks/BaseLayout_CHtgl8NP.mjs';
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 import { useState, useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
@@ -11,7 +11,7 @@ import { Loader2, Plus, Minus } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 /* empty css                                    */
-import { f as fetchHook, a as fetchSettings } from '../../chunks/fetchSettings_BSzKgKzb.mjs';
+import { f as fetchHook, a as fetchSettings } from '../../chunks/fetchSettings_PP77heLr.mjs';
 import { c as cn } from '../../chunks/utils_B05Dmz_H.mjs';
 export { renderers } from '../../renderers.mjs';
 

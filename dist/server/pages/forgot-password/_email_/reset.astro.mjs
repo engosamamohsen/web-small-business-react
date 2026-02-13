@@ -1,7 +1,7 @@
 /* empty css                                              */
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../../chunks/astro/server_DZHAztx_.mjs';
 import 'kleur/colors';
-import { $ as $$AuthLayout } from '../../../chunks/AuthLayout_MOVeVmOL.mjs';
+import { $ as $$AuthLayout } from '../../../chunks/AuthLayout_DkEnnsmn.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { toast } from 'react-toastify';
 import { EyeOff, Eye, Loader2 } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { f as fetchHook } from '../../../chunks/fetchSettings_BSzKgKzb.mjs';
+import { f as fetchHook } from '../../../chunks/fetchSettings_PP77heLr.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 const resetPasswordSchema = z.object({

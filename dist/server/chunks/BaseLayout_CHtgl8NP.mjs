@@ -1,6 +1,6 @@
 import { f as createAstro, g as createComponent, m as maybeRenderHead, i as addAttribute, r as renderTemplate, l as renderHead, j as renderComponent, n as renderSlot } from './astro/server_DZHAztx_.mjs';
 import 'kleur/colors';
-import { a as fetchSettings } from './fetchSettings_BSzKgKzb.mjs';
+import { a as fetchSettings } from './fetchSettings_PP77heLr.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { MoreVertical, ShoppingCart } from 'lucide-react';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';

@@ -9,10 +9,9 @@ const NOOP_MIDDLEWARE_FN = async (_ctx, next) => {
 };
 
 const ACTION_QUERY_PARAMS = {
-  actionName: "_astroAction"
-};
+  actionName: "_astroAction"};
 
-const __vite_import_meta_env__ = { "ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_API_BASE_URL": "https://admin-emend.cashierthru.com/api/", "PUBLIC_BASE_URL": "https://admin-emend.cashierthru.com", "PUBLIC_FIREBASE_API_KEY": "AIzaSyBgikvsur0oHXH3al8oa8sQwKQ58FHPwMY", "PUBLIC_FIREBASE_APP_ID": "1:675561190760:web:1d0cc394c3bc113aa452dd", "PUBLIC_FIREBASE_AUTH_DOMAIN": "cashier-thru.firebaseapp.com", "PUBLIC_FIREBASE_DATABASE_URL": "https://cashier-thru-default-rtdb.firebaseio.com", "PUBLIC_FIREBASE_MEASUREMENT_ID": "G-C5EM0V4EH6", "PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "675561190760", "PUBLIC_FIREBASE_PROJECT_ID": "cashier-thru", "PUBLIC_FIREBASE_STORAGE_BUCKET": "cashier-thru.firebasestorage.app", "PUBLIC_IS_LOCAL": "true", "PUBLIC_LAST_ROUTE_API_URL": "/api/", "PUBLIC_SITE_URL": "https://your-site-url.com", "SITE": "https://example.com", "SSR": true };
+const __vite_import_meta_env__ = {"ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_API_BASE_URL": "https://admin-emend.cashierthru.com/api/", "PUBLIC_BASE_URL": "https://admin-emend.cashierthru.com", "PUBLIC_FIREBASE_API_KEY": "AIzaSyBgikvsur0oHXH3al8oa8sQwKQ58FHPwMY", "PUBLIC_FIREBASE_APP_ID": "1:675561190760:web:1d0cc394c3bc113aa452dd", "PUBLIC_FIREBASE_AUTH_DOMAIN": "cashier-thru.firebaseapp.com", "PUBLIC_FIREBASE_DATABASE_URL": "https://cashier-thru-default-rtdb.firebaseio.com", "PUBLIC_FIREBASE_MEASUREMENT_ID": "G-C5EM0V4EH6", "PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "675561190760", "PUBLIC_FIREBASE_PROJECT_ID": "cashier-thru", "PUBLIC_FIREBASE_STORAGE_BUCKET": "cashier-thru.firebasestorage.app", "PUBLIC_IS_LOCAL": "true", "PUBLIC_LAST_ROUTE_API_URL": "/api/", "PUBLIC_SITE_URL": "https://your-site-url.com", "SITE": "https://example.com", "SSR": true};
 const codeToStatusMap = {
   // Implemented from tRPC error code table
   // https://trpc.io/docs/server/error-handling#error-codes

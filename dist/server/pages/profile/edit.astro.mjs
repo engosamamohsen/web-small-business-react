@@ -1,14 +1,14 @@
 /* empty css                                           */
 import { g as createComponent, j as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_DZHAztx_.mjs';
 import 'kleur/colors';
-import { $ as $$BaseLayout } from '../../chunks/BaseLayout_DGf6_HP9.mjs';
+import { $ as $$BaseLayout } from '../../chunks/BaseLayout_CHtgl8NP.mjs';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { Loader2 } from 'lucide-react';
-import { f as fetchHook } from '../../chunks/fetchSettings_BSzKgKzb.mjs';
+import { f as fetchHook } from '../../chunks/fetchSettings_PP77heLr.mjs';
 export { renderers } from '../../renderers.mjs';
 
 function EditProfile() {

@@ -1,7 +1,7 @@
 /* empty css                                        */
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_DZHAztx_.mjs';
 import 'kleur/colors';
-import { u as useCartStore, $ as $$BaseLayout } from '../chunks/BaseLayout_DGf6_HP9.mjs';
+import { u as useCartStore, $ as $$BaseLayout } from '../chunks/BaseLayout_CHtgl8NP.mjs';
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination as Pagination$1, Autoplay, Navigation } from 'swiper/modules';
@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { Flame, Loader2, ShoppingCart } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
-import { f as fetchHook } from '../chunks/fetchSettings_BSzKgKzb.mjs';
+import { f as fetchHook } from '../chunks/fetchSettings_PP77heLr.mjs';
 import { c as cn } from '../chunks/utils_B05Dmz_H.mjs';
 export { renderers } from '../renderers.mjs';
 

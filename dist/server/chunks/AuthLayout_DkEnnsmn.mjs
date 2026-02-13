@@ -1,7 +1,7 @@
 import { f as createAstro, g as createComponent, i as addAttribute, r as renderTemplate, l as renderHead, n as renderSlot } from './astro/server_DZHAztx_.mjs';
 import 'kleur/colors';
 import 'clsx';
-import { a as fetchSettings } from './fetchSettings_BSzKgKzb.mjs';
+import { a as fetchSettings } from './fetchSettings_PP77heLr.mjs';
 /* empty css                           */
 /* empty css                           */
 

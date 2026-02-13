@@ -3,7 +3,7 @@ import { R as ROUTE_TYPE_HEADER, p as REROUTE_DIRECTIVE_HEADER, A as AstroError,
 import { appendForwardSlash as appendForwardSlash$1, joinPaths, trimSlashes, removeTrailingForwardSlash, fileExtension, slash, prependForwardSlash as prependForwardSlash$1 } from '@astrojs/internal-helpers/path';
 import { serialize, parse } from 'cookie';
 import { bold, red, yellow, dim, blue } from 'kleur/colors';
-import { g as getActionQueryString, d as deserializeActionResult, e as ensure404Route, D as DEFAULT_404_ROUTE, a as default404Instance, N as NOOP_MIDDLEWARE_FN } from './astro-designed-error-pages_CvB8yb5K.mjs';
+import { g as getActionQueryString, d as deserializeActionResult, e as ensure404Route, D as DEFAULT_404_ROUTE, a as default404Instance, N as NOOP_MIDDLEWARE_FN } from './astro-designed-error-pages_GCjaYAag.mjs';
 import 'es-module-lexer';
 import 'clsx';
 import { AsyncLocalStorage } from 'node:async_hooks';
