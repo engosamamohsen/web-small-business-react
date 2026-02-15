@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { $api } from "@/client";
-import { ResetPasswordSchemaType } from "@/app/(auth)/forgot-password/formSchema";
+import { ResetPasswordSchemaType } from "@/components/auth/schemas";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 export const useForgotPasswordHook = () => {
   // All React hooks at the top level
@@ -63,7 +63,7 @@ export const useForgotPasswordHook = () => {
       if (response.status === 200) {
         toast.success("تم تغيير كلمة المرور بنجاح");
         Cookies.remove("verify_token");
-        router.push("/login");
+        router.push("/auth/login");
         return true;
       }
     } catch (error: any) {

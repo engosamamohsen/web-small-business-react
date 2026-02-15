@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import styles from "./style.module.css";
 
 function HeroContent({ data }: { data: any }) {

@@ -1,0 +1,81 @@
+---
+import LoginForm from "@/components/auth/LoginForm";
+import { fetchPublicSettings } from "@/hooks/fetchSettings";
+
+// Fetch public settings for the page
+const settingsResponse = await fetchPublicSettings();
+const settingsData = settingsResponse?.data ?? null;
+
+// SEO metadata
+const siteName = settingsData?.name || "المتجر";
+const pageTitle = `تسجيل الدخول | ${siteName}`;
+const pageDescription =
+    settingsData?.about_us || "انضم إلينا واحصل على تجربة مميزة";
+const pageKeywords = [
+    ...(settingsData?.keywords || []),
+    "تسجيل",
+    "دخول",
+    "تسجيل الدخول",
+];
+
+// Set to server-side rendering
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content={pageKeywords.join(", ")} />
+
+        <!-- Preload critical fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Open Graph -->
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="website" />
+        {
+            settingsData?.logo && (
+                <meta property="og:image" content={settingsData.logo} />
+            )
+        }
+
+        <!-- Favicon -->
+        {settingsData?.logo && <link rel="icon" href={settingsData.logo} />}
+
+        <!-- CSS Imports -->
+        <link rel="stylesheet" href="/src/styles/globals.css" />
+        <link rel="stylesheet" href="/node_modules/nprogress/nprogress.css" />
+        <link
+            rel="stylesheet"
+            href="/node_modules/react-toastify/dist/ReactToastify.css"
+        />
+        <link
+            rel="stylesheet"
+            href="/node_modules/primereact/resources/themes/lara-light-cyan/theme.css"
+        />
+        <link rel="stylesheet" href="/node_modules/primeicons/primeicons.css" />
+    </head>
+    <body class="relative font-cairo bg-gray-50">
+        <LoginForm initSettings={settingsData ?? {}} client:only="react" />
+    </body>
+</html>
+
+<style is:global>
+    :root {
+        --font-cairo: "Cairo", sans-serif;
+    }
+
+    body {
+        font-family: var(--font-cairo);
+    }
+</style>

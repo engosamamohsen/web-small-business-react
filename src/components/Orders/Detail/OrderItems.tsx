@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { OrderItemsProps } from "./types";
 import { calculateActualPrice, calculateItemTotal } from "./utils";
 

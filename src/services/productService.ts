@@ -14,7 +14,7 @@ export async function getProductDetailServices(
     const res = await fetchHook<ApiEnvelope<ProductType>>({
         url: `v1/product-details?product_id=${productId}`,
         init: {
-            next: { revalidate: 60 },
+            
         },
     });
 

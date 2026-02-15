@@ -1,13 +1,13 @@
 // src/hooks/fetch-hook.ts
-import getSubdomain from "@/app/subdomain";
+import getSubdomain from "@/lib/subdomain";
 
 // utils/fetchingData.ts
 type CacheMode = "force-cache" | "no-store";
-type NextConfig = { revalidate?: number | false; tags?: string[] };
+// type NextConfig = { revalidate?: number | false; tags?: string[] }; // Removed NextConfig
 
 type FetchConfig = Omit<RequestInit, "headers" | "signal"> & {
   cache?: CacheMode;
-  next?: NextConfig;
+  // next?: NextConfig; // Removed next config
   headers?: HeadersInit;
 };
 
@@ -41,7 +41,7 @@ export async function fetchHook<T = any>({
   const subdomain = await getSubdomain();
 
   const currentUrl =
-    baseUrl ?? `${subdomain}${process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL}`;
+    baseUrl ?? `${subdomain}${import.meta.env.PUBLIC_LAST_ROUTE_API_URL}`;
   const fullUrl = `${currentUrl}${url}`;
 
   const controller = new AbortController();

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import { User, LogOut } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -29,7 +29,7 @@ export default function LoginButton({ isLoggedIn, onLogout }: LoginButtonProps) 
   if (!isLoggedIn) {
     return (
       <Link
-        href="/login"
+        href="/auth/login"
         className="flex h-9 items-center gap-2 rounded-full bg-[var(--main-color)] px-4 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
       >
         <User className="h-4 w-4" />
@@ -54,7 +54,7 @@ export default function LoginButton({ isLoggedIn, onLogout }: LoginButtonProps) 
         <div className="absolute left-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5">
           <div className="py-1">
             <Link
-              href="/profile"
+              href="/user/profile"
               className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
               onClick={() => setShowDropdown(false)}
             >

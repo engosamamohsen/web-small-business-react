@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { PaymentMethod } from "@/lib/types";
 
 type PaymentMethodsListProps = {

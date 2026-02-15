@@ -13,7 +13,7 @@ import {
 import { usePaymentMethods } from "@/hooks/payment/Payments";
 import { useEffect } from "react";
 import { usePayment } from "@/hooks/order";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 function DialogPaymentMethodsForm({
   showDialog,

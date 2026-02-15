@@ -1,0 +1,89 @@
+---
+import SEO from "../components/SEO.astro";
+import Analytics from "../components/Analytics.astro";
+import WebVitals from "../components/WebVitals.astro";
+
+// CSS Imports
+import "../styles/globals.css";
+import "nprogress/nprogress.css";
+import "react-toastify/dist/ReactToastify.css";
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+import "primeicons/primeicons.css";
+
+interface Props {
+    title: string;
+    description?: string;
+    keywords?: string[];
+    image?: string;
+    imageWidth?: number;
+    imageHeight?: number;
+}
+
+const {
+    title,
+    description = "منصة إدارة الأعمال الصغيرة",
+    keywords = [],
+    image,
+    imageWidth,
+    imageHeight,
+} = Astro.props;
+
+// Get cookies for auth - currently unused
+// const token = Astro.cookies.get("app_token")?.value;
+---
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- Preload critical fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- SEO Component -->
+        <SEO
+            title={title}
+            description={description}
+            keywords={keywords}
+            image={image}
+            imageWidth={imageWidth}
+            imageHeight={imageHeight}
+        />
+
+        <!-- Analytics -->
+        <Analytics />
+
+        <!-- Web Vitals -->
+        <WebVitals />
+
+        <!-- Global error handler -->
+        <script is:inline>
+            window.addEventListener("error", (event) => {
+                console.error("Global error:", event.error);
+            });
+
+            window.addEventListener("unhandledrejection", (event) => {
+                console.error("Unhandled rejection:", event.reason);
+            });
+        </script>
+    </head>
+    <body class="relative font-cairo">
+        <slot />
+    </body>
+</html>
+
+<style is:global>
+    :root {
+        --font-cairo: "Cairo", sans-serif;
+    }
+
+    body {
+        font-family: var(--font-cairo);
+    }
+</style>

@@ -4,7 +4,7 @@ import { useAsync } from "react-use";
 import { OrderType } from "@/lib/types";
 import { OrderDetailType } from "@/components/Orders/Detail/types";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
@@ -16,7 +16,7 @@ export const useOrderServices = () => {
   const errorStatus = (error as any)?.status;
   if (errorStatus === 403) {
     Cookies.remove("app_token");
-    router.push("/login");
+    router.push("/auth/login");
   }
   return { data: value?.data?.data as OrderType[], loading };
 };
@@ -29,7 +29,7 @@ export const useOrderDetailServices = (orderId: number | string) => {
   const errorStatus = (error as any)?.status;
   if (errorStatus === 403) {
     Cookies.remove("app_token");
-    router.push("/login");
+    router.push("/auth/login");
   }
   return { data: value?.data?.data as OrderDetailType, loading };
 };

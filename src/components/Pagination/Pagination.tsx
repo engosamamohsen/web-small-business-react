@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "@/lib/navigation";
 import ReactPaginate from "react-paginate";
 
 const Pagination = ({ totalPages }: { totalPages: number }) => {

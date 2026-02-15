@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { ProductType } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 

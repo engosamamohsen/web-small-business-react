@@ -38,5 +38,5 @@ const axiosInstance = (baseUrl: string) => {
   return instance;
 };
 
-// export const $api = axiosInstance(process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL || "");
-export const $api = axiosInstance(process.env.NEXT_PUBLIC_API_URL || "");
+// export const $api = axiosInstance(import.meta.env.PUBLIC_LAST_ROUTE_API_URL || "");
+export const $api = axiosInstance(import.meta.env.PUBLIC_API_URL || "");

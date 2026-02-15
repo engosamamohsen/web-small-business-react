@@ -1,0 +1,195 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Hero from "@/components/Hero/Hero";
+import OfferProducts from "@/components/OfferProducts/Index";
+import Categories from "@/components/Categories/Categories";
+import ProductsSection from "@/components/Product/ProductsSection";
+
+export const prerender = false;
+
+import Header from "@/layouts/Header/Header";
+import Footer from "@/layouts/Footer";
+import ColorHandler from "@/layouts/ColorHandler";
+import LoginHandler from "@/layouts/LoginHandler";
+import SettingsCookieSync from "@/components/common/SettingsCookieSync";
+import WhatsAppButton from "@/components/common/WhatsAppButton";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { fetchHook } from "@/hooks/fetch-hook";
+import packageJson from "../../package.json";
+
+// Get auth token from cookies
+const token = Astro.cookies.get("app_token")?.value;
+
+// Get search params for filtering
+const searchParams = Astro.url.searchParams;
+const category = searchParams.get("category") || undefined;
+const sub_category = searchParams.get("sub_category") || undefined;
+const currentPage = Number(searchParams.get("page")) || 1;
+const limit = Number(searchParams.get("limit")) || 10;
+
+// ============================================
+// PARALLEL API CALLS - Improved SSR Performance
+// Using allSettled to prevent one failure from breaking the entire page
+// ============================================
+const [
+    settingsResult,
+    bannerResult,
+    offerResult,
+    categoriesResult
+] = await Promise.allSettled([
+    fetchSettings(token),
+    fetchHook({ url: "v1/banner", init: {} }),
+    fetchHook({ url: "v1/product?offer=1", init: {} }),
+    fetchHook({ url: "v1/categories", init: {}, token })
+]);
+
+// Extract settings data (handle rejected promises)
+const settingsResponse = settingsResult?.status === "fulfilled" ? settingsResult.value : null;
+const settingsData = settingsResponse?.data ?? null;
+const isLogin = settingsResponse?.ok ? Boolean(settingsResponse?.is_login) : false;
+const appVersion = packageJson.version;
+
+// Process banner data (safely handle result)
+let bannerData: any[] = [];
+let showBanner = false;
+if (bannerResult?.status === "fulfilled") {
+    const bannerResponse = bannerResult.value;
+    if (bannerResponse?.ok && bannerResponse?.data?.data?.length) {
+        bannerData = bannerResponse.data.data;
+        showBanner = true;
+    }
+}
+
+// Process offer products (safely handle result)
+let offerProducts: any[] = [];
+let showOffers = false;
+if (offerResult?.status === "fulfilled") {
+    const offerResponse = offerResult.value;
+    if (offerResponse?.ok && offerResponse?.data?.data?.length) {
+        offerProducts = offerResponse.data.data;
+        showOffers = true;
+    }
+}
+
+// Process categories (safely handle result)
+let categoriesData: any[] = [];
+let showCategories = false;
+if (categoriesResult?.status === "fulfilled") {
+    const categoriesResponse = categoriesResult.value;
+    if (categoriesResponse?.ok && categoriesResponse?.data?.data) {
+        categoriesData = categoriesResponse.data.data;
+        showCategories = true;
+    }
+}
+
+// Handle subcategories
+const targetFilterCategory = (() => {
+    if (!category) {
+        return { isFilterCategory: false, isSubCategory: false };
+    }
+    const cat = categoriesData?.find((item: any) => item.id == category);
+    return {
+        ...(cat || {}),
+        isFilterCategory: true,
+        isSubCategory: (cat?.subcategories?.length || 0) > 0,
+    };
+})();
+
+// ============================================
+// Products - Fetch separately (depends on category)
+// ============================================
+let productsData: any[] = [];
+let productsPagination: any = { last_page: 1 };
+let showProducts = false;
+
+try {
+    const productsUrl = `v1/product${category ? `?category_id=${category}` : ""}${
+        sub_category ? `&sub_category_id=${sub_category}` : ""
+    }${sub_category || category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
+
+    const productsResponse = await fetchHook({
+        url: productsUrl,
+        init: {},
+    });
+
+    if (productsResponse?.ok && productsResponse?.data?.data) {
+        productsData = productsResponse.data.data;
+        productsPagination = productsResponse.data.pagination || {
+            last_page: 1,
+        };
+        showProducts = true;
+    }
+} catch (error) {
+    console.error("Error fetching products:", error);
+}
+
+// SEO metadata
+const pageTitle = settingsData?.name || "الرئيسية - منصة الأعمال";
+const pageDescription = settingsData?.about_us || "منصة إدارة الأعمال الصغيرة";
+const pageKeywords = settingsData?.keywords || [
+    "أعمال صغيرة",
+    "متجر إلكتروني",
+    "تجارة إلكترونية",
+];
+---
+
+<Layout
+    title={pageTitle}
+    description={pageDescription}
+    keywords={pageKeywords}
+    image={settingsData?.logo}
+>
+    <ColorHandler client:only="react" />
+    <LoginHandler client:only="react" />
+
+    <Header
+        currentPath={Astro.url.pathname}
+        initialIsLoggedIn={isLogin}
+        settingsData={settingsData}
+        client:load
+    />
+
+    <main class="min-h-screen">
+        {showBanner && <Hero bannerData={bannerData} client:load />}
+
+        {
+            showOffers && (
+                <OfferProducts offerProducts={offerProducts} client:visible />
+            )
+        }
+
+        {
+            showCategories && (
+                <Categories
+                    categoriesData={categoriesData}
+                    isSuccess={true}
+                    targetFilterCategory={targetFilterCategory}
+                    client:visible
+                />
+            )
+        }
+
+        <section class="py-10" id="products">
+            <ProductsSection
+                products={showProducts
+                    ? {
+                          data: productsData,
+                          isSuccess: true,
+                          pagination: productsPagination,
+                      }
+                    : { isSuccess: false }}
+                defaultImage={settingsData?.product_default_image}
+                client:visible
+            />
+        </section>
+    </main>
+
+    <WhatsAppButton phone={settingsData?.whatsapp_phone} client:idle />
+    <SettingsCookieSync settings={settingsData} client:load />
+
+    <Footer
+        settingsData={settingsData}
+        appVersion={appVersion}
+        client:visible
+    />
+</Layout>

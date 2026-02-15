@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { useState } from "react";
 
 interface OptimizedImageProps {
@@ -23,7 +23,7 @@ export default function OptimizedImage({
   sizes = "100vw"
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
-  
+
   return (
     <div className={`relative ${className}`}>
       {isLoading && (
@@ -35,7 +35,7 @@ export default function OptimizedImage({
         width={width || 0}
         height={height || 0}
         className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-        onLoadingComplete={() => setIsLoading(false)}
+        onLoad={() => setIsLoading(false)}
         priority={priority}
         sizes={sizes}
         style={{ width: '100%', height: 'auto' }}

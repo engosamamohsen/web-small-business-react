@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
+import Link from "@/components/common/Link";
+import Image from "@/components/common/Image";
 import { Minus, Plus, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useEffect } from "react";
 
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
@@ -190,7 +190,7 @@ const OrderSummary = ({
         </div>
       </div>
       <Link
-        href="/checkout"
+        href="/shop/checkout"
         className="block w-full rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
       >
         إتمام الشراء

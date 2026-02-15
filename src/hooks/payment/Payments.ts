@@ -1,7 +1,7 @@
 import { useAsyncRetry } from "react-use";
 import { $api } from "@/client";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { PaymentMethod } from "@/lib/types";
 
 export const usePaymentMethods = () => {
@@ -12,7 +12,7 @@ export const usePaymentMethods = () => {
   const errorStatus = (error as any)?.status;
   if (errorStatus === 403) {
     Cookies.remove("app_token");
-    router.push("/login");
+    router.push("/auth/login");
   }
   return { data: value?.data?.data as PaymentMethod[], loading, retry };
 };
@@ -25,7 +25,7 @@ export const useInvoice = (invoiceNumber: string) => {
   const errorStatus = (error as any)?.status;
   if (errorStatus === 403) {
     Cookies.remove("app_token");
-    router.push("/login");
+    router.push("/auth/login");
   }
   return { data: value?.data?.data as PaymentMethod[], loading, retry };
 };

@@ -1,0 +1,129 @@
+﻿13:28:47 [types] Generated 74ms
+13:28:47 [build] output: "hybrid"
+13:28:47 [build] directory: F:\react js projects\kamal\web-small-business-react\dist\
+13:28:47 [build] adapter: @astrojs/node
+13:28:47 [build] Collecting build info...
+13:28:47 [build] Γ£ô Completed in 135ms.
+13:28:47 [build] Building hybrid entrypoints...
+13:28:47 [WARN] [router] getStaticPaths() ignored in dynamic page /src/pages/shop/products/[id].astro. Add `export const prerender = true;` to prerender the page as static HTML during the build process.
+13:28:49 [vite] [32mΓ£ô built in 1.99s[39m
+13:28:49 [build] Γ£ô Completed in 2.02s.
+
+ building client (vite) 
+13:28:49 [vite] transforming...
+13:28:52 [vite] [32mΓ£ô[39m 2048 modules transformed.
+13:28:52 [vite] rendering chunks...
+13:28:52 [vite] computing gzip size...
+13:28:52 [vite] [2mdist/client/[22m[35m_astro/checkout.B0Tv4TLO.css                    [39m[1m[2m  0.58 kB[22m[1m[22m[2m Γöé gzip:  0.27 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[35m_astro/_id_.Db77K4Ki.css                        [39m[1m[2m  1.60 kB[22m[1m[22m[2m Γöé gzip:  0.44 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[35m_astro/index.756wkaNq.css                       [39m[1m[2m  9.85 kB[22m[1m[22m[2m Γöé gzip:  2.34 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[35m_astro/index.B_l4pjL9.css                       [39m[1m[2m 13.17 kB[22m[1m[22m[2m Γöé gzip:  3.98 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/_id_.f4bd5aee.HhwYrydy.js                [39m[1m[2m  0.06 kB[22m[1m[22m[2m Γöé gzip:  0.07 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/checkout.68f73e18.2tqKsCTS.js            [39m[1m[2m  0.07 kB[22m[1m[22m[2m Γöé gzip:  0.08 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/classes-to-selector.CFU304S8.js          [39m[1m[2m  0.12 kB[22m[1m[22m[2m Γöé gzip:  0.13 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/providers.DkmD8w1N.js                    [39m[1m[2m  0.14 kB[22m[1m[22m[2m Γöé gzip:  0.13 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/_astro-entry_react-toastify.D270k9FL.js  [39m[1m[2m  0.15 kB[22m[1m[22m[2m Γöé gzip:  0.14 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Link.BqK_IixG.js                         [39m[1m[2m  0.23 kB[22m[1m[22m[2m Γöé gzip:  0.19 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/LoginHandler.DaB0hRow.js                 [39m[1m[2m  0.25 kB[22m[1m[22m[2m Γöé gzip:  0.22 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Image.BgogDUHG.js                        [39m[1m[2m  0.27 kB[22m[1m[22m[2m Γöé gzip:  0.21 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/clsx.B-dksMZM.js                         [39m[1m[2m  0.37 kB[22m[1m[22m[2m Γöé gzip:  0.24 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/navigation.CZryb3zM.js                   [39m[1m[2m  0.41 kB[22m[1m[22m[2m Γöé gzip:  0.22 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/shopping-cart.DIaI45RX.js                [39m[1m[2m  0.47 kB[22m[1m[22m[2m Γöé gzip:  0.33 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/PageLoader.BmIyBNeP.js                   [39m[1m[2m  0.50 kB[22m[1m[22m[2m Γöé gzip:  0.32 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/jsx-runtime.BjG_zV1W.js                  [39m[1m[2m  0.64 kB[22m[1m[22m[2m Γöé gzip:  0.42 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/tslib.es6.OVu8nUpd.js                    [39m[1m[2m  0.76 kB[22m[1m[22m[2m Γöé gzip:  0.40 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/index.95d291e9.DYRWAH6J.js               [39m[1m[2m  0.81 kB[22m[1m[22m[2m Γöé gzip:  0.40 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/useAsync.BNGWJ4SI.js                     [39m[1m[2m  0.84 kB[22m[1m[22m[2m Γöé gzip:  0.43 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/providers.CLBHCDtv.js                    [39m[1m[2m  1.03 kB[22m[1m[22m[2m Γöé gzip:  0.44 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/js.cookie.Cz0CWeBA.js                    [39m[1m[2m  1.41 kB[22m[1m[22m[2m Γöé gzip:  0.72 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/hoisted.B4HqmQWU.js                      [39m[1m[2m  1.43 kB[22m[1m[22m[2m Γöé gzip:  0.81 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/createLucideIcon.CineUDy-.js             [39m[1m[2m  1.55 kB[22m[1m[22m[2m Γöé gzip:  0.65 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/keyfilter.esm.C_sq5k15.js                [39m[1m[2m  1.64 kB[22m[1m[22m[2m Γöé gzip:  0.87 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/page.DusaEjm6.js                         [39m[1m[2m  2.17 kB[22m[1m[22m[2m Γöé gzip:  0.97 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/cart.BPlmXeNr.js                         [39m[1m[2m  2.20 kB[22m[1m[22m[2m Γöé gzip:  1.05 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Footer.Btx2BDBi.js                       [39m[1m[2m  3.60 kB[22m[1m[22m[2m Γöé gzip:  1.50 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/index.bwOXJm1I.js                        [39m[1m[2m  3.82 kB[22m[1m[22m[2m Γöé gzip:  1.50 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/LoginForm.hti4Cskc.js                    [39m[1m[2m  4.00 kB[22m[1m[22m[2m Γöé gzip:  1.75 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/autoplay.LnEnkbMo.js                     [39m[1m[2m  4.07 kB[22m[1m[22m[2m Γöé gzip:  1.48 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/ForgotPasswordForm.BbsuDokI.js           [39m[1m[2m  4.39 kB[22m[1m[22m[2m Γöé gzip:  1.94 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/inputtextarea.esm.VXIREhfu.js            [39m[1m[2m  4.72 kB[22m[1m[22m[2m Γöé gzip:  1.92 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Index.CTksjgbD.js                        [39m[1m[2m  4.80 kB[22m[1m[22m[2m Γöé gzip:  1.90 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/RegisterForm.BhkqMktY.js                 [39m[1m[2m  5.47 kB[22m[1m[22m[2m Γöé gzip:  1.94 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/web-vitals.By3A_XPg.js                   [39m[1m[2m  5.89 kB[22m[1m[22m[2m Γöé gzip:  2.25 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Cart.jehhklDu.js                         [39m[1m[2m  7.70 kB[22m[1m[22m[2m Γöé gzip:  2.70 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/index.DGOumNSj.js                        [39m[1m[2m  7.93 kB[22m[1m[22m[2m Γöé gzip:  3.05 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Index.DPz6DIQI.js                        [39m[1m[2m  9.84 kB[22m[1m[22m[2m Γöé gzip:  4.09 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/csstransition.esm.B_mI6vOk.js            [39m[1m[2m 10.21 kB[22m[1m[22m[2m Γöé gzip:  3.41 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Header.Be65vG7h.js                       [39m[1m[2m 10.57 kB[22m[1m[22m[2m Γöé gzip:  3.97 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Hero.Bulz5KOY.js                         [39m[1m[2m 10.89 kB[22m[1m[22m[2m Γöé gzip:  3.72 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/ColorHandler.CDXiY8ZP.js                 [39m[1m[2m 13.39 kB[22m[1m[22m[2m Γöé gzip:  5.07 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Categories.CVLN3wqf.js                   [39m[1m[2m 14.39 kB[22m[1m[22m[2m Γöé gzip:  4.98 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/utils.CppfKf37.js                        [39m[1m[2m 19.95 kB[22m[1m[22m[2m Γöé gzip:  6.72 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/button.esm.CE7VsCqv.js                   [39m[1m[2m 28.57 kB[22m[1m[22m[2m Γöé gzip:  8.53 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/_astro-entry_react-toastify.BeX7-DVQ.js  [39m[1m[2m 30.37 kB[22m[1m[22m[2m Γöé gzip:  9.27 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/index.BVz4tbdG.js                        [39m[1m[2m 39.60 kB[22m[1m[22m[2m Γöé gzip: 15.90 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/DetailPage.DMn9CP4J.js                   [39m[1m[2m 43.97 kB[22m[1m[22m[2m Γöé gzip: 14.57 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/componentbase.esm.BEoqqaQZ.js            [39m[1m[2m 69.92 kB[22m[1m[22m[2m Γöé gzip: 18.65 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/inputtext.esm.8rN7x8rG.js                [39m[1m[2m 80.27 kB[22m[1m[22m[2m Γöé gzip: 22.34 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/navigation.5Pa-AoAa.js                   [39m[1m[2m 85.01 kB[22m[1m[22m[2m Γöé gzip: 26.03 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/Checkout.DT7-aSWU.js                     [39m[1m[2m106.60 kB[22m[1m[22m[2m Γöé gzip: 30.63 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/client.CNCRiWsD.js                       [39m[1m[2m173.68 kB[22m[1m[22m[2m Γöé gzip: 55.32 kB[22m
+13:28:52 [vite] [2mdist/client/[22m[36m_astro/firebase-hooks.DLbbnpiZ.js               [39m[1m[2m268.90 kB[22m[1m[22m[2m Γöé gzip: 68.12 kB[22m
+13:28:52 [vite] [32mΓ£ô built in 3.38s[39m
+
+ prerendering static routes 
+13:28:52 Γû╢ src/pages/404.astro
+13:28:52   ΓööΓöÇ /404.html (+7ms)
+13:28:53 Γû╢ src/pages/500.astro
+13:28:53   ΓööΓöÇ /500.html (+2ms)
+13:28:53 ╬╗ src/pages/api/vitals.ts
+13:28:53   ΓööΓöÇ /api/vitals13:28:53 [WARN] [router] No API Route handler exists for the method "GET" for the route "/api/vitals".
+Found handlers: "POST"
+
+ (+0ms)
+13:28:53 Γ£ô Completed in 34ms.
+
+13:28:53 [build] Rearranging server assets...
+node.exe : Cannot read 
+properties of undefined 
+(reading 'reduce')
+At C:\Program 
+Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          :  
+   NotSpecified: (Cannot read  
+   pro...ading 'reduce'):Str   
+ ing) [], RemoteException
+    + FullyQualifiedErrorId :  
+   NativeCommandError
+ 
+  Location:
+    F:\react js projects\kamal\
+web-small-business-react\node_m
+odules\@astrojs\sitemap\dist\in
+dex.js:69:37
+  Stack trace:
+    at astro:build:done (file:/
+//F:/react%20js%20projects/kama
+l/web-small-business-react/node
+_modules/@astrojs/sitemap/dist/
+index.js:69:37)
+    at async 
+AstroBuilder.build (file:///F:/
+react%20js%20projects/kamal/web
+-small-business-react/node_modu
+les/astro/dist/core/build/index
+.js:159:5)
+    at async build (file:///F:/
+react%20js%20projects/kamal/web
+-small-business-react/node_modu
+les/astro/dist/core/build/index
+.js:51:3)
+    at async runCommand (file:/
+//F:/react%20js%20projects/kama
+l/web-small-business-react/node
+_modules/astro/dist/cli/index.j
+s:147:7)

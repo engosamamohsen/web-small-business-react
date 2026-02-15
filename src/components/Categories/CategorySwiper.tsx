@@ -1,14 +1,15 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import styles from "./style.module.css";
 import "swiper/css";
 import "swiper/css/navigation";
-import Sticky from "react-sticky-el";
+// import Sticky from "react-sticky-el";
 import { cn } from "@/utils/utils";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "@/lib/navigation";
+import React from 'react';
 
 interface CategoryType {
   id: number;
@@ -49,59 +50,59 @@ export default function CategorySwiper({ categories }: { categories: any }) {
   };
 
   return (
-    <Sticky
-      topOffset={0}
-      stickyClassName="z-[400] bg-white/90 backdrop-blur-md shadow-sm"
-    >
-      <div className={cn("relative", styles["fade-edges"])}>
-        <div className="container py-2">
-          <Swiper
-            modules={[Navigation, Autoplay]}
-            navigation
-            autoplay={
-              searchParams.get("category")
-                ? false
-                : {
-                  delay: 2800,
-                  disableOnInteraction: true,
-                  pauseOnMouseEnter: true,
-                }
-            }
-            onTouchStart={(swiper) => swiper.autoplay?.stop()}
-            onClick={(swiper) => swiper.autoplay?.stop()}
-            breakpoints={{
-              320: { slidesPerView: 3.2, spaceBetween: 8 },
-              420: { slidesPerView: 4.2, spaceBetween: 10 },
-              640: { slidesPerView: 6.2, spaceBetween: 12 },
-              768: { slidesPerView: 8.2, spaceBetween: 14 },
-              1024: { slidesPerView: 10.2, spaceBetween: 14 },
-              1280: { slidesPerView: 12.2, spaceBetween: 16 },
-              1536: { slidesPerView: 14.2, spaceBetween: 18 },
-            }}
-            loop={enableLoop}
-            className={cn(styles["categories-swiper"], "min-h-fit")}
-          >
-            {categories?.categoriesData?.map((category: CategoryType) => {
-              const isActive =
-                searchParams.get("category") == category.id.toString();
+    // <Sticky
+    //   topOffset={0}
+    //   stickyClassName="z-[400] bg-white/90 backdrop-blur-md shadow-sm"
+    // >
+    <div className={cn("relative", styles["fade-edges"])}>
+      <div className="container py-2">
+        <Swiper
+          modules={[Navigation, Autoplay]}
+          navigation
+          autoplay={
+            searchParams.get("category")
+              ? false
+              : {
+                delay: 2800,
+                disableOnInteraction: true,
+                pauseOnMouseEnter: true,
+              }
+          }
+          onTouchStart={(swiper) => swiper.autoplay?.stop()}
+          onClick={(swiper) => swiper.autoplay?.stop()}
+          breakpoints={{
+            320: { slidesPerView: 3.2, spaceBetween: 8 },
+            420: { slidesPerView: 4.2, spaceBetween: 10 },
+            640: { slidesPerView: 6.2, spaceBetween: 12 },
+            768: { slidesPerView: 8.2, spaceBetween: 14 },
+            1024: { slidesPerView: 10.2, spaceBetween: 14 },
+            1280: { slidesPerView: 12.2, spaceBetween: 16 },
+            1536: { slidesPerView: 14.2, spaceBetween: 18 },
+          }}
+          loop={enableLoop}
+          className={cn(styles["categories-swiper"], "min-h-fit")}
+        >
+          {categories?.categoriesData?.map((category: CategoryType) => {
+            const isActive =
+              searchParams.get("category") == category.id.toString();
 
-              return (
-                <SwiperSlide
-                  key={category.id}
-                  className="group py-3 max-md:py-2"
-                >
-                  <CategoryBox
-                    category={category}
-                    isActive={isActive}
-                    onClick={() => onCategoryClick(category)}
-                  />
-                </SwiperSlide>
-              );
-            })}
-          </Swiper>
-        </div>
+            return (
+              <SwiperSlide
+                key={category.id}
+                className="group py-3 max-md:py-2"
+              >
+                <CategoryBox
+                  category={category}
+                  isActive={isActive}
+                  onClick={() => onCategoryClick(category)}
+                />
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
       </div>
-    </Sticky>
+    </div>
+    // </Sticky>
   );
 }
 
@@ -121,6 +122,7 @@ function CategoryBox({
       className="flex w-full flex-col items-center gap-2 outline-none"
       aria-pressed={isActive}
       aria-label={`Category ${category.name}`}
+      suppressHydrationWarning
     >
       <div
         className={cn(
@@ -135,6 +137,7 @@ function CategoryBox({
           isActive &&
           "ring-2 ring-[var(--main-color)] shadow-[0_6px_18px_rgba(0,0,0,0.15)] bg-orange-50/40"
         )}
+        suppressHydrationWarning
       >
         <div className="relative h-[85%] w-[85%] overflow-hidden rounded-full">
           <Image
@@ -154,6 +157,7 @@ function CategoryBox({
           "max-md:max-w-[72px] max-md:text-[12px]",
           isActive && "text-[var(--main-color)]"
         )}
+        suppressHydrationWarning
       >
         {category.name}
       </span>

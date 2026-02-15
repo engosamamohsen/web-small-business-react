@@ -7,11 +7,11 @@ import { Button } from "primereact/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card } from "primereact/card";
 import { FileUpload } from "primereact/fileupload";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { classNames } from "primereact/utils";
 import PageLoader from "@/components/PageLoader/PageLoader";
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { z } from "zod";
 
 const ProfileFormSchema = z.object({
@@ -160,8 +160,8 @@ function ProfileEditPage() {
                     <Image
                       src={imagePreview}
                       alt="معاينة الصورة الشخصية"
-                      width="200"
-                      height="200"
+                      width={200}
+                      height={200}
                       className="h-[200px] w-[200px] rounded-full border"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 opacity-0 transition-opacity hover:opacity-100">

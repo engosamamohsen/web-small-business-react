@@ -1,8 +1,29 @@
-import { cache } from "react";
+// import { cache } from "react";
 
 // ===== Types =====
+export interface SettingsData {
+  id: number;
+  name?: string;
+  about_us?: string;
+  phone?: string;
+  whatsapp_phone?: string;
+  logo?: string;
+  main_color?: string;
+  main_bg?: string;
+  main_font_color?: string;
+  facebook_link?: string;
+  instagram_link?: string;
+  tax?: number;
+  service?: number;
+  vat?: string;
+  keywords?: string[];
+  product_default_image?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export type SettingsResponse = {
-  data?: any;
+  data?: SettingsData;
   is_login?: boolean;
   cart_count?: number;
   ok: boolean;
@@ -11,7 +32,7 @@ export type SettingsResponse = {
 };
 
 // ===== Config =====
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://emend.cashierthru.com";
+const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "https://admin-emend.cashierthru.com/api";
 const FETCH_TIMEOUT = 10000; // 10 seconds
 
 /**
@@ -58,7 +79,8 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
       url,
       {
         headers,
-        next: { revalidate: token ? 60 : 300 }, // 1 min for auth, 5 min for public
+        // Removed next: { revalidate } as it is Next.js specific
+        // Astro uses standard fetch caching or build-time fetching
       },
       FETCH_TIMEOUT
     );
@@ -96,17 +118,19 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
  * Cached public settings - for metadata and unauthenticated requests
  * Deduped within the same request using React cache()
  */
-export const fetchPublicSettings = cache(async (): Promise<SettingsResponse> => {
+export const fetchPublicSettings = async (): Promise<SettingsResponse> => {
+  // console.log("[fetchPublicSettings] Fetching public settings");
   return fetchSettingsBase(undefined);
-});
+};
 
 /**
  * Cached settings - for authenticated requests
  * Each unique token gets its own cache entry
  */
-export const fetchSettings = cache(async (token?: string): Promise<SettingsResponse> => {
+export const fetchSettings = async (token?: string): Promise<SettingsResponse> => {
+
   if (!token) {
     return fetchPublicSettings();
   }
   return fetchSettingsBase(token);
-});
+};

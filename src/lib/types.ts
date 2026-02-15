@@ -96,3 +96,4 @@ export type PaymentMethod = {
   redirect: string;
   logo: string;
 };
+

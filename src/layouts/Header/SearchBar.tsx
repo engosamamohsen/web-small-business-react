@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Search } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { fetchHookClient } from "@/hooks/fetch-hook-client";
 
 type Category = {

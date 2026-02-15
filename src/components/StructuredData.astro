@@ -1,0 +1,76 @@
+---
+interface StructuredDataProps {
+    type:
+        | "Organization"
+        | "Product"
+        | "BreadcrumbList"
+        | "WebSite"
+        | "LocalBusiness";
+    data: any;
+}
+
+const { type, data } = Astro.props as StructuredDataProps;
+
+function generateSchema(type: string, data: any) {
+    const baseSchema = {
+        "@context": "https://schema.org",
+        "@type": type,
+    };
+
+    switch (type) {
+        case "Organization":
+            return {
+                ...baseSchema,
+                name: data.name,
+                url: data.url,
+                logo: data.logo,
+                contactPoint: data.contactPoint,
+                sameAs: data.sameAs || [],
+            };
+
+        case "Product":
+            return {
+                ...baseSchema,
+                name: data.name,
+                description: data.description,
+                image: data.image,
+                offers: {
+                    "@type": "Offer",
+                    price: data.price,
+                    priceCurrency: data.currency || "SAR",
+                    availability: `https://schema.org/${data.availability || "InStock"}`,
+                },
+            };
+
+        case "BreadcrumbList":
+            return {
+                ...baseSchema,
+                itemListElement: data.items.map((item: any, index: number) => ({
+                    "@type": "ListItem",
+                    position: index + 1,
+                    name: item.name,
+                    item: item.url,
+                })),
+            };
+
+        case "WebSite":
+            return {
+                ...baseSchema,
+                name: data.name,
+                url: data.url,
+                potentialAction: {
+                    "@type": "SearchAction",
+                    target: `${data.url}/search?q={search_term_string}`,
+                    "query-input": "required name=search_term_string",
+                },
+            };
+
+        default:
+            return { ...baseSchema, ...data };
+    }
+}
+
+const schema = generateSchema(type, data);
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

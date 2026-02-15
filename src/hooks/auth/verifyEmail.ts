@@ -1,7 +1,7 @@
 import { $api } from "@/client";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import Cookies from "js-cookie";
 
 export const useVerifyEmail = () => {

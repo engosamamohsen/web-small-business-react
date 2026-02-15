@@ -1,46 +1,14 @@
 import SwiperBanner from "./SwiperBanner";
 // import { revalidateTime } from "@/constants/constansts";
-import { fetchHook } from "@/hooks/fetch-hook";
 
-export default async function Hero() {
-  const response = await getHeroServer();
+interface HeroProps {
+  bannerData: any[];
+}
 
-  if (response?.isSuccess && response?.bannerData?.length) {
-    return <SwiperBanner response={response} />;
+export default function Hero({ bannerData }: HeroProps) {
+  if (bannerData?.length) {
+    return <SwiperBanner response={{ bannerData, isSuccess: true }} />;
   }
 
   return null;
-}
-
-async function getHeroServer(): Promise<{
-  bannerData: any[];
-  isSuccess: boolean;
-}> {
-  try {
-    const response = await fetchHook({
-      url: "v1/banner",
-      init: { next: { revalidate: 60 } }, // Cache for 60 seconds
-    });
-
-    const bannerData = response?.data?.data;
-
-    if (!bannerData) {
-      return {
-        bannerData: [],
-        isSuccess: true,
-      };
-    }
-
-    return {
-      bannerData,
-      isSuccess: true,
-    };
-  } catch {
-    // Error handling - banner will not display
-    // Silently fail as this is not critical for page render
-    return {
-      bannerData: [],
-      isSuccess: false,
-    };
-  }
 }

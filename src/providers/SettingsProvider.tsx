@@ -35,7 +35,19 @@ export interface SettingsContextType {
 }
 
 // ===== Context =====
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+// Default context for isolated islands or missing provider
+const defaultContext: SettingsContextType = {
+    settings: null,
+    isLogin: false,
+    cartCount: 0,
+    token: undefined,
+    setCartCount: () => { },
+    incrementCartCount: () => { },
+    decrementCartCount: () => { },
+    setIsLogin: () => { },
+};
+
+const SettingsContext = createContext<SettingsContextType>(defaultContext);
 
 // ===== Provider =====
 export function SettingsProvider({
@@ -91,9 +103,6 @@ export function SettingsProvider({
  */
 export function useSettings() {
     const context = useContext(SettingsContext);
-    if (context === undefined) {
-        throw new Error("useSettings must be used within a SettingsProvider");
-    }
     return context;
 }
 

@@ -1,7 +1,7 @@
 import { useAsync } from "react-use";
 import Cookies from "js-cookie";
 import { $api } from "@/client";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { toast } from "react-toastify";
 
 interface ProfileUpdateData {
@@ -18,7 +18,7 @@ export const useProfileServices = () => {
   const errorStatus = (error as any)?.status;
   if (errorStatus === 403) {
     Cookies.remove("app_token");
-    router.push("/login");
+    router.push("/auth/login");
   }
   return { data: value?.data?.data, loading };
 };
@@ -46,7 +46,7 @@ export const useProfileUpdate = () => {
     } catch (error: any) {
       if (error.status === 403) {
         Cookies.remove("app_token");
-        router.push("/login");
+        router.push("/auth/login");
       }
       toast.error(
         `  فشل تحديث الملف الشخصي : ${error?.response?.data?.message}`,

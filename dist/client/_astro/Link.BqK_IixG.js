@@ -1,0 +1,1 @@
+import{j as e}from"./jsx-runtime.BjG_zV1W.js";function i({href:a,prefetch:t=!0,children:o,...s}){const r=t===!0?"tap":t===!1?void 0:t;return e.jsx("a",{href:a,...r&&{"data-astro-prefetch":r},...s,children:o})}export{i as L};

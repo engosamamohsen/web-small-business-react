@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useAsyncRetry } from "react-use";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
@@ -22,7 +22,7 @@ export const useCartServices = () => {
   const errorStatus = (error as any)?.status;
   if (errorStatus === 403) {
     Cookies.remove("app_token");
-    router.push("/login");
+    router.push("/auth/login");
   }
 
   return {
@@ -141,7 +141,7 @@ export const useCartHook = () => {
 function handleError(error: any, router: ReturnType<typeof useRouter>) {
   if (error?.status === 403) {
     Cookies.remove("app_token");
-    router.push("/login");
+    router.push("/auth/login");
   }
 
   toast.error(`فشل إضافة للسلة: ${error?.response?.data?.message}`, {

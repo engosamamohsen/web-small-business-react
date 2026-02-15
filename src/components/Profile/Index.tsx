@@ -4,8 +4,8 @@ import { useProfileServices } from "@/hooks/profile/profile";
 import PageLoader from "../PageLoader/PageLoader";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useRouter } from "@/lib/navigation";
+import Image from "@/components/common/Image";
 
 function Profile() {
   const { data, loading } = useProfileServices();
@@ -55,8 +55,8 @@ function Profile() {
                 <Image
                   src={data.image_url}
                   alt={data.name || "صورة الملف الشخصي"}
-                  width="200"
-                  height="200"
+                  width={200}
+                  height={200}
                   className="h-[200px] min-h-[200px] w-[200px] rounded-full border object-cover"
                 />
               </div>

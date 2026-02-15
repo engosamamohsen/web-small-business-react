@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "@/lib/navigation";
 import { CheckCircle, X, Printer, XCircle, Clock } from "lucide-react";
 
 // Types definitions

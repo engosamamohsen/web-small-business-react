@@ -27,7 +27,7 @@ export async function fetchHookClient<T = any>({
     error?: string;
 }> {
     const subdomain = "https://emend.cashierthru.com";
-    const lastRoute = process.env.NEXT_PUBLIC_LAST_ROUTE_API_URL ?? "";
+    const lastRoute = import.meta.env.PUBLIC_LAST_ROUTE_API_URL ?? "";
 
     // if caller passes baseUrl, use it; otherwise build like server hook
     const currentUrl = baseUrl ?? `${subdomain}${lastRoute}`;

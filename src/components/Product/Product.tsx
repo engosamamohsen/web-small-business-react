@@ -1,12 +1,13 @@
 import { ProductType } from "@/lib/types";
 import React from "react";
-import Image from "next/image";
+import Image from "@/components/common/Image";
 import { Flame } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "./ButtonAddToCart";
 
 interface ProductProps {
   product: ProductType;
+  defaultImage?: string;
 }
 
 function getDiscountedPrice(price: number, discount: number): number {
@@ -14,7 +15,7 @@ function getDiscountedPrice(price: number, discount: number): number {
   return parseFloat(discountedPrice.toFixed(2));
 }
 
-export function Product({ product }: ProductProps) {
+export function Product({ product, defaultImage }: ProductProps) {
   const rawDiscount = product?.discount ?? 0;
   const discountValue =
     typeof rawDiscount === "number"
@@ -27,6 +28,7 @@ export function Product({ product }: ProductProps) {
     product?.main_image ||
     product?.gallery_images?.[0] ||
     (product as any).image ||
+    defaultImage ||
     "";
 
   const categoryName = product?.category?.name;

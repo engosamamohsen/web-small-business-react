@@ -1,39 +1,45 @@
-"use client";
-
 import { ShoppingCart } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import Link from "@/components/common/Link";
+import Image from "@/components/common/Image";
 import { useEffect, useState, useCallback } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import Cookies from "js-cookie";
 
 import { useSettings } from "@/providers";
+import { SettingsData } from "@/hooks/fetchSettings";
 import LoginButton from "./LoginButton";
 import SearchBar from "./SearchBar";
 
-export default function Header() {
+interface HeaderProps {
+  currentPath?: string;
+  initialIsLoggedIn?: boolean;
+  settingsData?: SettingsData | null;
+}
+
+export default function Header({ currentPath = "", initialIsLoggedIn = false, settingsData }: HeaderProps) {
   // Get data from context - NO API calls!
-  const { settings, isLogin: initialIsLogin, cartCount } = useSettings();
+  const { settings: contextSettings, isLogin: contextIsLogin, cartCount } = useSettings();
 
-  // const [token, setToken] = useState<string | undefined>(initialToken);
-  const [isLoggedIn, setIsLoggedIn] = useState(initialIsLogin);
+  const settings = settingsData || contextSettings;
 
-  const pathname = usePathname();
+  // Initialize state from props (server source of truth) or context
+  const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn || contextIsLogin);
+
+  // const pathname = currentPath; // Use prop for rendering active states if needed
   const router = useRouter();
 
-  // Sync auth state from cookies - only on mount and pathname change
+  // Sync auth state from cookies - client side check
   useEffect(() => {
     const cookieToken = Cookies.get("app_token");
-    // setToken(cookieToken);
     setIsLoggedIn(Boolean(cookieToken));
-  }, [pathname]); // Only depend on pathname, not token
+  }, []); // Run once on mount to reconcile
 
   // Handle logout - called from LoginButton
   const handleLogout = useCallback(() => {
     Cookies.remove("app_token");
     // setToken(undefined);
     setIsLoggedIn(false);
-    router.push("/login");
+    router.push("/auth/login");
     router.refresh(); // Refresh to update server state
   }, [router]);
 
@@ -41,7 +47,7 @@ export default function Header() {
   const handleCartClick = (e: React.MouseEvent) => {
     if (!isLoggedIn) {
       e.preventDefault();
-      router.push("/login");
+      router.push("/auth/login");
     }
   };
 

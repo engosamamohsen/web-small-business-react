@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
-import Link from "next/link";
+import Image from "@/components/common/Image";
+import Link from "@/components/common/Link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,7 @@ import {
 } from "./formSchema";
 import AddressList from "./AddressList";
 import DialogAddressForm from "./DialogAddressForm";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Button } from "primereact/button";
 import { useCartServices } from "@/hooks/cart/cart";
 import PageLoader from "../PageLoader/PageLoader";

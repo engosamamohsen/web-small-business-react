@@ -1,7 +1,7 @@
 import { $api } from "@/client";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 
 export const addUserToDatabase = async (data: any, action: () => void) => {
   try {

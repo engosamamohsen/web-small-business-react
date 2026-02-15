@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { cn } from "@/utils/utils";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { formatDate } from "@/lib/global";
 import { useOrderServices } from "@/hooks/order";
 import PageLoader from "@/components/PageLoader/PageLoader";

@@ -7,7 +7,7 @@ import "swiper/css/free-mode";
 import "swiper/css/scrollbar";
 
 import { FreeMode, Scrollbar } from "swiper/modules";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "@/lib/navigation";
 import { cn } from "@/utils/utils";
 import { scrollToProducts } from "./CategorySwiper";
 import styles from "./style.module.css";

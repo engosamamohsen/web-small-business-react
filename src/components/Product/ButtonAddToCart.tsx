@@ -5,7 +5,7 @@ import { ProductType } from "@/lib/types";
 import { cn } from "@/utils/utils";
 import Cookies from "js-cookie";
 import { ShoppingCart } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { Button } from "primereact/button";
 
 export function ButtonAddToCart({ product }: { product: ProductType }) {
@@ -28,7 +28,7 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
           router.push(`/products/${product?.id}`);
         } else {
           if (!token) {
-            router.push("/login");
+            router.push("/auth/login");
           } else {
             try {
               await addToCart(product);

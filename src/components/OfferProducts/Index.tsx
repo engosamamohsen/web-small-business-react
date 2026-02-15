@@ -1,27 +1,30 @@
-// src/app/(wherever)/OfferProducts.tsx
 import React from "react";
 import SwiperOffer from "./SwiperOffer";
 import NotFoundProducts from "../NotFoundProducts/NotFoundProducts";
-import { fetchHook } from "@/hooks/fetch-hook";
+// import { fetchHook } from "@/hooks/fetch-hook";
 
-async function OfferProducts() {
-  const response = await fetchHook({
-    url: "v1/product?offer=1",
-    init: {
-      // ✅ cache & dedupe offers list for 60s
-      next: { revalidate: 60 },
-    },
-  });
 
-  if (response?.ok) {
+interface OfferProductsProps {
+  offerProducts: any[];
+}
+
+function OfferProducts({ offerProducts }: OfferProductsProps) {
+  // const response = { ok: true, data: { data: offerProducts } }; // Mock response structure for SwiperOffer if needed, or better, update SwiperOffer to take array directly.
+  // Looking at SwiperOffer usage in index.astro, it expects { response: { data: { data: [] }, ok: boolean } }
+  // Let's construct the response object here to maintain compatibility with SwiperOffer
+
+  const response = {
+    ok: true,
+    data: {
+      data: offerProducts
+    }
+  };
+
+  if (offerProducts?.length) {
     return (
       <div className="container py-10">
         <h2 className="mb-8 text-2xl font-bold">العروض</h2>
-        {response?.data?.data?.length ? (
-          <SwiperOffer response={response} />
-        ) : (
-          <NotFoundProducts text="عروض" />
-        )}
+        <SwiperOffer response={response} />
       </div>
     );
   }

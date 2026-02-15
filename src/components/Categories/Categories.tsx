@@ -1,25 +1,26 @@
 import CategorySwiper from "./CategorySwiper";
 import SubCategories from "./SubCategories";
-import { cookies } from "next/headers";
+import React from 'react';
 // import { revalidateTime } from "@/constants/constansts";
-import { fetchHook } from "@/hooks/fetch-hook";
 
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
-export default async function Categories({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const searchParamsUrl = await searchParams;
-  const response = await getCategoriesServer();
+interface CategoriesProps {
+  categoriesData: any[];
+  isSuccess: boolean;
+  targetFilterCategory: {
+    isFilterCategory: boolean;
+    isSubCategory: boolean;
+    name?: string;
+    subcategories?: any[];
+  } | null;
+}
 
-  const targetFilterCategory = await handleSubCategories({
-    categories: response?.categoriesData,
-    category_id: searchParamsUrl.category,
-  });
-
-  if (!response?.isSuccess) return null;
+export default function Categories({
+  categoriesData,
+  isSuccess,
+  targetFilterCategory,
+}: CategoriesProps) {
+  if (!isSuccess) return null;
 
   return (
     <>
@@ -34,7 +35,7 @@ export default async function Categories({
           </p> */}
         </div>
 
-        <CategorySwiper categories={response} />
+        <CategorySwiper categories={{ categoriesData, isSuccess }} />
       </section>
 
       {/* Title + optional subcategories */}
@@ -51,7 +52,7 @@ export default async function Categories({
               اختر الفئة الفرعية :
             </bdi>
 
-            <SubCategories categories={targetFilterCategory?.subcategories} />
+            <SubCategories categories={targetFilterCategory?.subcategories || []} />
           </div>
         )}
       </section>
@@ -59,49 +60,4 @@ export default async function Categories({
   );
 }
 
-const handleSubCategories = async ({
-  categories,
-  category_id,
-}: {
-  categories: any[];
-  category_id: any;
-}) => {
-  if (!category_id) {
-    return { isFilterCategory: false, isSubCategory: false };
-  }
 
-  const category = categories?.find((item: any) => item.id == category_id);
-
-  return {
-    ...(category || {}),
-    isFilterCategory: true,
-    isSubCategory: (category?.subcategories?.length || 0) > 0,
-  };
-};
-
-async function getCategoriesServer(): Promise<{
-  categoriesData: any[];
-  isSuccess: boolean;
-}> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("app_token")?.value;
-
-    const response = await fetchHook({
-      url: `v1/categories`,
-      init: { next: { revalidate: 300 } }, // Cache for 5 minutes
-      token,
-    });
-
-    const categoriesData = response?.data?.data;
-
-    return {
-      categoriesData: categoriesData || [],
-      isSuccess: true,
-    };
-  } catch {
-    // Error handling - categories will return empty array
-    // Silently fail as this is not critical for page render
-    return { categoriesData: [], isSuccess: false };
-  }
-}

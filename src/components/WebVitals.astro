@@ -1,0 +1,32 @@
+---
+// Web Vitals monitoring component
+---
+
+<script>
+    // Only load web-vitals in production
+    if (import.meta.env.PROD) {
+        import("web-vitals").then(({ onCLS, onINP, onLCP, onFCP, onTTFB }) => {
+            function sendToAnalytics(metric: any) {
+                const body = JSON.stringify(metric);
+
+                // Use sendBeacon if available, fallback to fetch
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon("/api/vitals", body);
+                } else {
+                    fetch("/api/vitals", {
+                        body,
+                        method: "POST",
+                        keepalive: true,
+                        headers: { "Content-Type": "application/json" },
+                    }).catch(console.error);
+                }
+            }
+
+            onCLS(sendToAnalytics);
+            onINP(sendToAnalytics);
+            onLCP(sendToAnalytics);
+            onFCP(sendToAnalytics);
+            onTTFB(sendToAnalytics);
+        });
+    }
+</script>

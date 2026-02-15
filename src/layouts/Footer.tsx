@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import { Facebook, Instagram } from "lucide-react";
-import { usePathname } from "next/navigation";
+import Image from "@/components/common/Image";
+import { Facebook, Instagram, Phone } from "lucide-react";
+import { usePathname } from "@/lib/navigation";
 import { cn } from "@/utils/utils";
 import { useSettingsData } from "@/providers/SettingsProvider";
 
@@ -57,6 +57,16 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
                 <p className="max-w-md text-xs leading-relaxed text-gray-300">
                   {settings.about_us}
                 </p>
+              )}
+              {settings?.phone && (
+                <div className="flex flex-wrap gap-2 text-xs text-gray-400">
+                  <Phone size={12} className="mt-0.5" />
+                  {settings.phone.split(" ").map((p: string) => (
+                    <a key={p} href={`tel:${p}`} className="hover:text-white">
+                      {p}
+                    </a>
+                  ))}
+                </div>
               )}
             </div>
           </div>
