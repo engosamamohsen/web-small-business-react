@@ -7,14 +7,13 @@ import "swiper/css/free-mode";
 import "swiper/css/scrollbar";
 
 import { FreeMode, Scrollbar } from "swiper/modules";
-import { useRouter, useSearchParams } from "@/lib/navigation";
+import { useSearchParams } from "@/lib/navigation";
 import { cn } from "@/utils/utils";
 import { scrollToProducts } from "./CategorySwiper";
 import styles from "./style.module.css";
 
 const SubCategories = ({ categories }: { categories: any[] }) => {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const onCategoryClick = (category: any) => {
     const sp = new URLSearchParams(window.location.search);
@@ -25,14 +24,15 @@ const SubCategories = ({ categories }: { categories: any[] }) => {
     sp.set("page", "1");
 
     if (nextId === current) {
-      // unselect subcategory
+      // unselect subcategory - use pushState to avoid full reload
       sp.delete("sub_category");
-      router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+      window.history.pushState({}, '', `${window.location.pathname}?${sp}`);
       return;
     }
 
+    // Use pushState to update URL without full page reload
     sp.set("sub_category", nextId);
-    router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+    window.history.pushState({}, '', `${window.location.pathname}?${sp}`);
     scrollToProducts({ elementId: "products", top: 270 });
   };
 

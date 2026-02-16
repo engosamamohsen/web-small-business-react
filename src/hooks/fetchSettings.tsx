@@ -63,7 +63,7 @@ async function fetchWithTimeout(
  * Base fetch function - NOT cached
  */
 async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
-  const url = `${API_BASE_URL}/v1/setting-profile`;
+  const url = `${API_BASE_URL}v1/setting-profile`;
 
   try {
     const headers: HeadersInit = {
@@ -115,22 +115,9 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
 }
 
 /**
- * Cached public settings - for metadata and unauthenticated requests
- * Deduped within the same request using React cache()
- */
-export const fetchPublicSettings = async (): Promise<SettingsResponse> => {
-  // console.log("[fetchPublicSettings] Fetching public settings");
-  return fetchSettingsBase(undefined);
-};
-
-/**
  * Cached settings - for authenticated requests
  * Each unique token gets its own cache entry
  */
 export const fetchSettings = async (token?: string): Promise<SettingsResponse> => {
-
-  if (!token) {
-    return fetchPublicSettings();
-  }
   return fetchSettingsBase(token);
 };

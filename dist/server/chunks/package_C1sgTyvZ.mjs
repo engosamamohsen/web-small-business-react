@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState, createContext, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { __assign } from 'tslib';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -68,14 +68,42 @@ function useRouter() {
   };
 }
 function usePathname() {
-  if (typeof window === "undefined") return "";
-  return window.location.pathname;
+  const [pathname, setPathname] = useState("");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setPathname(window.location.pathname);
+    const handlePopState = () => {
+      setPathname(window.location.pathname);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+  return pathname;
 }
 function useSearchParams() {
-  if (typeof window === "undefined") {
-    return new URLSearchParams();
-  }
-  return new URLSearchParams(window.location.search);
+  const [searchParams, setSearchParams] = useState(() => {
+    if (typeof window === "undefined") {
+      return new URLSearchParams();
+    }
+    return new URLSearchParams(window.location.search);
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handlePopState = () => {
+      setSearchParams(new URLSearchParams(window.location.search));
+    };
+    window.addEventListener("popstate", handlePopState);
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function(...args) {
+      originalPushState.apply(window.history, args);
+      setSearchParams(new URLSearchParams(window.location.search));
+    };
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.history.pushState = originalPushState;
+    };
+  }, []);
+  return searchParams;
 }
 
 function useMountedState() {
@@ -683,4 +711,4 @@ const version = "0.2.0";
 const packageJson = {
 	version: version};
 
-export { $api as $, Footer as F, Header as H, Image as I, Link as L, useRouter as a, useAsync as b, cn as c, useSearchParams as d, usePathname as e, packageJson as p, useCart as u };
+export { $api as $, Footer as F, Header as H, Image as I, Link as L, useRouter as a, useAsync as b, cn as c, useSearchParams as d, fetchHookClient as f, packageJson as p, useCart as u };

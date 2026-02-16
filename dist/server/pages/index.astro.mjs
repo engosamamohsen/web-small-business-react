@@ -1,17 +1,17 @@
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_RokZUlch.mjs';
 import 'kleur/colors';
-import { $ as $$Layout } from '../chunks/Layout_CxhoI3tg.mjs';
+import { $ as $$Layout } from '../chunks/Layout_DnstxwGS.mjs';
 import { jsx, Fragment, jsxs } from 'react/jsx-runtime';
-import { L as Link, I as Image, c as cn, a as useRouter, d as useSearchParams, e as usePathname, H as Header, F as Footer, p as packageJson } from '../chunks/package_CyaH-9oZ.mjs';
+import { L as Link, I as Image, c as cn, a as useRouter, d as useSearchParams, f as fetchHookClient, H as Header, F as Footer, p as packageJson } from '../chunks/package_C1sgTyvZ.mjs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, Navigation, FreeMode, Scrollbar } from 'swiper/modules';
 /* empty css                                 */
 import { s as styles$1, a as styles$2, b as styles$3 } from '../chunks/index.95d291e9_BMS-agoT.mjs';
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { u as useMergeProps, P as PrimeReactContext, a as useHandleStyle, c as classNames, C as ComponentBase, B as Button } from '../chunks/button.esm_DKcfQX2F.mjs';
 import { ShoppingCart, Flame, PackageOpen } from 'lucide-react';
-import { a as useCartHook } from '../chunks/cart_iTx8_aSU.mjs';
+import { a as useCartHook } from '../chunks/cart_CtVqWjtC.mjs';
 import Cookies from 'js-cookie';
 import { a as fetchSettings } from '../chunks/fetchSettings_COq2Kj7n.mjs';
 import { f as fetchHook } from '../chunks/fetch-hook__RYspszQ.mjs';
@@ -426,76 +426,68 @@ function OfferProducts({ offerProducts }) {
 
 function CategorySwiper({ categories }) {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
   const categoryCount = categories?.categoriesData?.length || 0;
   const enableLoop = categoryCount > 14;
   const onCategoryClick = (category) => {
-    const sp = new URLSearchParams(searchParams.toString());
+    const sp = new URLSearchParams(window.location.search);
     const current = sp.get("category");
     const nextId = category.id.toString();
     if (nextId === current) {
       sp.delete("category");
       sp.delete("sub_category");
       sp.set("page", "1");
-      router.push(`${pathname}?${sp}`, { scroll: false });
+      window.history.pushState({}, "", `${window.location.pathname}?${sp}`);
       return;
     }
     sp.delete("sub_category");
     sp.set("page", "1");
     sp.set("category", nextId);
-    router.push(`${pathname}?${sp}`, { scroll: false });
+    window.history.pushState({}, "", `${window.location.pathname}?${sp}`);
     scrollToProducts({ elementId: "products", top: 270 });
   };
-  return (
-    // <Sticky
-    //   topOffset={0}
-    //   stickyClassName="z-[400] bg-white/90 backdrop-blur-md shadow-sm"
-    // >
-    /* @__PURE__ */ jsx("div", { className: cn("relative", styles$3["fade-edges"]), children: /* @__PURE__ */ jsx("div", { className: "container py-2", children: /* @__PURE__ */ jsx(
-      Swiper,
-      {
-        modules: [Navigation, Autoplay],
-        navigation: true,
-        autoplay: searchParams.get("category") ? false : {
-          delay: 2800,
-          disableOnInteraction: true,
-          pauseOnMouseEnter: true
-        },
-        onTouchStart: (swiper) => swiper.autoplay?.stop(),
-        onClick: (swiper) => swiper.autoplay?.stop(),
-        breakpoints: {
-          320: { slidesPerView: 3.2, spaceBetween: 8 },
-          420: { slidesPerView: 4.2, spaceBetween: 10 },
-          640: { slidesPerView: 6.2, spaceBetween: 12 },
-          768: { slidesPerView: 8.2, spaceBetween: 14 },
-          1024: { slidesPerView: 10.2, spaceBetween: 14 },
-          1280: { slidesPerView: 12.2, spaceBetween: 16 },
-          1536: { slidesPerView: 14.2, spaceBetween: 18 }
-        },
-        loop: enableLoop,
-        className: cn(styles$3["categories-swiper"], "min-h-fit"),
-        children: categories?.categoriesData?.map((category) => {
-          const isActive = searchParams.get("category") == category.id.toString();
-          return /* @__PURE__ */ jsx(
-            SwiperSlide,
-            {
-              className: "group py-3 max-md:py-2",
-              children: /* @__PURE__ */ jsx(
-                CategoryBox,
-                {
-                  category,
-                  isActive,
-                  onClick: () => onCategoryClick(category)
-                }
-              )
-            },
-            category.id
-          );
-        })
-      }
-    ) }) })
-  );
+  return /* @__PURE__ */ jsx("div", { className: cn("relative", styles$3["fade-edges"]), children: /* @__PURE__ */ jsx("div", { className: "container py-2", children: /* @__PURE__ */ jsx(
+    Swiper,
+    {
+      modules: [Navigation, Autoplay],
+      navigation: true,
+      autoplay: searchParams.get("category") ? false : {
+        delay: 2800,
+        disableOnInteraction: true,
+        pauseOnMouseEnter: true
+      },
+      onTouchStart: (swiper) => swiper.autoplay?.stop(),
+      onClick: (swiper) => swiper.autoplay?.stop(),
+      breakpoints: {
+        320: { slidesPerView: 3.2, spaceBetween: 8 },
+        420: { slidesPerView: 4.2, spaceBetween: 10 },
+        640: { slidesPerView: 6.2, spaceBetween: 12 },
+        768: { slidesPerView: 8.2, spaceBetween: 14 },
+        1024: { slidesPerView: 10.2, spaceBetween: 14 },
+        1280: { slidesPerView: 12.2, spaceBetween: 16 },
+        1536: { slidesPerView: 14.2, spaceBetween: 18 }
+      },
+      loop: enableLoop,
+      className: cn(styles$3["categories-swiper"], "min-h-fit"),
+      children: categories?.categoriesData?.map((category) => {
+        const isActive = searchParams.get("category") == category.id.toString();
+        return /* @__PURE__ */ jsx(
+          SwiperSlide,
+          {
+            className: "group py-3 max-md:py-2",
+            children: /* @__PURE__ */ jsx(
+              CategoryBox,
+              {
+                category,
+                isActive,
+                onClick: () => onCategoryClick(category)
+              }
+            )
+          },
+          category.id
+        );
+      })
+    }
+  ) }) });
 }
 function CategoryBox({
   category,
@@ -571,7 +563,6 @@ const scrollToProducts = ({
 
 const SubCategories = ({ categories }) => {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const onCategoryClick = (category) => {
     const sp = new URLSearchParams(window.location.search);
     const current = sp.get("sub_category");
@@ -579,11 +570,11 @@ const SubCategories = ({ categories }) => {
     sp.set("page", "1");
     if (nextId === current) {
       sp.delete("sub_category");
-      router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+      window.history.pushState({}, "", `${window.location.pathname}?${sp}`);
       return;
     }
     sp.set("sub_category", nextId);
-    router.push(`${window.location.pathname}?${sp}`, { scroll: false });
+    window.history.pushState({}, "", `${window.location.pathname}?${sp}`);
     scrollToProducts({ elementId: "products", top: 270 });
   };
   if (!categories?.length) return null;
@@ -639,8 +630,61 @@ function Categories({
   ] });
 }
 
+function useProductsFilter(initialProducts, initialPagination, forcedCategory, forcedSubCategory) {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category") || void 0;
+  const subCategory = searchParams.get("sub_category") || void 0;
+  const currentPage = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("limit")) || 10;
+  const [products, setProducts] = useState(initialProducts || null);
+  const [pagination, setPagination] = useState(initialPagination || null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  useEffect(() => {
+    if (isFirstLoad && initialProducts) {
+      setIsFirstLoad(false);
+      return;
+    }
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const url = `v1/product${category ? `?category_id=${category}` : ""}${subCategory ? `&sub_category_id=${subCategory}` : ""}${subCategory || category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
+        const response = await fetchHookClient({
+          url,
+          method: "GET"
+        });
+        if (response.ok && response.data?.data) {
+          setProducts(response.data.data);
+          setPagination(response.data.pagination || { last_page: 1 });
+        } else {
+          setError(response.error || "Failed to fetch products");
+          setProducts([]);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+        setIsFirstLoad(false);
+      }
+    };
+    fetchProducts();
+  }, [category, subCategory, currentPage, limit]);
+  const isEmpty = !isLoading && !error && products !== null && products.length === 0 && !isFirstLoad;
+  return {
+    products,
+    pagination,
+    isLoading,
+    error,
+    isSuccess: products !== null && !error,
+    isEmpty
+  };
+}
+
 function ProductsGrid({ products, defaultImage }) {
-  return /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4", children: products?.data?.map((product) => /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4", children: products?.map((product) => /* @__PURE__ */ jsx(
     "div",
     {
       className: "group overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg",
@@ -649,14 +693,37 @@ function ProductsGrid({ products, defaultImage }) {
     product.id
   )) });
 }
-function ProductsSection({ products, defaultImage }) {
-  if (!products?.isSuccess) {
-    return null;
+function ProductsSection({
+  products,
+  defaultImage
+}) {
+  const { products: filteredProducts, isLoading, isEmpty } = useProductsFilter(
+    products?.data,
+    products?.pagination
+  );
+  if (isLoading) {
+    return /* @__PURE__ */ jsxs("div", { className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
+      /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between sm:mb-8", children: /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-slate-900 sm:text-2xl", children: "أحدث المنتجات" }) }),
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center py-16", children: [
+        /* @__PURE__ */ jsx("div", { className: "h-10 w-10 animate-spin rounded-full border-4 border-solid border-[var(--main-color)] border-t-transparent" }),
+        /* @__PURE__ */ jsx("p", { className: "mt-4 text-gray-500", children: "جاري تحميل المنتجات..." })
+      ] })
+    ] });
   }
-  const hasProducts = products?.data && products.data.length > 0;
+  if (isEmpty) {
+    return /* @__PURE__ */ jsxs("div", { className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
+      /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between sm:mb-8", children: /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-slate-900 sm:text-2xl", children: "أحدث المنتجات" }) }),
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center py-16", children: [
+        /* @__PURE__ */ jsx("div", { className: "mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100", children: /* @__PURE__ */ jsx("svg", { className: "h-8 w-8 text-gray-400", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" }) }) }),
+        /* @__PURE__ */ jsx("p", { className: "text-lg font-semibold text-gray-700", children: "لا يوجد منتجات" }),
+        /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-gray-500", children: "جرب اختيار فئة أخرى" })
+      ] })
+    ] });
+  }
+  const hasProducts = filteredProducts && filteredProducts.length > 0;
   return /* @__PURE__ */ jsxs("div", { className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
     /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between sm:mb-8", children: /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-slate-900 sm:text-2xl", children: "أحدث المنتجات" }) }),
-    hasProducts ? /* @__PURE__ */ jsx(ProductsGrid, { products, defaultImage }) : /* @__PURE__ */ jsx("div", { className: "py-10 text-center text-gray-500", children: "لا توجد منتجات حاليا" })
+    hasProducts ? /* @__PURE__ */ jsx(ProductsGrid, { products: filteredProducts, defaultImage }) : /* @__PURE__ */ jsx("div", { className: "py-10 text-center text-gray-500", children: "لا توجد منتجات" })
   ] });
 }
 

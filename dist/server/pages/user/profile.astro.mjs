@@ -1,11 +1,11 @@
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, m as maybeRenderHead, i as addAttribute } from '../../chunks/astro/server_RokZUlch.mjs';
 import 'kleur/colors';
-import { $ as $$Layout } from '../../chunks/Layout_CxhoI3tg.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DnstxwGS.mjs';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import Cookies from 'js-cookie';
-import { b as useAsync, $ as $api, a as useRouter, I as Image, H as Header, F as Footer, p as packageJson } from '../../chunks/package_CyaH-9oZ.mjs';
+import { b as useAsync, $ as $api, a as useRouter, I as Image, H as Header, F as Footer, p as packageJson } from '../../chunks/package_C1sgTyvZ.mjs';
 import 'react-toastify';
-import { P as PageLoader } from '../../chunks/PageLoader_6WRPkHu1.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CfPhSRrW.mjs';
 import * as React from 'react';
 import { u as useMergeProps, P as PrimeReactContext, a as useHandleStyle, O as ObjectUtils, c as classNames, C as ComponentBase, B as Button } from '../../chunks/button.esm_DKcfQX2F.mjs';
 import { a as fetchSettings } from '../../chunks/fetchSettings_COq2Kj7n.mjs';

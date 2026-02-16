@@ -6,9 +6,8 @@ import { Navigation, Autoplay } from "swiper/modules";
 import styles from "./style.module.css";
 import "swiper/css";
 import "swiper/css/navigation";
-// import Sticky from "react-sticky-el";
 import { cn } from "@/utils/utils";
-import { useRouter, useSearchParams, usePathname } from "@/lib/navigation";
+import { useSearchParams } from "@/lib/navigation";
 import React from 'react';
 
 interface CategoryType {
@@ -19,15 +18,13 @@ interface CategoryType {
 
 export default function CategorySwiper({ categories }: { categories: any }) {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
 
   // Only enable loop if we have enough slides (more than max slidesPerView)
   const categoryCount = categories?.categoriesData?.length || 0;
   const enableLoop = categoryCount > 14;
 
   const onCategoryClick = (category: CategoryType) => {
-    const sp = new URLSearchParams(searchParams.toString());
+    const sp = new URLSearchParams(window.location.search);
     const current = sp.get("category");
     const nextId = category.id.toString();
 
@@ -36,7 +33,8 @@ export default function CategorySwiper({ categories }: { categories: any }) {
       sp.delete("category");
       sp.delete("sub_category");
       sp.set("page", "1");
-      router.push(`${pathname}?${sp}`, { scroll: false });
+      // Use pushState to update URL without full page reload
+      window.history.pushState({}, '', `${window.location.pathname}?${sp}`);
       return;
     }
 
@@ -44,16 +42,13 @@ export default function CategorySwiper({ categories }: { categories: any }) {
     sp.delete("sub_category");
     sp.set("page", "1");
     sp.set("category", nextId);
-
-    router.push(`${pathname}?${sp}`, { scroll: false });
+    
+    // Use pushState to update URL without full page reload
+    window.history.pushState({}, '', `${window.location.pathname}?${sp}`);
     scrollToProducts({ elementId: "products", top: 270 });
   };
 
   return (
-    // <Sticky
-    //   topOffset={0}
-    //   stickyClassName="z-[400] bg-white/90 backdrop-blur-md shadow-sm"
-    // >
     <div className={cn("relative", styles["fade-edges"])}>
       <div className="container py-2">
         <Swiper
@@ -102,7 +97,6 @@ export default function CategorySwiper({ categories }: { categories: any }) {
         </Swiper>
       </div>
     </div>
-    // </Sticky>
   );
 }
 

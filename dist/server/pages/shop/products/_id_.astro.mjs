@@ -1,6 +1,6 @@
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, u as unescapeHTML, m as maybeRenderHead, i as addAttribute } from '../../../chunks/astro/server_RokZUlch.mjs';
 import 'kleur/colors';
-import { $ as $$Layout } from '../../../chunks/Layout_CxhoI3tg.mjs';
+import { $ as $$Layout } from '../../../chunks/Layout_DnstxwGS.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import parse from 'html-react-parser';
 import React__default, { useState, useEffect, useMemo, memo, useCallback } from 'react';
@@ -9,9 +9,9 @@ import { Navigation } from 'swiper/modules';
 /* empty css                                       */
 import { s as styles } from '../../../chunks/_id_.f4bd5aee_3zF7qthd.mjs';
 import { B as Button } from '../../../chunks/button.esm_DKcfQX2F.mjs';
-import { a as useCartHook } from '../../../chunks/cart_iTx8_aSU.mjs';
+import { a as useCartHook } from '../../../chunks/cart_CtVqWjtC.mjs';
 import Cookies from 'js-cookie';
-import { c as cn, H as Header, F as Footer, p as packageJson } from '../../../chunks/package_CyaH-9oZ.mjs';
+import { c as cn, H as Header, F as Footer, p as packageJson } from '../../../chunks/package_C1sgTyvZ.mjs';
 import { u as useUpdateEffect, I as InputTextarea } from '../../../chunks/inputtextarea.esm_0g3tNOt2.mjs';
 import { toast } from 'react-toastify';
 import { a as fetchSettings } from '../../../chunks/fetchSettings_COq2Kj7n.mjs';
