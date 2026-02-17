@@ -1,19 +1,18 @@
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_RokZUlch.mjs';
 import 'kleur/colors';
-import { $ as $$Layout } from '../chunks/Layout_DnstxwGS.mjs';
+import { $ as $$Layout } from '../chunks/Layout_DfWRcqDA.mjs';
 import { jsx, Fragment, jsxs } from 'react/jsx-runtime';
-import { L as Link, I as Image, c as cn, a as useRouter, d as useSearchParams, f as fetchHookClient, H as Header, F as Footer, p as packageJson } from '../chunks/package_C1sgTyvZ.mjs';
+import { L as Link, I as Image, e as useMergeProps, P as PrimeReactContext, o as useHandleStyle, k as classNames, C as ComponentBase, B as Button, c as cn, a as useRouter, G as useSearchParams, J as fetchHookClient, H as Header, F as Footer, p as packageJson } from '../chunks/package_DgEzYN_O.mjs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, Navigation, FreeMode, Scrollbar } from 'swiper/modules';
 /* empty css                                 */
 import { s as styles$1, a as styles$2, b as styles$3 } from '../chunks/index.95d291e9_BMS-agoT.mjs';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { u as useMergeProps, P as PrimeReactContext, a as useHandleStyle, c as classNames, C as ComponentBase, B as Button } from '../chunks/button.esm_DKcfQX2F.mjs';
 import { ShoppingCart, Flame, PackageOpen } from 'lucide-react';
-import { a as useCartHook } from '../chunks/cart_CtVqWjtC.mjs';
+import { a as useCartHook } from '../chunks/cart_CHnMYuUD.mjs';
 import Cookies from 'js-cookie';
-import { a as fetchSettings } from '../chunks/fetchSettings_COq2Kj7n.mjs';
+import { a as fetchSettings } from '../chunks/fetchSettings_Cxh3gvuA.mjs';
 import { f as fetchHook } from '../chunks/fetch-hook__RYspszQ.mjs';
 export { renderers } from '../renderers.mjs';
 

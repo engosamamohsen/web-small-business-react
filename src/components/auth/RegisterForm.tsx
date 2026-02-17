@@ -14,6 +14,7 @@ import { SettingsType } from "@/lib/types";
 import { useRouter } from "@/lib/navigation";
 import Cookies from "js-cookie";
 import { useLoginHook } from "@/hooks/auth/login";
+import CircleLogo from "@/global/CircleLogo";
 
 const registerSchema = z
   .object({
@@ -36,8 +37,10 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterForm({
   initSettings,
+  onSwitchToLogin,
 }: {
   initSettings: SettingsType;
+  onSwitchToLogin?: () => void;
 }) {
   const router = useRouter();
   const {
@@ -67,13 +70,8 @@ export default function RegisterForm({
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
         {initSettings?.logo && (
-          <Image
-            src={initSettings?.logo}
-            alt="logo app"
-            width={80}
-            height={80}
-            className="mr-[6px]"
-          />
+        <CircleLogo src={initSettings?.logo} className="mr-2" />
+
         )}
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">
           <div className="flex w-full items-center justify-center gap-1">
@@ -237,9 +235,19 @@ export default function RegisterForm({
       <div className="text-center">
         <div className="flex w-full justify-center gap-1 text-sm text-black">
           <span> هل لديك حساب بالفعل ؟</span>
-          <Link href="/auth/login" className="text-[var(--main-color)]">
-            تسجيل الدخول
-          </Link>
+          {onSwitchToLogin ? (
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="text-[var(--main-color)] hover:underline"
+            >
+              تسجيل الدخول
+            </button>
+          ) : (
+            <Link href="/auth/login" className="text-[var(--main-color)]">
+              تسجيل الدخول
+            </Link>
+          )}
         </div>
       </div>
     </form>

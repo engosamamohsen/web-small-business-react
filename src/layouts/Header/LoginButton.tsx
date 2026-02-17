@@ -7,9 +7,10 @@ import { useState, useRef, useEffect } from "react";
 interface LoginButtonProps {
   isLoggedIn: boolean;
   onLogout: () => void;
+  onOpenAuthDialog?: () => void;
 }
 
-export default function LoginButton({ isLoggedIn, onLogout }: LoginButtonProps) {
+export default function LoginButton({ isLoggedIn, onLogout, onOpenAuthDialog }: LoginButtonProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -25,16 +26,16 @@ export default function LoginButton({ isLoggedIn, onLogout }: LoginButtonProps) 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Not logged in - show login button
+  // Not logged in - show login button that opens dialog
   if (!isLoggedIn) {
     return (
-      <Link
-        href="/auth/login"
+      <button
+        onClick={() => onOpenAuthDialog?.()}
         className="flex h-9 items-center gap-2 rounded-full bg-[var(--main-color)] px-4 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
       >
         <User className="h-4 w-4" />
         <span className="hidden sm:inline">تسجيل الدخول</span>
-      </Link>
+      </button>
     );
   }
 

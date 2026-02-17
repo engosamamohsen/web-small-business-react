@@ -1,6 +1,6 @@
 import { g as createComponent, i as addAttribute, r as renderTemplate, k as renderHead, j as renderComponent } from '../../chunks/astro/server_RokZUlch.mjs';
 import 'kleur/colors';
-import { f as fetchPublicSettings } from '../../chunks/fetchSettings_COq2Kj7n.mjs';
+import { f as fetchPublicSettings } from '../../chunks/fetchSettings_Cxh3gvuA.mjs';
 /* empty css                                    */
 export { renderers } from '../../renderers.mjs';
 

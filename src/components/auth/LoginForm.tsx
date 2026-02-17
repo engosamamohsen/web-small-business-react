@@ -18,11 +18,18 @@ import {
 import { useLoginHook } from "@/hooks/auth/login";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
+import CircleLogo from "@/global/CircleLogo";
+
+
 
 export default function LoginForm({
   initSettings,
+  onSwitchToRegister,
+  onSwitchToForgotPassword,
 }: {
   initSettings: SettingsType;
+  onSwitchToRegister?: () => void;
+  onSwitchToForgotPassword?: () => void;
 }) {
   const router = useRouter();
   const {
@@ -53,13 +60,8 @@ export default function LoginForm({
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
         {initSettings?.logo && (
-          <Image
-            src={initSettings?.logo}
-            alt="logo app"
-            width={80}
-            height={80}
-            className="mr-[6px]"
-          />
+        <CircleLogo src={initSettings?.logo} className="mr-2" />
+
         )}
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">
           <div className="flex w-full items-center justify-center gap-1">
@@ -155,14 +157,34 @@ export default function LoginForm({
       </div>
       <div className="flex items-center justify-between gap-2">
         <div className="flex gap-1 text-sm text-black">
-          <Link href="/auth/register" className="text-[var(--main-color)]">
-            أنشاء حساب جديد
-          </Link>
+          {onSwitchToRegister ? (
+            <button
+              type="button"
+              onClick={onSwitchToRegister}
+              className="text-[var(--main-color)] hover:underline"
+            >
+              أنشاء حساب جديد
+            </button>
+          ) : (
+            <Link href="/auth/register" className="text-[var(--main-color)]">
+              أنشاء حساب جديد
+            </Link>
+          )}
         </div>
         <div className="text-sm text-black">
-          <Link href="/auth/forgot-password" className="text-[var(--second-color)]">
-            نسيت كلمة المرور ؟
-          </Link>
+          {onSwitchToForgotPassword ? (
+            <button
+              type="button"
+              onClick={onSwitchToForgotPassword}
+              className="text-[var(--second-color)] hover:underline"
+            >
+              نسيت كلمة المرور ؟
+            </button>
+          ) : (
+            <Link href="/auth/forgot-password" className="text-[var(--second-color)]">
+              نسيت كلمة المرور ؟
+            </Link>
+          )}
         </div>
       </div>
     </form>

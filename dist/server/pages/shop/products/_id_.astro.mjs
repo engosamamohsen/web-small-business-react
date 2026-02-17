@@ -1,6 +1,6 @@
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, u as unescapeHTML, m as maybeRenderHead, i as addAttribute } from '../../../chunks/astro/server_RokZUlch.mjs';
 import 'kleur/colors';
-import { $ as $$Layout } from '../../../chunks/Layout_DnstxwGS.mjs';
+import { $ as $$Layout } from '../../../chunks/Layout_DfWRcqDA.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import parse from 'html-react-parser';
 import React__default, { useState, useEffect, useMemo, memo, useCallback } from 'react';
@@ -8,13 +8,12 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 /* empty css                                       */
 import { s as styles } from '../../../chunks/_id_.f4bd5aee_3zF7qthd.mjs';
-import { B as Button } from '../../../chunks/button.esm_DKcfQX2F.mjs';
-import { a as useCartHook } from '../../../chunks/cart_CtVqWjtC.mjs';
+import { B as Button, c as cn, H as Header, F as Footer, p as packageJson } from '../../../chunks/package_DgEzYN_O.mjs';
+import { a as useCartHook } from '../../../chunks/cart_CHnMYuUD.mjs';
 import Cookies from 'js-cookie';
-import { c as cn, H as Header, F as Footer, p as packageJson } from '../../../chunks/package_C1sgTyvZ.mjs';
-import { u as useUpdateEffect, I as InputTextarea } from '../../../chunks/inputtextarea.esm_0g3tNOt2.mjs';
+import { u as useUpdateEffect, I as InputTextarea } from '../../../chunks/inputtextarea.esm_C5CYVi-k.mjs';
 import { toast } from 'react-toastify';
-import { a as fetchSettings } from '../../../chunks/fetchSettings_COq2Kj7n.mjs';
+import { a as fetchSettings } from '../../../chunks/fetchSettings_Cxh3gvuA.mjs';
 import { f as fetchHook } from '../../../chunks/fetch-hook__RYspszQ.mjs';
 export { renderers } from '../../../renderers.mjs';
 

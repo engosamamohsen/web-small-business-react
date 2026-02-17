@@ -1,13 +1,13 @@
 import { f as createAstro, g as createComponent, j as renderComponent, r as renderTemplate, m as maybeRenderHead, i as addAttribute } from '../../chunks/astro/server_RokZUlch.mjs';
 import 'kleur/colors';
-import { $ as $$Layout } from '../../chunks/Layout_DnstxwGS.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DfWRcqDA.mjs';
 import { jsx, jsxs } from 'react/jsx-runtime';
-import { u as useCart, L as Link, I as Image, c as cn, a as useRouter, H as Header, F as Footer, p as packageJson } from '../../chunks/package_C1sgTyvZ.mjs';
+import { u as useCart, L as Link, I as Image, c as cn, a as useRouter, H as Header, F as Footer, p as packageJson } from '../../chunks/package_DgEzYN_O.mjs';
 import { Minus, Plus, X } from 'lucide-react';
 import { useEffect } from 'react';
-import { u as useCartServices, a as useCartHook } from '../../chunks/cart_CtVqWjtC.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_CfPhSRrW.mjs';
-import { a as fetchSettings } from '../../chunks/fetchSettings_COq2Kj7n.mjs';
+import { u as useCartServices, a as useCartHook } from '../../chunks/cart_CHnMYuUD.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_7ycXwOAB.mjs';
+import { a as fetchSettings } from '../../chunks/fetchSettings_Cxh3gvuA.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const CartItem = ({

@@ -15,11 +15,14 @@ import {
 } from "./schemas";
 
 import { useForgotPasswordHook } from "@/hooks/auth/forgotPassword";
+import CircleLogo from "@/global/CircleLogo";
 
 export default function ForgotPasswordForm({
   initSettings,
+  onSwitchToLogin,
 }: {
   initSettings: SettingsType;
+  onSwitchToLogin?: () => void;
 }) {
   const router = useRouter();
 
@@ -51,13 +54,8 @@ export default function ForgotPasswordForm({
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
         {initSettings?.logo && (
-          <Image
-            src={initSettings?.logo}
-            alt="logo app"
-            width={80}
-            height={80}
-            className="mr-[6px]"
-          />
+        <CircleLogo src={initSettings?.logo} className="mr-2" />
+
         )}
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">
           <div className="flex w-full items-center justify-center gap-1">
@@ -108,9 +106,19 @@ export default function ForgotPasswordForm({
       <div className="flex items-center justify-center gap-2">
         <div className="flex gap-1 text-sm text-black">
           <span>لديك حساب بالفعل؟</span>
-          <Link href="/auth/login" className="text-[var(--main-color)]">
-            تسجيل الدخول
-          </Link>
+          {onSwitchToLogin ? (
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="text-[var(--main-color)] hover:underline"
+            >
+              تسجيل الدخول
+            </button>
+          ) : (
+            <Link href="/auth/login" className="text-[var(--main-color)]">
+              تسجيل الدخول
+            </Link>
+          )}
         </div>
       </div>
     </form>
