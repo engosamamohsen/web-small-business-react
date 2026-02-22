@@ -1,1 +1,0 @@
-import{u as r}from"./providers.CLBHCDtv.js";import{r as e}from"./index.DGOumNSj.js";import"./jsx-runtime.BjG_zV1W.js";function n({isLogin:t}){const{setIsLogin:o}=r();return e.useEffect(()=>{typeof t=="boolean"&&o(t)},[t,o]),null}export{n as default};

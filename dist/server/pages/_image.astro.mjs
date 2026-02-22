@@ -1014,16 +1014,16 @@ const $$Picture = createComponent(async ($$result, $$props, $$slots) => {
   })} <img${addAttribute(fallbackImage.src, "src")}${spreadAttributes(imgAdditionalAttributes)}${spreadAttributes(fallbackImage.attributes)}> </picture>`;
 }, "F:/react js projects/kamal/web-small-business-react/node_modules/astro/components/Picture.astro", void 0);
 
-const imageConfig = { "service": { "entrypoint": "astro/assets/services/sharp", "config": {} }, "domains": ["admin-osama.cashierthru.com"], "remotePatterns": [{ "protocol": "https", "hostname": "*.cashierthru.com" }, { "protocol": "https", "hostname": "cdn.pixabay.com" }, { "protocol": "https", "hostname": "i.ibb.co" }, { "protocol": "https", "hostname": "source.unsplash.com" }, { "protocol": "https", "hostname": "staging.fawaterk.com" }], "endpoint": "astro/assets/endpoint/node" };
-// This is used by the @astrojs/node integration to locate images.
-// It's unused on other platforms, but on some platforms like Netlify (and presumably also Vercel)
-// new URL("dist/...") is interpreted by the bundler as a signal to include that directory
-// in the Lambda bundle, which would bloat the bundle with images.
-// To prevent this, we mark the URL construction as pure,
-// so that it's tree-shaken away for all platforms that don't need it.
-const outDir = /* #__PURE__ */ new URL("file:///F:/react%20js%20projects/kamal/web-small-business-react/dist/client/");
-const assetsDir = /* #__PURE__ */ new URL("_astro", outDir);
-const getImage = async (options) => await getImage$1(options, imageConfig);
+const imageConfig = {"service":{"entrypoint":"astro/assets/services/sharp","config":{}},"domains":["admin-osama.cashierthru.com"],"remotePatterns":[{"protocol":"https","hostname":"*.cashierthru.com"},{"protocol":"https","hostname":"cdn.pixabay.com"},{"protocol":"https","hostname":"i.ibb.co"},{"protocol":"https","hostname":"source.unsplash.com"},{"protocol":"https","hostname":"staging.fawaterk.com"}],"endpoint":"astro/assets/endpoint/node"};
+					// This is used by the @astrojs/node integration to locate images.
+					// It's unused on other platforms, but on some platforms like Netlify (and presumably also Vercel)
+					// new URL("dist/...") is interpreted by the bundler as a signal to include that directory
+					// in the Lambda bundle, which would bloat the bundle with images.
+					// To prevent this, we mark the URL construction as pure,
+					// so that it's tree-shaken away for all platforms that don't need it.
+					const outDir = /* #__PURE__ */ new URL("file:///F:/react%20js%20projects/kamal/web-small-business-react/dist/client/");
+					const assetsDir = /* #__PURE__ */ new URL("_astro", outDir);
+					const getImage = async (options) => await getImage$1(options, imageConfig);
 
 const fnv1a52 = (str) => {
   const len = str.length;

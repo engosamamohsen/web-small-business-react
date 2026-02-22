@@ -18,8 +18,8 @@ if (!token) {
     return Astro.redirect("/auth/login");
 }
 
-// Get order ID from route params
-const { id } = Astro.params;
+// Get order ID from route params (always defined for a dynamic route)
+const id = Astro.params.id as string;
 
 // Fetch settings for the page
 const settingsResponse = await fetchSettings(token);

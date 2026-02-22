@@ -1,1 +1,0 @@
-import{r as e}from"./index.DGOumNSj.js";import{a}from"./js.cookie.Cz0CWeBA.js";function i({settings:r}){return e.useEffect(()=>{r&&(r.vat&&a.set("vat",r.vat),r.tax&&a.set("tax",r.tax.toString()),r.service&&a.set("service",r.service.toString()),a.set("app_settings",JSON.stringify(r),{expires:7}))},[r]),null}export{i as default};

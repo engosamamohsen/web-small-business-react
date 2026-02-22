@@ -1,0 +1,1 @@
+import{r as o}from"./index.DGOumNSj.js";import{a}from"./js.cookie.Cz0CWeBA.js";import{s as e}from"./fetchSettings.BRQZD0hC.js";function p({settings:r}){return o.useEffect(()=>{r&&(r.vat&&a.set("vat",r.vat),r.tax&&a.set("tax",r.tax.toString()),r.service&&a.set("service",r.service.toString()),a.set("app_settings",JSON.stringify(r),{expires:7}),e(r))},[r]),null}export{p as default};
