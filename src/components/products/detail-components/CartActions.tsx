@@ -1,5 +1,4 @@
-import { useState, memo, useCallback } from "react";
-import { Button } from "primereact/button";
+import { useState, memo, useCallback, lazy, Suspense } from "react";
 import { useCartHook } from "@/hooks/cart/cart";
 import { ProductType, SizeOption, ColorOption } from "@/lib/types";
 import Cookies from "js-cookie";
@@ -8,6 +7,11 @@ import { cn } from "@/utils/utils";
 import { InputTextarea } from "primereact/inputtextarea";
 import { getDiscountedPrice } from "@/lib/pricing-utils";
 import { toast } from "react-toastify";
+import { ShoppingCart, Zap, Plus, Minus } from "lucide-react";
+import { useSettings } from "@/providers";
+
+// Lazy-load AuthDialog — only needed when user is not logged in
+const AuthDialog = lazy(() => import("@/components/auth/AuthDialog"));
 
 interface FormattedVariation {
     main_variation_id: string;
@@ -25,6 +29,7 @@ interface CartActionsProps {
     currentSize: SizeOption | null;
     selectedVariations: FormattedVariations;
     productVariations: { is_required?: boolean; id?: string }[];
+    onAddedToCart?: () => void;
 }
 
 export const CartActions = memo(({
@@ -34,118 +39,210 @@ export const CartActions = memo(({
     selectedVariations,
     productVariations,
     totalPrice,
+    onAddedToCart,
 }: CartActionsProps) => {
     const [count, setCount] = useState(1);
     const [productNote, setProductNote] = useState("");
-    const token = Cookies.get("app_token");
     const [isAvailable, setIsAvailable] = useState(true);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
+    // Track what action to run after successful login: "cart" | "buynow"
+    const [pendingAction, setPendingAction] = useState<"cart" | "buynow" | null>(null);
+
     const { loading, addToCart } = useCartHook();
-    const discount = product.discount ? parseInt(product.discount, 10) : 0;
+    const { settings } = useSettings();
+    const discount = product.discount ? parseInt(String(product.discount), 10) : 0;
 
-    const handleAddToCart = useCallback(async () => {
-        if (!token) {
-            window.location.href = "/login";
-            return;
-        }
+    const finalPrice = discount > 0
+        ? getDiscountedPrice(product?.price, discount)
+        : totalPrice * count;
 
+    // ── Core cart add (called directly or after login) ──────────────────────
+    const doAddToCart = useCallback(async () => {
         try {
-            // Get variations in the required format
             const { variations } = selectedVariations;
-
-            // Call the API to add the product to cart
             await addToCart({
                 ...product,
                 count,
                 currentColor,
                 currentSize,
-                product_note: productNote, // Include product note from state
-                variations, // Include variations
+                product_note: productNote,
+                variations,
             });
-
-            // Clear product note after successful addition
             setProductNote("");
+            onAddedToCart?.();
         } catch (error) {
-            // Show error toast notification
             toast.error(
                 error instanceof Error ? error.message : "فشل إضافة المنتج إلى السلة"
             );
         }
-    }, [token, selectedVariations, addToCart, product, count, currentColor, currentSize, productNote]);
+    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, onAddedToCart]);
 
-    /**
-     * Updates the availability state of the product based on selected variations.
-     *
-     * This function checks if all required variations have been selected. If so, it sets the availability state to true. Otherwise, it sets it to false.
-     */
+    // ── Core buy now (called directly or after login) ────────────────────────
+    const doBuyNow = useCallback(async () => {
+        try {
+            const { variations } = selectedVariations;
+            await addToCart({
+                ...product,
+                count,
+                currentColor,
+                currentSize,
+                product_note: productNote,
+                variations,
+            });
+            window.location.href = "/shop/cart";
+        } catch (error) {
+            toast.error(
+                error instanceof Error ? error.message : "فشل إضافة المنتج إلى السلة"
+            );
+        }
+    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote]);
+
+    // ── Auth guard ────────────────────────────────────────────────────────────
+    const requireAuth = useCallback((action: "cart" | "buynow") => {
+        const token = Cookies.get("app_token");
+        if (!token) {
+            setPendingAction(action);
+            setShowAuthDialog(true);
+            return false;
+        }
+        return true;
+    }, []);
+
+    const handleAddToCart = useCallback(async () => {
+        if (!requireAuth("cart")) return;
+        await doAddToCart();
+    }, [requireAuth, doAddToCart]);
+
+    const handleBuyNow = useCallback(async () => {
+        if (!requireAuth("buynow")) return;
+        await doBuyNow();
+    }, [requireAuth, doBuyNow]);
+
+    // ── Called by AuthDialog after successful login ───────────────────────────
+    const handleLoginSuccess = useCallback(async () => {
+        setShowAuthDialog(false);
+        if (pendingAction === "cart") {
+            await doAddToCart();
+        } else if (pendingAction === "buynow") {
+            await doBuyNow();
+        }
+        setPendingAction(null);
+    }, [pendingAction, doAddToCart, doBuyNow]);
+
     useUpdateEffect(() => {
         if (!productVariations.length) return;
-        const requiredVariations = productVariations.filter(
-            (variation) => variation.is_required,
+        const requiredVariations = productVariations.filter((v) => v.is_required);
+        const available = requiredVariations.every((main) =>
+            selectedVariations.variations.some((v) => v.main_variation_id == main.id)
         );
-        const isAvailable = requiredVariations.every((main_variation) => {
-            return selectedVariations.variations.some(
-                (variation) => variation.main_variation_id == main_variation.id,
-            );
-        });
-        setIsAvailable(isAvailable);
+        setIsAvailable(available);
     }, [productVariations, selectedVariations]);
+
     return (
-        <div className="mt-4 flex flex-col gap-4">
-            {/* Product Note Input */}
-            <div className="mt-6 w-full">
-                <label
-                    htmlFor="product-note"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                >
-                    ملاحظات المنتج (اختياري)
-                </label>
-                <InputTextarea
-                    id="product-note"
-                    value={productNote}
-                    onChange={(e) => setProductNote(e.target.value)}
-                    rows={3}
-                    className="w-full rounded-md border border-gray-300 p-2 focus:border-[var(--main-color)] focus:outline-none"
-                    placeholder="اكتب أي ملاحظات خاصة بالمنتج هنا..."
-                />
-            </div>
-
-            <div className="flex items-center justify-between gap-3 max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:z-50 max-md:flex-col-reverse max-md:bg-white max-md:px-8 max-md:py-6 max-md:pb-10 max-md:shadow-[0_0_10px_0_rgba(0,0,0,0.2)]">
-                <Button
-                    loading={loading}
-                    disabled={loading || !isAvailable}
-                    onClick={handleAddToCart}
-                    loadingIcon="pi pi-spin pi-spinner absolute"
-                    className={cn(
-                        "flex w-fit items-center justify-center gap-4 rounded-md bg-[var(--main-color)] px-6 py-4 text-white transition-colors hover:bg-gray-800 max-md:w-full",
-                        !isAvailable && "bg-gray-500",
-                    )}
-                    aria-label="Add product to cart"
-                >
-                    <span>أضف إلى السلة</span>
-                    <span>
-                        {discount > 0 ? getDiscountedPrice(product?.price, discount) : totalPrice * count} <span>جنية</span>
-                    </span>
-                </Button>
-                <div className="flex w-40 items-center justify-between gap-1 rounded-lg border bg-white p-4 max-md:w-full">
-                    <Button
-                        icon="pi pi-plus"
-                        className="p-button-text mx-0 !shadow-none !outline-none hover:text-[var(--second-color)]"
-                        onClick={() => setCount((prev) => prev + 1)}
-                    />
-
-                    <span className="text-xl font-semibold">{count}</span>
-                    <Button
-                        icon="pi pi-minus"
-                        className="p-button-text mx-0 !shadow-none !outline-none hover:text-[var(--second-color)]"
-                        onClick={() => {
-                            if (count > 1) {
-                                setCount((prev) => Math.max(prev - 1, 0));
-                            }
-                        }}
+        <>
+            <div className="mt-4 flex flex-col gap-4">
+                {/* Product Note */}
+                <div className="mt-4 w-full">
+                    <label
+                        htmlFor="product-note"
+                        className="mb-2 block text-sm font-medium text-gray-700"
+                    >
+                        ملاحظات المنتج (اختياري)
+                    </label>
+                    <InputTextarea
+                        id="product-note"
+                        value={productNote}
+                        onChange={(e) => setProductNote(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-xl border border-gray-200 p-3 text-sm focus:border-[var(--main-color)] focus:outline-none focus:ring-2 focus:ring-[var(--main-color)]/20"
+                        placeholder="اكتب أي ملاحظات خاصة بالمنتج هنا..."
                     />
                 </div>
+
+                {/* Quantity Counter */}
+                <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-600">الكمية</span>
+                    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2">
+                        <button
+                            onClick={() => setCount((p) => Math.max(p - 1, 1))}
+                            disabled={count <= 1}
+                            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 disabled:opacity-40"
+                        >
+                            <Minus size={14} />
+                        </button>
+                        <span className="min-w-[2rem] text-center text-lg font-bold text-gray-800">
+                            {count}
+                        </span>
+                        <button
+                            onClick={() => setCount((p) => p + 1)}
+                            className="flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100"
+                        >
+                            <Plus size={14} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Action Buttons — fixed on mobile, inline on desktop */}
+                <div
+                    className={cn(
+                        "flex gap-3",
+                        "max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:z-30",
+                        "max-md:flex-row max-md:bg-white max-md:px-4 max-md:py-4 max-md:pb-6",
+                        "max-md:shadow-[0_-4px_24px_rgba(0,0,0,0.10)] max-md:border-t max-md:border-gray-100",
+                        "md:flex-row md:items-stretch"
+                    )}
+                >
+                    {/* Add to Cart — outlined */}
+                    <button
+                        disabled={loading || !isAvailable}
+                        onClick={handleAddToCart}
+                        className={cn(
+                            "flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-[var(--main-color)] px-5 py-3.5 text-sm font-bold text-[var(--main-color)] transition-all duration-200",
+                            "hover:bg-[var(--main-color)]/8 active:scale-[0.98]",
+                            (loading || !isAvailable) && "cursor-not-allowed border-gray-300 text-gray-400"
+                        )}
+                    >
+                        {loading ? (
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--main-color)] border-t-transparent" />
+                        ) : (
+                            <ShoppingCart size={16} />
+                        )}
+                        <span>أضف للسلة</span>
+                        <span className="text-xs opacity-70">{finalPrice} ج.م</span>
+                    </button>
+
+                    {/* Buy Now — filled → goes to /shop/cart */}
+                    <button
+                        disabled={loading || !isAvailable}
+                        onClick={handleBuyNow}
+                        className={cn(
+                            "flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--main-color)] px-5 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200",
+                            "hover:opacity-90 active:scale-[0.98]",
+                            (loading || !isAvailable) && "cursor-not-allowed bg-gray-300"
+                        )}
+                    >
+                        <Zap size={16} />
+                        <span>اشتري الآن</span>
+                    </button>
+                </div>
+
+                {/* Spacer so fixed bar doesn't overlap content on mobile */}
+                <div className="h-20 md:hidden" />
             </div>
-        </div>
+
+            {/* Auth Dialog — shown when user is not logged in */}
+            <Suspense fallback={null}>
+                <AuthDialog
+                    visible={showAuthDialog}
+                    onHide={() => {
+                        setShowAuthDialog(false);
+                        setPendingAction(null);
+                    }}
+                    initSettings={settings || {}}
+                    onSuccess={handleLoginSuccess}
+                />
+            </Suspense>
+        </>
     );
 });
 

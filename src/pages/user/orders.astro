@@ -1,0 +1,128 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import OrderList from "@/components/Orders/OrderList/OrderList";
+import Header from "@/layouts/Header/Header";
+import Footer from "@/layouts/Footer";
+import ColorHandler from "@/layouts/ColorHandler";
+import LoginHandler from "@/layouts/LoginHandler";
+import { ToastContainer } from "react-toastify";
+import { SettingsProvider } from "@/providers";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import packageJson from "../../../package.json";
+
+// Get auth token from cookies
+const token = Astro.cookies.get("app_token")?.value;
+
+// If not logged in, redirect to login
+if (!token) {
+    return Astro.redirect("/auth/login");
+}
+
+// Fetch settings for the page
+const settingsResponse = await fetchSettings(token);
+
+// Extract data with defaults
+const settingsData = settingsResponse?.data ?? null;
+const isLogin = settingsResponse?.ok
+    ? Boolean(settingsResponse?.is_login)
+    : false;
+const cartCount = settingsResponse?.cart_count ?? 0;
+const appVersion = packageJson.version;
+
+// Build WhatsApp link
+function buildWhatsAppLink(phone?: string | null): string | null {
+    if (!phone) return null;
+    const digitsOnly = phone.replace(/[^\d]/g, "");
+    if (!digitsOnly) return null;
+    return `https://wa.me/${encodeURIComponent(digitsOnly)}`;
+}
+
+const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
+
+// SEO metadata
+const pageTitle = "طلباتي - " + (settingsData?.name || "المتجر");
+const pageDescription = "استعرض جميع طلباتك وتابع حالة كل طلب";
+
+// Server-side rendering (requires auth)
+export const prerender = false;
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+    <SettingsProvider
+        initialSettings={settingsData}
+        isLogin={isLogin}
+        cartCount={cartCount}
+        token={token}
+        client:only="react"
+    >
+        <!-- Color and Login Handlers -->
+        <ColorHandler client:only="react" />
+        <LoginHandler client:only="react" />
+
+        <!-- Header -->
+        <Header client:load />
+
+        <!-- Main Content -->
+        <main class="min-h-screen">
+            <OrderList client:load />
+        </main>
+
+        <!-- WhatsApp Floating Button -->
+        {
+            whatsappLink && (
+                <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="تواصل عبر الواتساب"
+                    class="group fixed left-4 top-40 z-50"
+                >
+                    <div
+                        class="
+            flex h-12 w-12 items-center overflow-hidden
+            rounded-full bg-green-500 text-white shadow-lg
+            transition-all duration-300
+            group-hover:w-[150px] group-hover:shadow-xl
+          "
+                    >
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center">
+                            <i class="pi pi-whatsapp text-2xl" />
+                        </div>
+                        <span
+                            class="
+              max-w-0 translate-x-2 whitespace-nowrap text-sm font-medium
+              opacity-0 transition-all duration-300
+              group-hover:max-w-[100px] group-hover:translate-x-0 group-hover:opacity-100
+            "
+                        >
+                            تواصل معنا
+                        </span>
+                    </div>
+                    <span class="sr-only">تواصل معنا عبر الواتساب</span>
+                </a>
+            )
+        }
+
+        <!-- Footer -->
+        <Footer
+            settingsData={settingsData}
+            appVersion={appVersion}
+            client:load
+        />
+
+        <!-- Toast Notifications -->
+        <ToastContainer
+            position="bottom-right"
+            rtl={true}
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={true}
+            closeOnClick={true}
+            pauseOnFocusLoss={true}
+            draggable={true}
+            pauseOnHover={true}
+            theme="light"
+            client:only="react"
+        />
+    </SettingsProvider>
+</Layout>

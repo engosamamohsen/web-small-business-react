@@ -11,15 +11,21 @@ import { useSearchParams } from "@/lib/navigation";
 import { cn } from "@/utils/utils";
 import { scrollToProducts } from "./CategorySwiper";
 import styles from "./style.module.css";
+import { CategoryType } from "@/lib/types";
 
-const SubCategories = ({ categories }: { categories: any[] }) => {
+import { useRouter } from "@/lib/navigation";
+
+
+const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const onCategoryClick = (category: any) => {
+  const onSubCategoryClick = (category: CategoryType) => {
+    console.log("onSubCategoryClick", category.name);
     const sp = new URLSearchParams(window.location.search);
 
     const current = sp.get("sub_category");
-    const nextId = category.id.toString();
+    const nextId = category.id?.toString() + "-" + category.slug.toString();
 
     sp.set("page", "1");
 
@@ -40,7 +46,7 @@ const SubCategories = ({ categories }: { categories: any[] }) => {
 
   return (
     <div className="w-full sm:w-fit sm:max-w-[440px]">
-      <div className="rounded-2xl border border-gray-200 bg-white/80 px-2 py-1 shadow-sm max-md:w-full">
+      <div className=" bg-white/80  max-md:w-full">
         <Swiper
           slidesPerView="auto"
           spaceBetween={8}
@@ -51,13 +57,13 @@ const SubCategories = ({ categories }: { categories: any[] }) => {
         >
           {categories.map((item: any) => {
             const isActive =
-              searchParams.get("sub_category") == item.id?.toString();
+              searchParams.get("sub_category") == item.id?.toString() + "-" + item.slug?.toString();
 
             return (
               <SwiperSlide key={item.id} className="!w-auto">
                 <button
                   type="button"
-                  onClick={() => onCategoryClick(item)}
+                  onClick={() => onSubCategoryClick(item)}
                   className={cn(
                     "px-3 py-1.5 text-sm font-semibold transition-all",
                     "rounded-full border bg-gray-100 text-gray-700",

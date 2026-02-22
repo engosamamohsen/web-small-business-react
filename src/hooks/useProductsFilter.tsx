@@ -23,6 +23,13 @@ interface UseProductsFilterReturn {
     isEmpty: boolean;
 }
 
+/** Extract just the numeric ID from a "{id}-{slug}" URL param value. */
+function extractId(param: string | undefined): string | undefined {
+    if (!param) return undefined;
+    const match = param.match(/^(\d+)/);
+    return match ? match[1] : param;
+}
+
 export function useProductsFilter(
     initialProducts?: any[],
     initialPagination?: any,
@@ -31,13 +38,17 @@ export function useProductsFilter(
 ): UseProductsFilterReturn {
     const searchParams = useSearchParams();
 
-    // Use forced params if provided, otherwise fall back to URL params
-    const category = forcedCategory !== undefined 
-        ? forcedCategory.toString() 
-        : (searchParams.get("category") || undefined);
-    const subCategory = forcedSubCategory !== undefined 
-        ? forcedSubCategory.toString() 
-        : (searchParams.get("sub_category") || undefined);
+    // URL params are stored as "{id}-{slug}" — extract the numeric part for the API
+    const categoryParam = forcedCategory !== undefined
+        ? forcedCategory.toString()
+        : extractId(searchParams.get("category") || undefined);
+    const subCategoryParam = forcedSubCategory !== undefined
+        ? forcedSubCategory.toString()
+        : extractId(searchParams.get("sub_category") || undefined);
+
+    // Keep raw params for change detection (so effect re-runs when slug portion changes too)
+    const rawCategory = searchParams.get("category") || undefined;
+    const rawSubCategory = searchParams.get("sub_category") || undefined;
     const currentPage = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 10;
 
@@ -60,8 +71,8 @@ export function useProductsFilter(
             setError(null);
 
             try {
-                const url = `v1/product${category ? `?category_id=${category}` : ""}${subCategory ? `&sub_category_id=${subCategory}` : ""
-                    }${subCategory || category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
+                const url = `v1/product${categoryParam ? `?category_id=${categoryParam}` : ""}${subCategoryParam ? `&sub_category_id=${subCategoryParam}` : ""
+                    }${subCategoryParam || categoryParam ? `&` : "?"}page=${currentPage}&limit=${limit}`;
 
                 const response = await fetchHookClient<ProductsResponse>({
                     url,
@@ -85,7 +96,7 @@ export function useProductsFilter(
         };
 
         fetchProducts();
-    }, [category, subCategory, currentPage, limit]);
+    }, [rawCategory, rawSubCategory, currentPage, limit]);
 
     // Determine if products are empty (loaded but no products)
     const isEmpty = !isLoading && !error && products !== null && products.length === 0 && !isFirstLoad;

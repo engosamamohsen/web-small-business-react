@@ -7,7 +7,7 @@ import partytown from '@astrojs/partytown';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://admin-emend.cashierthru.com',
+  site: 'https://admin-osama.cashierthru.com',
   output: 'hybrid', // SSG by default, SSR on-demand
   adapter: node({ mode: 'standalone' }),
 
@@ -32,7 +32,7 @@ export default defineConfig({
 
   // Image optimization
   image: {
-    domains: ['admin-emend.cashierthru.com'],
+    domains: ['admin-osama.cashierthru.com'],
     remotePatterns: [
       { protocol: 'https', hostname: '*.cashierthru.com' },
       { protocol: 'https', hostname: 'cdn.pixabay.com' },

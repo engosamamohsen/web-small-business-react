@@ -9,7 +9,7 @@ interface PriceDisplayProps {
 }
 
 export const PriceDisplay = memo(({ product, currentPrice }: PriceDisplayProps) => {
-    const discount = product.discount ? parseInt(product.discount, 10) : 0;
+    const discount = product.discount ? parseInt(String(product.discount), 10) : 0;
 
     // Memoize the discounted price calculation
     const priceDiscount = useMemo(() => {

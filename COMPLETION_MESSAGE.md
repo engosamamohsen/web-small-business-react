@@ -4,7 +4,7 @@ I have successfully updated the application per your request.
 
 ### Key Changes:
 
-1.  **API Integration**: Updated `fetchSettings` to use `https://admin-emend.cashierthru.com/api` and handle the new response structure (`SettingsData` type).
+1.  **API Integration**: Updated `fetchSettings` to use `https://admin-osama.cashierthru.com/api` and handle the new response structure (`SettingsData` type).
 2.  **Cookies**: Implemented `SettingsCookieSync` to save critical settings (vat, tax, service) and full app settings to client-side cookies.
 3.  **UI Updates**:
     *   **Header**: Now accepts server-side settings directly for faster load. Displays shop name beside logo.

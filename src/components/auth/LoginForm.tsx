@@ -26,10 +26,12 @@ export default function LoginForm({
   initSettings,
   onSwitchToRegister,
   onSwitchToForgotPassword,
+  onSuccess,
 }: {
   initSettings: SettingsType;
   onSwitchToRegister?: () => void;
   onSwitchToForgotPassword?: () => void;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const {
@@ -44,7 +46,7 @@ export default function LoginForm({
   });
   const { loading, login } = useLoginHook();
   const onSubmit = async (inputs: any) => {
-    await login(inputs);
+    await login(inputs, onSuccess);
   };
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export default function LoginForm({
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
         {initSettings?.logo && (
-        <CircleLogo src={initSettings?.logo} className="mr-2" />
+          <CircleLogo src={initSettings?.logo} className="mr-2" />
 
         )}
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">

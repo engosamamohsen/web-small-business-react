@@ -4,6 +4,7 @@ import Image from "@/components/common/Image";
 import { Flame } from "lucide-react";
 import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "./ButtonAddToCart";
+import { slugify } from "@/utils/utils";
 
 interface ProductProps {
   product: ProductType;
@@ -36,7 +37,7 @@ export function Product({ product, defaultImage }: ProductProps) {
   return (
     <div className="flex h-full min-h-[350px] flex-col">
       <div className="relative">
-        <Link href={`/products/${product?.id}`} className="block">
+        <Link href={`/products/${product?.slug}`} className="block">
           <div className="relative w-full aspect-square overflow-hidden bg-gray-50">
             {imageSrc ? (
               <Image

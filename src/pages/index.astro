@@ -16,78 +16,66 @@ import WhatsAppButton from "@/components/common/WhatsAppButton";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { fetchHook } from "@/hooks/fetch-hook";
 import packageJson from "../../package.json";
+import { Product } from "@/lib/product/product";
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
 
 // Get search params for filtering
 const searchParams = Astro.url.searchParams;
-const category = searchParams.get("category") || undefined;
-const sub_category = searchParams.get("sub_category") || undefined;
+const categoryParam = searchParams.get("category") || undefined;
+const subCategoryParam = searchParams.get("sub_category") || undefined;
 const currentPage = Number(searchParams.get("page")) || 1;
 const limit = Number(searchParams.get("limit")) || 10;
+
+// URL params are stored as "{id}-{slug}" — extract the numeric ID for API calls
+const extractId = (param: string | undefined) => param?.match(/^(\d+)/)?.[1];
+const categoryId = extractId(categoryParam);
+const subCategoryId = extractId(subCategoryParam);
 
 // ============================================
 // PARALLEL API CALLS - Improved SSR Performance
 // Using allSettled to prevent one failure from breaking the entire page
 // ============================================
-const [
-    settingsResult,
-    bannerResult,
-    offerResult,
-    categoriesResult
-] = await Promise.allSettled([
+const [settingsResult, homeResult] = await Promise.allSettled([
     fetchSettings(token),
-    fetchHook({ url: "v1/banner", init: {} }),
-    fetchHook({ url: "v1/product?offer=1", init: {} }),
-    fetchHook({ url: "v1/categories", init: {}, token })
+    fetchHook({ url: "v1/home", init: {}, token }),
 ]);
 
 // Extract settings data (handle rejected promises)
-const settingsResponse = settingsResult?.status === "fulfilled" ? settingsResult.value : null;
+const settingsResponse =
+    settingsResult?.status === "fulfilled" ? settingsResult.value : null;
 const settingsData = settingsResponse?.data ?? null;
-const isLogin = settingsResponse?.ok ? Boolean(settingsResponse?.is_login) : false;
+const isLogin = settingsResponse?.ok
+    ? Boolean(settingsResponse?.is_login)
+    : false;
 const appVersion = packageJson.version;
 
-// Process banner data (safely handle result)
-let bannerData: any[] = [];
-let showBanner = false;
-if (bannerResult?.status === "fulfilled") {
-    const bannerResponse = bannerResult.value;
-    if (bannerResponse?.ok && bannerResponse?.data?.data?.length) {
-        bannerData = bannerResponse.data.data;
-        showBanner = true;
-    }
-}
+// Extract home data
+const homeResponse =
+    homeResult?.status === "fulfilled" ? homeResult.value : null;
+const homeData = homeResponse?.ok ? homeResponse?.data?.data : null;
 
-// Process offer products (safely handle result)
-let offerProducts: any[] = [];
-let showOffers = false;
-if (offerResult?.status === "fulfilled") {
-    const offerResponse = offerResult.value;
-    if (offerResponse?.ok && offerResponse?.data?.data?.length) {
-        offerProducts = offerResponse.data.data;
-        showOffers = true;
-    }
-}
+// Process banner data
+const bannerData: any[] = homeData?.banners ?? [];
+const showBanner = bannerData.length > 0;
 
-// Process categories (safely handle result)
-let categoriesData: any[] = [];
-let showCategories = false;
-if (categoriesResult?.status === "fulfilled") {
-    const categoriesResponse = categoriesResult.value;
-    if (categoriesResponse?.ok && categoriesResponse?.data?.data) {
-        categoriesData = categoriesResponse.data.data;
-        showCategories = true;
-    }
-}
+// Process offer products (popular_products from home API)
+const offerProducts: any[] = homeData?.popular_products ?? [];
+const showOffers = offerProducts.length > 0;
 
-// Handle subcategories
+// Process categories
+const categoriesData: any[] = homeData?.categories ?? [];
+const showCategories = categoriesData.length > 0;
+
+// Handle subcategories — match on the numeric ID extracted from the URL param
 const targetFilterCategory = (() => {
-    if (!category) {
+    if (!categoryId) {
         return { isFilterCategory: false, isSubCategory: false };
     }
-    const cat = categoriesData?.find((item: any) => item.id == category);
+    const cat = categoriesData?.find(
+        (item: any) => item.id?.toString() === categoryId,
+    );
     return {
         ...(cat || {}),
         isFilterCategory: true,
@@ -98,14 +86,14 @@ const targetFilterCategory = (() => {
 // ============================================
 // Products - Fetch separately (depends on category)
 // ============================================
-let productsData: any[] = [];
+let productsData: Product[] = [];
 let productsPagination: any = { last_page: 1 };
 let showProducts = false;
 
 try {
-    const productsUrl = `v1/product${category ? `?category_id=${category}` : ""}${
-        sub_category ? `&sub_category_id=${sub_category}` : ""
-    }${sub_category || category ? `&` : "?"}page=${currentPage}&limit=${limit}`;
+    const productsUrl = `v1/product${categoryId ? `?category_id=${categoryId}` : ""}${
+        subCategoryId ? `&sub_category_id=${subCategoryId}` : ""
+    }${subCategoryId || categoryId ? `&` : "?"}page=${currentPage}&limit=${limit}`;
 
     const productsResponse = await fetchHook({
         url: productsUrl,
@@ -145,7 +133,7 @@ const pageKeywords = settingsData?.keywords || [
     <Header
         currentPath={Astro.url.pathname}
         initialIsLoggedIn={isLogin}
-        settingsData={settingsData}
+        settingsData={settingsData || undefined}
         client:load
     />
 

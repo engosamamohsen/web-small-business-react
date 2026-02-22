@@ -24,23 +24,38 @@ export interface ColorOption {
   color: string;
 }
 
-export interface Category {
-  id: number | string;
+export interface CategoryType {
+  id: number;
+  name: string;
+  icon: string;
+  slug: string;
+  subcategories?: CategoryType[];
+  products?: ProductType[];
+}
+
+
+export interface ProductTag {
+  id: number;
   name: string;
 }
 
 export interface ProductType {
   id: number;
+  slug?: string;
   title: string;
   name: string;
   price: number;
   description: string;
   steps?: string[];
   description_steps?: string[];
-  category?: Category;
+  category?: CategoryType;
+  sub_category?: CategoryType;
+  tags?: ProductTag[];
+  /** Main product image from API (product_image field) */
+  product_image?: string;
   image: string;
   main_image?: string;
-  discount?: string;
+  discount?: string | number;
   price_after?: number;
   is_variation?: boolean;
   variations?: Variation[];

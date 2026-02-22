@@ -1,8 +1,8 @@
 async function getSubdomain() {
   if (typeof window !== "undefined") {
-    return "https://admin-emend.cashierthru.com";
+    return "https://admin-osama.cashierthru.com";
   }
-  return "https://admin-emend.cashierthru.com";
+  return "https://admin-osama.cashierthru.com";
 }
 
 async function fetchHook({

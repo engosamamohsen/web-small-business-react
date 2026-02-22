@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { CartItemType } from "@/types/types";
-import { useCheckout, useGetAddress } from "@/hooks/addressHook";
+import { useCheckout, useGetAddress, useBranchesWithCity } from "@/hooks/addressHook";
 import { InputTextarea } from "primereact/inputtextarea";
 
 import {
@@ -22,13 +22,13 @@ import { useRouter } from "@/lib/navigation";
 import { Button } from "primereact/button";
 import { useCartServices } from "@/hooks/cart/cart";
 import PageLoader from "../PageLoader/PageLoader";
+import SelectInput from "../SelectInput/SelectInput";
 
 export default function CheckoutPage() {
   const { loading: cartLoading, data: cartResponse } = useCartServices();
   const items = cartResponse?.cart_items || [];
 
   const [showDialog, setShowDialog] = useState(false);
-
   const [loading, setLoading] = useState<boolean>(false);
 
   const router = useRouter();
@@ -47,15 +47,31 @@ export default function CheckoutPage() {
 
   const { loading: addressLoading, value: address, retry } = useGetAddress();
 
+  // Get area_id from the selected address to fetch branches
+  const selectedAddress = watch("address");
+  const areaId = selectedAddress?.area_id ?? selectedAddress?.city_id ?? null;
+  const shippingFees = Number(selectedAddress?.shipping ?? selectedAddress?.shipping_fees ?? 0);
+
+  const { loading: branchesLoading, value: branches } = useBranchesWithCity(areaId || undefined);
+
   const { createOrder } = useCheckout();
   const onSubmit = async (inputs: any) => {
     setLoading(true);
-    const res = await createOrder(inputs);
+    const res = await createOrder({
+      ...inputs,
+      shippingFees,
+    });
     if (res?.status === 200) {
-      router.push("/order");
+      const orderId = res?.data?.data?.id;
+      if (orderId) {
+        router.push(`/order/${orderId}`);
+      } else {
+        router.push("/user/orders");
+      }
     }
     setLoading(false);
   };
+
   if (cartLoading) {
     return <PageLoader text={"جاري تحميل عربة التسوق"} />;
   }
@@ -64,7 +80,7 @@ export default function CheckoutPage() {
   }
 
   const total = cartResponse?.total_price || 0;
-  const shippingFees = watch("address").shipping_fees || 0;
+
   return (
     <>
       <div className="mx-auto min-h-screen max-w-7xl px-4 py-12">
@@ -87,6 +103,9 @@ export default function CheckoutPage() {
                 handleSubmit={handleSubmit}
                 onSubmit={onSubmit}
                 loading={loading}
+                branches={branches || []}
+                branchesLoading={branchesLoading}
+                hasAddressSelected={!!selectedAddress?.id}
               />
             )}
           </div>
@@ -149,6 +168,9 @@ type BillingFormProps = {
   handleSubmit: any;
   onSubmit: (inputs: any) => void;
   loading: boolean;
+  branches: any[];
+  branchesLoading: boolean;
+  hasAddressSelected: boolean;
 };
 
 const BillingForm = ({
@@ -162,6 +184,9 @@ const BillingForm = ({
   handleSubmit,
   onSubmit,
   loading,
+  branches,
+  branchesLoading,
+  hasAddressSelected,
 }: BillingFormProps) => (
   <div className="mb-6 rounded-lg bg-white px-4 py-6">
     <h2 className="mb-4 text-xl font-bold">معلومات الفاتورة</h2>
@@ -188,12 +213,48 @@ const BillingForm = ({
         selectedAddressId={watch("address")?.id || null}
         onSelectAddress={(selectedAddress) => {
           setValue("address", selectedAddress);
+          setValue("branch_id", ""); // reset branch when address changes
           setError("address", { type: "manual", message: "" });
         }}
       />
     )}
 
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
+    {/* Branch selection — shown only after an address is selected */}
+    {hasAddressSelected && (
+      <div className="mt-6">
+        <label className="mb-2 block text-sm font-medium text-gray-700">
+          اختر الفرع
+        </label>
+        {branchesLoading ? (
+          <div className="flex h-12 items-center justify-center rounded-lg border border-gray-200 bg-slate-50">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--main-color)] border-t-transparent" />
+          </div>
+        ) : branches?.length === 0 ? (
+          <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            لا توجد فروع متاحة لهذه المنطقة
+          </p>
+        ) : (
+          <SelectInput
+            name="branch_id"
+            optionLabel="name"
+            options={branches || []}
+            loading={branchesLoading}
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-orange-500"
+            value={watch("branch_id") || ""}
+            setValue={setValue}
+            placeholder="اختر الفرع"
+            setError={setError}
+          />
+        )}
+        {errors.branch_id && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.branch_id.message?.toString()}
+          </p>
+        )}
+      </div>
+    )}
+
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-6">
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
           ملاحظات إضافية
@@ -315,7 +376,9 @@ const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
       </div>
       <div className="flex justify-between text-sm">
         <span>رسوم الشحن</span>
-        <span>{shippingFees.toFixed(2)} ج.م</span>
+        <span className={shippingFees > 0 ? "text-orange-600" : "text-green-600"}>
+          {shippingFees > 0 ? `${shippingFees.toFixed(2)} ج.م` : "مجاني"}
+        </span>
       </div>
       <div className="text-md flex justify-between border-t pt-2">
         <span>الإجمالي النهائي</span>

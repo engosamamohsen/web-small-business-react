@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://admin-emend.cashierthru.com/api/";
+const API_BASE_URL = "https://admin-osama.cashierthru.com/api/";
 const FETCH_TIMEOUT = 1e4;
 async function fetchWithTimeout(url, options, timeout) {
   const controller = new AbortController();

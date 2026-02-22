@@ -13,12 +13,14 @@ interface AuthDialogProps {
   visible: boolean;
   onHide: () => void;
   initSettings: SettingsType;
+  onSuccess?: () => void;
 }
 
 export default function AuthDialog({
   visible,
   onHide,
   initSettings,
+  onSuccess,
 }: AuthDialogProps) {
   const [showRegister, setShowRegister] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -52,7 +54,7 @@ export default function AuthDialog({
       footer={null}
       dismissableMask
       closable
-  className="w-[90%] max-w-[400px] !rounded-2xl overflow-hidden"
+      className="w-[90%] max-w-[400px] !rounded-2xl overflow-hidden"
       contentClassName="!rounded-2xl"
       showHeader={false}
       maskClassName="!bg-black/50"
@@ -73,6 +75,7 @@ export default function AuthDialog({
             initSettings={initSettings}
             onSwitchToRegister={handleSwitchToRegister}
             onSwitchToForgotPassword={handleSwitchToForgotPassword}
+            onSuccess={onSuccess}
           />
         )}
       </div>

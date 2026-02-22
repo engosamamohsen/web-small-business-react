@@ -9,7 +9,7 @@ import { transformSelectData } from "@/lib/global";
 
 export const useGovernorate = () => {
   const { value, loading, retry } = useAsyncRetry(async () => {
-    const { data } = await $api.get(`/city`);
+    const { data } = await $api.get(`v1/city`);
     const transformData = transformSelectData({
       data: data.data,
       idKey: "id",
@@ -29,7 +29,7 @@ export const useCities = (governorateId?: number) => {
     if (!governorateId) {
       return [];
     }
-    const { data } = await $api.get(`/city/${governorateId}/cities`);
+    const { data } = await $api.get(`v1/city/${governorateId}/cities`);
     const transformData = transformSelectData({
       data: data.data,
       idKey: "city_id",
@@ -44,7 +44,7 @@ export const useCities = (governorateId?: number) => {
 };
 export const useGetAddress = () => {
   const { value, loading, retry } = useAsyncRetry(async () => {
-    const { data } = await $api.get(`/customer-addresses/view`);
+    const { data } = await $api.get(`v1/customer-addresses/view`);
     return data?.data;
   }, []);
   return {
@@ -59,9 +59,9 @@ export const useBranchesWithCity = (cityId?: number) => {
     if (!cityId) {
       return [];
     }
-    const { data } = await $api.get(`/branches/by-city/${cityId}`);
+    const { data } = await $api.get(`/v1/branches/by-city/${cityId}`);
     const transformData = transformSelectData({
-      data: data.branches,
+      data: data.data,
       idKey: "id",
       valueKey: "address",
     });
@@ -83,7 +83,7 @@ export const useAddress = () => {
       setLoading(true);
 
       const data = await $api.post(
-        `/customer-address`,
+        `/v1/customer-address`,
         transformCreateAddressInputs({ ...inputs }),
       );
       toast.success(`تمت إضافة العنوان الخاص بك`, {
@@ -117,16 +117,15 @@ export const useAddress = () => {
 export const useCheckout = () => {
   const [loading, setLoading] = useState(false);
 
-  // create a new expense
   const createOrder = async (inputs: any) => {
     try {
       setLoading(true);
 
       const data = await $api.post(`v1/basket/buy`, {
         address_id: inputs.address?.id,
-        shipping: 0,
+        shipping: inputs.shippingFees ?? 0,
         notes: inputs.desc,
-        // payment_method: inputs.paymentMethod?.paymentId || 1, // Default to cash (id: 1) if not selected
+        branch_id: inputs.branch_id?.value ?? null,
       });
       toast.success(`تمت إضافة الطلب بنجاح`, {
         position: "top-right",

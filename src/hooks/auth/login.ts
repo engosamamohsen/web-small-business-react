@@ -6,7 +6,7 @@ import { useRouter } from "@/lib/navigation";
 export const addUserToDatabase = async (data: any, action: () => void) => {
   try {
     const { data: response }: any = await $api.post(
-      "register-social",
+      "v1/register-social",
       transformUserData(data),
     );
     if (response?.data?.status !== 200) {
@@ -70,7 +70,7 @@ export const useLoginHook = () => {
   /**
    * On Share Project action
    */
-  const login = async (inputs: any) => {
+  const login = async (inputs: any, onSuccess?: () => void) => {
     try {
       setLoading(true);
 
@@ -92,7 +92,10 @@ export const useLoginHook = () => {
         secure: process.env.NODE_ENV === "production",
       }); // Expires in 1 day
 
-      if (typeof window !== "undefined") {
+      if (onSuccess) {
+        // Called from a dialog (e.g. cart) — stay on page and run the callback
+        onSuccess();
+      } else if (typeof window !== "undefined") {
         window.location.replace("/");
       } else {
         routes.replace("/");

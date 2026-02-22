@@ -25,7 +25,7 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
 
 
         if (product?.is_variation) {
-          router.push(`/products/${product?.id}`);
+          router.push(`/products/${product?.slug}`);
         } else {
           if (!token) {
             router.push("/auth/login");

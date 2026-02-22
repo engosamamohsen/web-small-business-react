@@ -21,7 +21,8 @@ export { renderers } from '../../renderers.mjs';
   cookies: {
     consent: {
       secure: process.env.NODE_ENV === "production"
-    }}
+    }
+  }
 });
 function transformSelectData({
   data,
@@ -212,65 +213,83 @@ function AddressList({
   if (!addresses || addresses.length === 0) {
     return null;
   }
-  return /* @__PURE__ */ jsx("div", { className: "mb-4 space-y-3 rounded-lg border border-gray-200 px-4 py-6", children: /* @__PURE__ */ jsx("div", { className: "max-h-[300px] space-y-2 overflow-y-auto", children: addresses.map((address) => /* @__PURE__ */ jsx(
-    "div",
-    {
-      onClick: () => onSelectAddress(address),
-      className: cn(
-        "cursor-pointer rounded-md border p-3 transition hover:border-orange-400",
-        selectedAddressId === address.id ? "border-2 border-orange-500 bg-orange-50" : "border-gray-200"
-      ),
-      children: /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between", children: [
-        /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
-          /* @__PURE__ */ jsxs("p", { className: "font-medium", children: [
-            address.city_name,
-            ", ",
-            address.area_name,
-            ",",
-            address.branch_name
-          ] }),
-          /* @__PURE__ */ jsxs("p", { className: "text-sm text-gray-600", children: [
-            "شارع: ",
-            address.street,
-            ", عمارة: ",
-            address.building,
-            ", طابق:",
-            address.floor,
-            ", شقة: ",
-            address.flat
-          ] }),
-          address.special_sign && /* @__PURE__ */ jsxs("p", { className: "text-sm text-gray-600", children: [
-            "علامة مميزة: ",
-            address.special_sign
-          ] }),
-          /* @__PURE__ */ jsxs("p", { className: "text-sm text-gray-600", children: [
-            "هاتف: ",
-            address.phone
-          ] })
-        ] }),
-        selectedAddressId === address.id && /* @__PURE__ */ jsx("span", { className: "flex-shrink-0 text-orange-500", children: /* @__PURE__ */ jsx(
-          "svg",
-          {
-            xmlns: "http://www.w3.org/2000/svg",
-            className: "h-6 w-6",
-            fill: "none",
-            viewBox: "0 0 24 24",
-            stroke: "currentColor",
-            children: /* @__PURE__ */ jsx(
-              "path",
-              {
-                strokeLinecap: "round",
-                strokeLinejoin: "round",
-                strokeWidth: 2,
-                d: "M5 13l4 4L19 7"
-              }
-            )
-          }
-        ) })
-      ] })
-    },
-    address.id
-  )) }) });
+  return /* @__PURE__ */ jsx("div", {
+    className: "mb-4 space-y-3 rounded-lg border border-gray-200 px-4 py-6", children: /* @__PURE__ */ jsx("div", {
+      className: "max-h-[300px] space-y-2 overflow-y-auto", children: addresses.map((address) => /* @__PURE__ */ jsx(
+        "div",
+        {
+          onClick: () => onSelectAddress(address),
+          className: cn(
+            "cursor-pointer rounded-md border p-3 transition hover:border-orange-400",
+            selectedAddressId === address.id ? "border-2 border-orange-500 bg-orange-50" : "border-gray-200"
+          ),
+          children: /* @__PURE__ */ jsxs("div", {
+            className: "flex items-start justify-between", children: [
+        /* @__PURE__ */ jsxs("div", {
+              className: "space-y-1", children: [
+          /* @__PURE__ */ jsxs("p", {
+                className: "font-medium", children: [
+                  address.city_name,
+                  ", ",
+                  address.area_name,
+                  ",",
+                  address.branch_name
+                ]
+              }),
+          /* @__PURE__ */ jsxs("p", {
+                className: "text-sm text-gray-600", children: [
+                  "شارع: ",
+                  address.street,
+                  ", عمارة: ",
+                  address.building,
+                  ", طابق:",
+                  address.floor,
+                  ", شقة: ",
+                  address.flat
+                ]
+              }),
+                address.special_sign && /* @__PURE__ */ jsxs("p", {
+                  className: "text-sm text-gray-600", children: [
+                    "علامة مميزة: ",
+                    address.special_sign
+                  ]
+                }),
+          /* @__PURE__ */ jsxs("p", {
+                  className: "text-sm text-gray-600", children: [
+                    "هاتف: ",
+                    address.phone
+                  ]
+                })
+              ]
+            }),
+              selectedAddressId === address.id && /* @__PURE__ */ jsx("span", {
+                className: "flex-shrink-0 text-orange-500", children: /* @__PURE__ */ jsx(
+                  "svg",
+                  {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    className: "h-6 w-6",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    stroke: "currentColor",
+                    children: /* @__PURE__ */ jsx(
+                      "path",
+                      {
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                        strokeWidth: 2,
+                        d: "M5 13l4 4L19 7"
+                      }
+                    )
+                  }
+                )
+              })
+            ]
+          })
+        },
+        address.id
+      ))
+    })
+  });
 }
 
 function _extends$5() {
@@ -533,16 +552,16 @@ var VirtualScroller = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(func
   var horizontal = props.orientation === 'horizontal';
   var both = props.orientation === 'both';
   var _React$useState = React.useState(both ? {
-      rows: 0,
-      cols: 0
-    } : 0),
+    rows: 0,
+    cols: 0
+  } : 0),
     _React$useState2 = _slicedToArray$1(_React$useState, 2),
     firstState = _React$useState2[0],
     setFirstState = _React$useState2[1];
   var _React$useState3 = React.useState(both ? {
-      rows: 0,
-      cols: 0
-    } : 0),
+    rows: 0,
+    cols: 0
+  } : 0),
     _React$useState4 = _slicedToArray$1(_React$useState3, 2),
     lastState = _React$useState4[0],
     setLastState = _React$useState4[1];
@@ -551,9 +570,9 @@ var VirtualScroller = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(func
     pageState = _React$useState6[0],
     setPageState = _React$useState6[1];
   var _React$useState7 = React.useState(both ? {
-      rows: 0,
-      cols: 0
-    } : 0),
+    rows: 0,
+    cols: 0
+  } : 0),
     _React$useState8 = _slicedToArray$1(_React$useState7, 2),
     numItemsInViewportState = _React$useState8[0],
     setNumItemsInViewportState = _React$useState8[1];
@@ -570,17 +589,17 @@ var VirtualScroller = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(func
     loaderArrState = _React$useState14[0],
     setLoaderArrState = _React$useState14[1];
   var _VirtualScrollerBase$ = VirtualScrollerBase.setMetaData({
-      props: props,
-      state: {
-        first: firstState,
-        last: lastState,
-        page: pageState,
-        numItemsInViewport: numItemsInViewportState,
-        numToleratedItems: numToleratedItemsState,
-        loading: loadingState,
-        loaderArr: loaderArrState
-      }
-    }),
+    props: props,
+    state: {
+      first: firstState,
+      last: lastState,
+      page: pageState,
+      numItemsInViewport: numItemsInViewportState,
+      numToleratedItems: numToleratedItemsState,
+      loading: loadingState,
+      loaderArr: loaderArrState
+    }
+  }),
     ptm = _VirtualScrollerBase$.ptm;
   useStyle(VirtualScrollerBase.css.styles, {
     name: 'virtualscroller'
@@ -605,21 +624,21 @@ var VirtualScroller = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(func
   var lazyLoadState = React.useRef(null);
   var viewInitialized = React.useRef(false);
   var _useResizeListener = useResizeListener({
-      listener: function listener(event) {
-        return onResize();
-      },
-      when: !props.disabled
-    }),
+    listener: function listener(event) {
+      return onResize();
+    },
+    when: !props.disabled
+  }),
     _useResizeListener2 = _slicedToArray$1(_useResizeListener, 1),
     bindWindowResizeListener = _useResizeListener2[0];
   var _useEventListener = useEventListener({
-      target: 'window',
-      type: 'orientationchange',
-      listener: function listener(event) {
-        return onResize();
-      },
-      when: !props.disabled
-    }),
+    target: 'window',
+    type: 'orientationchange',
+    listener: function listener(event) {
+      return onResize();
+    },
+    when: !props.disabled
+  }),
     _useEventListener2 = _slicedToArray$1(_useEventListener, 1),
     bindOrientationChangeListener = _useEventListener2[0];
   var getElementRef = function getElementRef() {
@@ -2079,7 +2098,7 @@ var DropdownPanel = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(functi
 }));
 DropdownPanel.displayName = 'DropdownPanel';
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike) { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike) { if (it) o = it; var i = 0; var F = function F() { }; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -2119,14 +2138,14 @@ var Dropdown = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(function (i
   var hasFilter = ObjectUtils.isNotEmpty(filterState);
   var appendTo = props.appendTo || context && context.appendTo || PrimeReact.appendTo;
   var _DropdownBase$setMeta = DropdownBase.setMetaData(_objectSpread(_objectSpread({
-      props: props
-    }, props.__parentMetadata), {}, {
-      state: {
-        filter: filterState,
-        focused: focusedState,
-        overlayVisible: overlayVisibleState
-      }
-    })),
+    props: props
+  }, props.__parentMetadata), {}, {
+    state: {
+      filter: filterState,
+      focused: focusedState,
+      overlayVisible: overlayVisibleState
+    }
+  })),
     ptm = _DropdownBase$setMeta.ptm,
     cx = _DropdownBase$setMeta.cx,
     sx = _DropdownBase$setMeta.sx,
@@ -2135,17 +2154,17 @@ var Dropdown = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(function (i
     name: 'dropdown'
   });
   var _useOverlayListener = useOverlayListener({
-      target: elementRef,
-      overlay: overlayRef,
-      listener: function listener(event, _ref) {
-        var type = _ref.type,
-          valid = _ref.valid;
-        if (valid) {
-          type === 'outside' ? !isClearClicked(event) && hide() : hide();
-        }
-      },
-      when: overlayVisibleState
-    }),
+    target: elementRef,
+    overlay: overlayRef,
+    listener: function listener(event, _ref) {
+      var type = _ref.type,
+        valid = _ref.valid;
+      if (valid) {
+        type === 'outside' ? !isClearClicked(event) && hide() : hide();
+      }
+    },
+    when: overlayVisibleState
+  }),
     _useOverlayListener2 = _slicedToArray(_useOverlayListener, 2),
     bindOverlayListener = _useOverlayListener2[0],
     unbindOverlayListener = _useOverlayListener2[1];
@@ -3261,243 +3280,287 @@ function DialogAddressForm({
       retryAddress();
     }
   };
-  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx(
-    Dialog,
-    {
-      visible: showDialog,
-      modal: true,
-      className: "mx-4 flex w-full items-center justify-center shadow-none",
-      onHide: () => {
-        if (!showDialog) return;
-        setShowDialog(false);
-      },
-      content: ({ hide }) => /* @__PURE__ */ jsx("div", { className: "h-full w-fit overflow-y-auto rounded-md max-md:max-h-[700px] max-sm:max-h-[550px]", children: /* @__PURE__ */ jsxs("div", { className: "relative flex h-fit min-h-[880px] w-full max-w-[550px] flex-col items-center justify-start gap-2 overflow-y-auto rounded-md bg-[var(--main-background)] p-6 py-10 max-sm:min-h-[880px]", children: [
-        /* @__PURE__ */ jsxs("div", { className: "absolute top-1 flex w-full items-center justify-between gap-2 px-4 text-[var(--second-font-color)]", children: [
+  return /* @__PURE__ */ jsx(Fragment, {
+    children: /* @__PURE__ */ jsx(
+      Dialog,
+      {
+        visible: showDialog,
+        modal: true,
+        className: "mx-4 flex w-full items-center justify-center shadow-none",
+        onHide: () => {
+          if (!showDialog) return;
+          setShowDialog(false);
+        },
+        content: ({ hide }) => /* @__PURE__ */ jsx("div", {
+          className: "h-full w-fit overflow-y-auto rounded-md max-md:max-h-[700px] max-sm:max-h-[550px]", children: /* @__PURE__ */ jsxs("div", {
+            className: "relative flex h-fit min-h-[880px] w-full max-w-[550px] flex-col items-center justify-start gap-2 overflow-y-auto rounded-md bg-[var(--main-background)] p-6 py-10 max-sm:min-h-[880px]", children: [
+        /* @__PURE__ */ jsxs("div", {
+              className: "absolute top-1 flex w-full items-center justify-between gap-2 px-4 text-[var(--second-font-color)]", children: [
           /* @__PURE__ */ jsx("div", { className: "flex w-full items-center gap-1", children: /* @__PURE__ */ jsx("h4", { className: "text-[15px] font-semibold text-[var(--main-color)]", children: "اضف العنوان الخاص بيك" }) }),
           /* @__PURE__ */ jsx(
-            Button,
-            {
-              icon: /* @__PURE__ */ jsx(CircleX, {}),
-              rounded: true,
-              text: true,
-              onClick: (e) => hide(e),
-              className: "w-fit text-[var(--second-font-color)] !shadow-none !outline-none"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "flex h-full w-full flex-col items-center justify-start gap-4", children: /* @__PURE__ */ jsxs(
-          "form",
-          {
-            onSubmit: handleSubmit(onSubmit),
-            className: "w-full space-y-4",
-            children: [
-              /* @__PURE__ */ jsxs(Fragment, { children: [
-                /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "الاسم" }),
-                    /* @__PURE__ */ jsx(
-                      InputText,
-                      {
-                        type: "text",
-                        required: true,
-                        placeholder: "ادخل الاسم",
-                        ...register("name"),
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500"
-                      }
-                    ),
-                    errors.name && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.name.message })
-                  ] }),
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم الهاتف (واتساب)" }),
-                    /* @__PURE__ */ jsx(
-                      InputText,
-                      {
-                        type: "tel",
-                        required: true,
-                        placeholder: "ادخل رقم الهاتف",
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                        ...register("phone")
-                      }
-                    ),
-                    errors.phone && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.phone.message })
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { children: [
-                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "البريد الإلكتروني" }),
-                  /* @__PURE__ */ jsx(
-                    InputText,
-                    {
-                      type: "email",
-                      required: true,
-                      placeholder: "ادخل البريد الالكتروني",
-                      className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                      ...register("email")
-                    }
-                  ),
-                  errors.email && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.email.message })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { children: [
-                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "العنوان" }),
-                  /* @__PURE__ */ jsx(
-                    InputText,
-                    {
-                      type: "text",
-                      required: true,
-                      placeholder: "ادخل العنوان",
-                      className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                      ...register("address")
-                    }
-                  ),
-                  errors.address && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.address.message })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "المدينة" }),
-                    /* @__PURE__ */ jsx(
-                      SelectInput,
-                      {
-                        name: "governorate",
-                        loading: governoratesLoading,
-                        options: governorates || [],
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                        value: watch("governorate") || "",
-                        setValue,
-                        optionLabel: "name",
-                        placeholder: "اختر المحافظة",
-                        setError
-                      }
-                    ),
-                    errors.governorate && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.governorate.message })
-                  ] }),
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "المنطقه" }),
-                    /* @__PURE__ */ jsx(
-                      SelectInput,
-                      {
-                        name: "city",
-                        optionLabel: "name",
-                        disabled: watch("governorate")?.length === 0,
-                        options: cities || [],
-                        loading: citiesLoading,
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                        value: watch("city") || "",
-                        setValue,
-                        placeholder: "اختر المدينة او المنطقه",
-                        setError
-                      }
-                    ),
-                    errors.city && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.city.message })
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { children: [
-                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "الفرع" }),
-                  /* @__PURE__ */ jsx(
-                    SelectInput,
-                    {
-                      name: "branch_id",
-                      optionLabel: "name",
-                      disabled: watch("governorate")?.length === 0,
-                      options: branches || [],
-                      loading: branchesLoading,
-                      className: "w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                      value: watch("branch_id") || "",
-                      setValue,
-                      placeholder: "اختر الفرع",
-                      setError
-                    }
-                  ),
-                  errors.branch_id && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.branch_id.message })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "الشارع" }),
-                    /* @__PURE__ */ jsx(
-                      InputText,
-                      {
-                        type: "text",
-                        required: true,
-                        placeholder: "ادخل الشارع",
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                        ...register("street")
-                      }
-                    ),
-                    errors.street && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.street.message })
-                  ] }),
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "علامة خاصة" }),
-                    /* @__PURE__ */ jsx(
-                      InputText,
-                      {
-                        type: "text",
-                        required: true,
-                        placeholder: "ادخل علامة خاصة",
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                        ...register("special_Sign")
-                      }
-                    ),
-                    errors.special_Sign && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.special_Sign.message })
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم / اسم المبنى" }),
-                    /* @__PURE__ */ jsx(
-                      InputText,
-                      {
-                        type: "text",
-                        required: true,
-                        placeholder: "ادخل رقم المبنى",
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                        ...register("building")
-                      }
-                    ),
-                    errors.building && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.building.message })
-                  ] }),
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم الدور" }),
-                    /* @__PURE__ */ jsx(
-                      InputText,
-                      {
-                        type: "number",
-                        required: true,
-                        placeholder: "ادخل رقم الدور",
-                        className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                        ...register("floor")
-                      }
-                    ),
-                    errors.floor && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.floor.message })
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { children: [
-                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم الشقة" }),
-                  /* @__PURE__ */ jsx(
-                    InputText,
-                    {
-                      type: "number",
-                      required: true,
-                      placeholder: "ادخل رقم الشقة",
-                      className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-                      ...register("flat")
-                    }
-                  ),
-                  errors.flat && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.flat.message })
-                ] })
-              ] }),
-              /* @__PURE__ */ jsx(
-                "button",
+                Button,
                 {
-                  type: "submit",
-                  disabled: loading,
-                  className: "w-full rounded-lg bg-orange-500 py-3 font-semibold text-white transition-colors hover:bg-orange-600",
-                  children: "تأكيد العنوان"
+                  icon: /* @__PURE__ */ jsx(CircleX, {}),
+                  rounded: true,
+                  text: true,
+                  onClick: (e) => hide(e),
+                  className: "w-fit text-[var(--second-font-color)] !shadow-none !outline-none"
                 }
               )
+              ]
+            }),
+        /* @__PURE__ */ jsx("div", {
+              className: "flex h-full w-full flex-col items-center justify-start gap-4", children: /* @__PURE__ */ jsxs(
+                "form",
+                {
+                  onSubmit: handleSubmit(onSubmit),
+                  className: "w-full space-y-4",
+                  children: [
+              /* @__PURE__ */ jsxs(Fragment, {
+                    children: [
+                /* @__PURE__ */ jsxs("div", {
+                      className: "grid grid-cols-2 gap-4", children: [
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "الاسم" }),
+                    /* @__PURE__ */ jsx(
+                          InputText,
+                          {
+                            type: "text",
+                            required: true,
+                            placeholder: "ادخل الاسم",
+                            ...register("name"),
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500"
+                          }
+                        ),
+                          errors.name && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.name.message })
+                        ]
+                      }),
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم الهاتف (واتساب)" }),
+                    /* @__PURE__ */ jsx(
+                          InputText,
+                          {
+                            type: "tel",
+                            required: true,
+                            placeholder: "ادخل رقم الهاتف",
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                            ...register("phone")
+                          }
+                        ),
+                          errors.phone && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.phone.message })
+                        ]
+                      })
+                      ]
+                    }),
+                /* @__PURE__ */ jsxs("div", {
+                      children: [
+                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "البريد الإلكتروني" }),
+                  /* @__PURE__ */ jsx(
+                        InputText,
+                        {
+                          type: "email",
+                          required: true,
+                          placeholder: "ادخل البريد الالكتروني",
+                          className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                          ...register("email")
+                        }
+                      ),
+                        errors.email && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.email.message })
+                      ]
+                    }),
+                /* @__PURE__ */ jsxs("div", {
+                      children: [
+                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "العنوان" }),
+                  /* @__PURE__ */ jsx(
+                        InputText,
+                        {
+                          type: "text",
+                          required: true,
+                          placeholder: "ادخل العنوان",
+                          className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                          ...register("address")
+                        }
+                      ),
+                        errors.address && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.address.message })
+                      ]
+                    }),
+                /* @__PURE__ */ jsxs("div", {
+                      className: "grid grid-cols-2 gap-4", children: [
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "المدينة" }),
+                    /* @__PURE__ */ jsx(
+                          SelectInput,
+                          {
+                            name: "governorate",
+                            loading: governoratesLoading,
+                            options: governorates || [],
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                            value: watch("governorate") || "",
+                            setValue,
+                            optionLabel: "name",
+                            placeholder: "اختر المحافظة",
+                            setError
+                          }
+                        ),
+                          errors.governorate && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.governorate.message })
+                        ]
+                      }),
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "المنطقه" }),
+                    /* @__PURE__ */ jsx(
+                          SelectInput,
+                          {
+                            name: "city",
+                            optionLabel: "name",
+                            disabled: watch("governorate")?.length === 0,
+                            options: cities || [],
+                            loading: citiesLoading,
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                            value: watch("city") || "",
+                            setValue,
+                            placeholder: "اختر المدينة او المنطقه",
+                            setError
+                          }
+                        ),
+                          errors.city && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.city.message })
+                        ]
+                      })
+                      ]
+                    }),
+                /* @__PURE__ */ jsxs("div", {
+                      children: [
+                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "الفرع" }),
+                  /* @__PURE__ */ jsx(
+                        SelectInput,
+                        {
+                          name: "branch_id",
+                          optionLabel: "name",
+                          disabled: watch("governorate")?.length === 0,
+                          options: branches || [],
+                          loading: branchesLoading,
+                          className: "w-full rounded-lg border border-gray-300 px-4 py-2 text-red-800 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                          value: watch("branch_id") || "",
+                          setValue,
+                          placeholder: "اختر الفرع",
+                          setError
+                        }
+                      ),
+                        errors.branch_id && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.branch_id.message })
+                      ]
+                    }),
+                /* @__PURE__ */ jsxs("div", {
+                      className: "grid grid-cols-2 gap-4", children: [
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "الشارع" }),
+                    /* @__PURE__ */ jsx(
+                          InputText,
+                          {
+                            type: "text",
+                            required: true,
+                            placeholder: "ادخل الشارع",
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                            ...register("street")
+                          }
+                        ),
+                          errors.street && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.street.message })
+                        ]
+                      }),
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "علامة خاصة" }),
+                    /* @__PURE__ */ jsx(
+                          InputText,
+                          {
+                            type: "text",
+                            required: true,
+                            placeholder: "ادخل علامة خاصة",
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                            ...register("special_Sign")
+                          }
+                        ),
+                          errors.special_Sign && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.special_Sign.message })
+                        ]
+                      })
+                      ]
+                    }),
+                /* @__PURE__ */ jsxs("div", {
+                      className: "grid grid-cols-2 gap-4", children: [
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم / اسم المبنى" }),
+                    /* @__PURE__ */ jsx(
+                          InputText,
+                          {
+                            type: "text",
+                            required: true,
+                            placeholder: "ادخل رقم المبنى",
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                            ...register("building")
+                          }
+                        ),
+                          errors.building && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.building.message })
+                        ]
+                      }),
+                  /* @__PURE__ */ jsxs("div", {
+                        children: [
+                    /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم الدور" }),
+                    /* @__PURE__ */ jsx(
+                          InputText,
+                          {
+                            type: "number",
+                            required: true,
+                            placeholder: "ادخل رقم الدور",
+                            className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                            ...register("floor")
+                          }
+                        ),
+                          errors.floor && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.floor.message })
+                        ]
+                      })
+                      ]
+                    }),
+                /* @__PURE__ */ jsxs("div", {
+                      children: [
+                  /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "رقم الشقة" }),
+                  /* @__PURE__ */ jsx(
+                        InputText,
+                        {
+                          type: "number",
+                          required: true,
+                          placeholder: "ادخل رقم الشقة",
+                          className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+                          ...register("flat")
+                        }
+                      ),
+                        errors.flat && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.flat.message })
+                      ]
+                    })
+                    ]
+                  }),
+              /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      type: "submit",
+                      disabled: loading,
+                      className: "w-full rounded-lg bg-orange-500 py-3 font-semibold text-white transition-colors hover:bg-orange-600",
+                      children: "تأكيد العنوان"
+                    }
+                  )
+                  ]
+                }
+              )
+            })
             ]
-          }
-        ) })
-      ] }) })
-    }
-  ) });
+          })
+        })
+      }
+    )
+  });
 }
 
 function CheckoutPage() {
@@ -3536,26 +3599,31 @@ function CheckoutPage() {
   }
   const total = cartResponse?.total_price || 0;
   const shippingFees = watch("address").shipping_fees || 0;
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("div", { className: "mx-auto min-h-screen max-w-7xl px-4 py-12", children: [
+  return /* @__PURE__ */ jsxs(Fragment, {
+    children: [
+    /* @__PURE__ */ jsxs("div", {
+      className: "mx-auto min-h-screen max-w-7xl px-4 py-12", children: [
       /* @__PURE__ */ jsx("h1", { className: "mb-8 text-3xl font-bold", children: "إتمام الشراء" }),
-      /* @__PURE__ */ jsxs("div", { className: "flex w-full flex-col-reverse gap-8 lg:flex-row", children: [
-        /* @__PURE__ */ jsx("div", { className: "w-full flex-1", children: addressLoading ? /* @__PURE__ */ jsx(AddressSkeleton, {}) : /* @__PURE__ */ jsx(
-          BillingForm,
-          {
-            address,
-            showDialog,
-            setShowDialog,
-            watch,
-            setValue,
-            setError,
-            register,
-            errors,
-            handleSubmit,
-            onSubmit,
-            loading
-          }
-        ) }),
+      /* @__PURE__ */ jsxs("div", {
+        className: "flex w-full flex-col-reverse gap-8 lg:flex-row", children: [
+        /* @__PURE__ */ jsx("div", {
+          className: "w-full flex-1", children: addressLoading ? /* @__PURE__ */ jsx(AddressSkeleton, {}) : /* @__PURE__ */ jsx(
+            BillingForm,
+            {
+              address,
+              showDialog,
+              setShowDialog,
+              watch,
+              setValue,
+              setError,
+              register,
+              errors,
+              handleSubmit,
+              onSubmit,
+              loading
+            }
+          )
+        }),
         /* @__PURE__ */ jsx(
           OrderSummary,
           {
@@ -3564,19 +3632,23 @@ function CheckoutPage() {
             shippingFees
           }
         )
-      ] })
-    ] }),
-    showDialog && /* @__PURE__ */ jsx(
-      DialogAddressForm,
-      {
-        showDialog,
-        retryAddress: retry,
-        setShowDialog
-      }
-    )
-  ] });
+        ]
+      })
+      ]
+    }),
+      showDialog && /* @__PURE__ */ jsx(
+        DialogAddressForm,
+        {
+          showDialog,
+          retryAddress: retry,
+          setShowDialog
+        }
+      )
+    ]
+  });
 }
-const EmptyCart = () => /* @__PURE__ */ jsxs("div", { className: "mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-12 text-center", children: [
+const EmptyCart = () => /* @__PURE__ */ jsxs("div", {
+  className: "mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-12 text-center", children: [
   /* @__PURE__ */ jsx("h2", { className: "mb-4 text-2xl font-bold", children: "عربة التسوق فارغة" }),
   /* @__PURE__ */ jsx(
     Link,
@@ -3586,17 +3658,24 @@ const EmptyCart = () => /* @__PURE__ */ jsxs("div", { className: "mx-auto flex m
       children: "العودة للتسوق"
     }
   )
-] });
-const AddressSkeleton = () => /* @__PURE__ */ jsx("div", { className: "mb-6 rounded-lg bg-white py-6", children: /* @__PURE__ */ jsxs("div", { className: "animate-pulse space-y-4", children: [
+  ]
+});
+const AddressSkeleton = () => /* @__PURE__ */ jsx("div", {
+  className: "mb-6 rounded-lg bg-white py-6", children: /* @__PURE__ */ jsxs("div", {
+    className: "animate-pulse space-y-4", children: [
   /* @__PURE__ */ jsx("div", { className: "h-8 w-1/3 rounded bg-gray-200" }),
-  /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4", children: [
+  /* @__PURE__ */ jsxs("div", {
+      className: "flex items-center gap-4", children: [
     /* @__PURE__ */ jsx("div", { className: "h-12 w-40 rounded bg-gray-200" }),
     /* @__PURE__ */ jsx("div", { className: "h-10 w-full rounded bg-gray-200" })
-  ] }),
+      ]
+    }),
   /* @__PURE__ */ jsx("div", { className: "h-[200px] w-full rounded bg-gray-200" }),
   /* @__PURE__ */ jsx("div", { className: "h-32 w-full rounded bg-gray-200" }),
   /* @__PURE__ */ jsx("div", { className: "h-12 w-full rounded bg-gray-200" })
-] }) });
+    ]
+  })
+});
 const BillingForm = ({
   address,
   setShowDialog,
@@ -3608,9 +3687,11 @@ const BillingForm = ({
   handleSubmit,
   onSubmit,
   loading
-}) => /* @__PURE__ */ jsxs("div", { className: "mb-6 rounded-lg bg-white px-4 py-6", children: [
+}) => /* @__PURE__ */ jsxs("div", {
+  className: "mb-6 rounded-lg bg-white px-4 py-6", children: [
   /* @__PURE__ */ jsx("h2", { className: "mb-4 text-xl font-bold", children: "معلومات الفاتورة" }),
-  /* @__PURE__ */ jsxs("div", { className: "mb-5 mt-10 flex items-center justify-between", children: [
+  /* @__PURE__ */ jsxs("div", {
+    className: "mb-5 mt-10 flex items-center justify-between", children: [
     /* @__PURE__ */ jsx("h3", { className: "mb-2 font-medium", children: address?.length ? "العناوين المحفوظة" : "لا يوجد عناوين محفوظة" }),
     /* @__PURE__ */ jsx(
       "button",
@@ -3621,138 +3702,184 @@ const BillingForm = ({
         children: "اضافة عنوان جديد"
       }
     )
-  ] }),
-  !address?.length ? /* @__PURE__ */ jsx("h3", { className: "text-md flex h-[200px] items-center justify-center bg-slate-50 text-center font-bold text-red-600", children: "لم يتم إضافة عنوان، من فضلك قم بإضافة عنوان لاستكمال الطلب" }) : /* @__PURE__ */ jsx(
-    AddressList,
-    {
-      addresses: address,
-      selectedAddressId: watch("address")?.id || null,
-      onSelectAddress: (selectedAddress) => {
-        setValue("address", selectedAddress);
-        setError("address", { type: "manual", message: "" });
+    ]
+  }),
+    !address?.length ? /* @__PURE__ */ jsx("h3", { className: "text-md flex h-[200px] items-center justify-center bg-slate-50 text-center font-bold text-red-600", children: "لم يتم إضافة عنوان، من فضلك قم بإضافة عنوان لاستكمال الطلب" }) : /* @__PURE__ */ jsx(
+      AddressList,
+      {
+        addresses: address,
+        selectedAddressId: watch("address")?.id || null,
+        onSelectAddress: (selectedAddress) => {
+          setValue("address", selectedAddress);
+          setError("address", { type: "manual", message: "" });
+        }
       }
-    }
-  ),
-  /* @__PURE__ */ jsxs("form", { onSubmit: handleSubmit(onSubmit), className: "space-y-4 pt-4", children: [
-    /* @__PURE__ */ jsxs("div", { children: [
+    ),
+  /* @__PURE__ */ jsxs("form", {
+      onSubmit: handleSubmit(onSubmit), className: "space-y-4 pt-4", children: [
+    /* @__PURE__ */ jsxs("div", {
+        children: [
       /* @__PURE__ */ jsx("label", { className: "mb-1 block text-sm font-medium text-gray-700", children: "ملاحظات إضافية" }),
       /* @__PURE__ */ jsx(
-        InputTextarea,
-        {
-          rows: 4,
-          className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
-          ...register("desc")
-        }
-      ),
-      errors.desc && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.desc.message }),
-      errors.address && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.address.message?.toString() }),
-      errors.paymentMethod && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.paymentMethod.message?.toString() })
-    ] }),
-    /* @__PURE__ */ jsx(
-      Button,
-      {
-        type: "submit",
-        loading,
-        className: "flex w-full items-center justify-center gap-4 rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600",
-        children: "تأكيد الطلب"
-      }
-    )
-  ] })
-] });
-const OrderSummary = ({ items, total, shippingFees }) => /* @__PURE__ */ jsxs("div", { className: "h-fit w-full flex-1 rounded-lg bg-gray-100 p-6", children: [
-  /* @__PURE__ */ jsx("h2", { className: "mb-4 text-xl font-bold", children: "ملخص الطلب" }),
-  /* @__PURE__ */ jsx("div", { className: "max-h-[500px] space-y-4 overflow-y-auto bg-gray-50 px-10 pb-10", children: items.map((item) => /* @__PURE__ */ jsx(
-    "div",
-    {
-      className: "flex items-center gap-4 border-t border-gray-200 py-4 max-sm:items-start",
-      children: /* @__PURE__ */ jsxs("div", { className: "flex flex-1 items-start justify-start gap-4 max-sm:flex-col", children: [
-        /* @__PURE__ */ jsx("div", { className: "relative h-20 w-20", children: /* @__PURE__ */ jsx(
-          Image,
+          InputTextarea,
           {
-            src: item.product_image,
-            alt: item.product_name || "",
-            fill: true,
-            className: "rounded object-cover"
+            rows: 4,
+            className: "w-full rounded-lg border border-gray-300 px-4 py-4 focus:border-transparent focus:ring-2 focus:ring-orange-500",
+            ...register("desc")
           }
-        ) }),
-        /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
+        ),
+          errors.desc && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.desc.message }),
+          errors.address && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.address.message?.toString() }),
+          errors.paymentMethod && /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-red-600", children: errors.paymentMethod.message?.toString() })
+        ]
+      }),
+    /* @__PURE__ */ jsx(
+        Button,
+        {
+          type: "submit",
+          loading,
+          className: "flex w-full items-center justify-center gap-4 rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600",
+          children: "تأكيد الطلب"
+        }
+      )
+      ]
+    })
+  ]
+});
+const OrderSummary = ({ items, total, shippingFees }) => /* @__PURE__ */ jsxs("div", {
+  className: "h-fit w-full flex-1 rounded-lg bg-gray-100 p-6", children: [
+  /* @__PURE__ */ jsx("h2", { className: "mb-4 text-xl font-bold", children: "ملخص الطلب" }),
+  /* @__PURE__ */ jsx("div", {
+    className: "max-h-[500px] space-y-4 overflow-y-auto bg-gray-50 px-10 pb-10", children: items.map((item) => /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "flex items-center gap-4 border-t border-gray-200 py-4 max-sm:items-start",
+        children: /* @__PURE__ */ jsxs("div", {
+          className: "flex flex-1 items-start justify-start gap-4 max-sm:flex-col", children: [
+        /* @__PURE__ */ jsx("div", {
+            className: "relative h-20 w-20", children: /* @__PURE__ */ jsx(
+              Image,
+              {
+                src: item.product_image,
+                alt: item.product_name || "",
+                fill: true,
+                className: "rounded object-cover"
+              }
+            )
+          }),
+        /* @__PURE__ */ jsxs("div", {
+            className: "flex-1", children: [
           /* @__PURE__ */ jsx("h3", { className: "font-semibold", children: item.product_name }),
-          /* @__PURE__ */ jsxs("p", { className: "mt-2 text-end text-sm text-gray-800", children: [
-            item.qty,
-            " ×",
-            (item.item_total - (item.variations?.reduce(
-              (sum, variation) => sum + variation.choices.reduce(
-                (choiceSum, choice) => choiceSum + choice.price,
-                0
-              ),
-              0
-            ) || 0)).toFixed(1),
-            "ج.م"
-          ] }),
-          item.product_note && /* @__PURE__ */ jsxs("p", { className: "mt-1 text-xs text-gray-500", children: [
-            /* @__PURE__ */ jsx("span", { className: "font-medium", children: "ملاحظة:" }),
-            item.product_note
-          ] }),
-          item.variations && item.variations.length > 0 && /* @__PURE__ */ jsx("div", { className: "mt-1", children: item.variations.map((variation) => /* @__PURE__ */ jsxs(
-            "div",
-            {
-              className: "flex items-center justify-between gap-1 text-xs text-gray-500",
-              children: [
-                /* @__PURE__ */ jsxs("span", { className: "font-medium", children: [
-                  variation.main_variation_name,
-                  ":"
-                ] }),
-                variation.choices.map((choice, idx) => /* @__PURE__ */ jsxs(React__default.Fragment, { children: [
-                  idx > 0 && /* @__PURE__ */ jsx("span", { children: ", " }),
-                  /* @__PURE__ */ jsxs("bdi", { children: [
-                    choice.name,
-                    " (",
-                    choice.price,
-                    " ج.م+)"
-                  ] })
-                ] }, choice.id))
+          /* @__PURE__ */ jsxs("p", {
+              className: "mt-2 text-end text-sm text-gray-800", children: [
+                item.qty,
+                " ×",
+                (item.item_total - (item.variations?.reduce(
+                  (sum, variation) => sum + variation.choices.reduce(
+                    (choiceSum, choice) => choiceSum + choice.price,
+                    0
+                  ),
+                  0
+                ) || 0)).toFixed(1),
+                "ج.م"
               ]
-            },
-            variation.main_variation_id
-          )) }),
-          /* @__PURE__ */ jsxs("div", { className: "mt-1 flex items-center justify-between text-sm text-gray-800", children: [
+            }),
+              item.product_note && /* @__PURE__ */ jsxs("p", {
+                className: "mt-1 text-xs text-gray-500", children: [
+            /* @__PURE__ */ jsx("span", { className: "font-medium", children: "ملاحظة:" }),
+                  item.product_note
+                ]
+              }),
+              item.variations && item.variations.length > 0 && /* @__PURE__ */ jsx("div", {
+                className: "mt-1", children: item.variations.map((variation) => /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "flex items-center justify-between gap-1 text-xs text-gray-500",
+                    children: [
+                /* @__PURE__ */ jsxs("span", {
+                      className: "font-medium", children: [
+                        variation.main_variation_name,
+                        ":"
+                      ]
+                    }),
+                      variation.choices.map((choice, idx) => /* @__PURE__ */ jsxs(React__default.Fragment, {
+                        children: [
+                          idx > 0 && /* @__PURE__ */ jsx("span", { children: ", " }),
+                  /* @__PURE__ */ jsxs("bdi", {
+                            children: [
+                              choice.name,
+                              " (",
+                              choice.price,
+                              " ج.م+)"
+                            ]
+                          })
+                        ]
+                      }, choice.id))
+                    ]
+                  },
+                  variation.main_variation_id
+                ))
+              }),
+          /* @__PURE__ */ jsxs("div", {
+                className: "mt-1 flex items-center justify-between text-sm text-gray-800", children: [
             /* @__PURE__ */ jsx("span", { className: "", children: "إجمالي المنتج" }),
-            /* @__PURE__ */ jsxs(Fragment, { children: [
-              item.item_total.toFixed(2),
-              " ج.م"
-            ] })
-          ] })
-        ] })
-      ] })
-    },
-    item.cart_item_id
-  )) }),
-  /* @__PURE__ */ jsxs("div", { className: "text-md space-y-2 border-t pt-4 font-bold", children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex justify-between text-sm", children: [
+            /* @__PURE__ */ jsxs(Fragment, {
+                  children: [
+                    item.item_total.toFixed(2),
+                    " ج.م"
+                  ]
+                })
+                ]
+              })
+            ]
+          })
+          ]
+        })
+      },
+      item.cart_item_id
+    ))
+  }),
+  /* @__PURE__ */ jsxs("div", {
+    className: "text-md space-y-2 border-t pt-4 font-bold", children: [
+    /* @__PURE__ */ jsxs("div", {
+      className: "flex justify-between text-sm", children: [
       /* @__PURE__ */ jsx("span", { children: "إجمالي المنتجات" }),
-      /* @__PURE__ */ jsxs("span", { children: [
-        total.toFixed(2),
-        " ج.م"
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex justify-between text-sm", children: [
+      /* @__PURE__ */ jsxs("span", {
+        children: [
+          total.toFixed(2),
+          " ج.م"
+        ]
+      })
+      ]
+    }),
+    /* @__PURE__ */ jsxs("div", {
+      className: "flex justify-between text-sm", children: [
       /* @__PURE__ */ jsx("span", { children: "رسوم الشحن" }),
-      /* @__PURE__ */ jsxs("span", { children: [
-        shippingFees.toFixed(2),
-        " ج.م"
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "text-md flex justify-between border-t pt-2", children: [
+      /* @__PURE__ */ jsxs("span", {
+        children: [
+          shippingFees.toFixed(2),
+          " ج.م"
+        ]
+      })
+      ]
+    }),
+    /* @__PURE__ */ jsxs("div", {
+      className: "text-md flex justify-between border-t pt-2", children: [
       /* @__PURE__ */ jsx("span", { children: "الإجمالي النهائي" }),
-      /* @__PURE__ */ jsxs("span", { children: [
-        (total + shippingFees).toFixed(2),
-        " ج.م"
-      ] })
-    ] })
-  ] })
-] });
+      /* @__PURE__ */ jsxs("span", {
+        children: [
+          (total + shippingFees).toFixed(2),
+          " ج.م"
+        ]
+      })
+      ]
+    })
+    ]
+  })
+  ]
+});
 
-const $$Astro = createAstro("https://admin-emend.cashierthru.com");
+const $$Astro = createAstro("https://admin-osama.cashierthru.com");
 const prerender = false;
 const $$Checkout = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
@@ -3775,7 +3902,9 @@ const $$Checkout = createComponent(async ($$result, $$props, $$slots) => {
   const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
   const pageTitle = "\u0625\u062A\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628 - " + (settingsData?.name || "\u0627\u0644\u0645\u062A\u062C\u0631");
   const pageDescription = "\u0623\u0643\u0645\u0644 \u0639\u0645\u0644\u064A\u0629 \u0627\u0644\u0634\u0631\u0627\u0621 \u0648\u0623\u062F\u062E\u0644 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0634\u062D\u0646 \u0648\u0627\u0644\u062F\u0641\u0639";
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, { "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "CheckoutPage", CheckoutPage, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Checkout/Checkout", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription }, {
+    "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, {
+      "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "CheckoutPage", CheckoutPage, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Checkout/Checkout", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
             flex h-12 w-12 items-center overflow-hidden
             rounded-full bg-green-500 text-white shadow-lg
             transition-all duration-300
@@ -3786,7 +3915,9 @@ const $$Checkout = createComponent(async ($$result, $$props, $$slots) => {
               group-hover:max-w-[100px] group-hover:translate-x-0 group-hover:opacity-100
             ">
 تواصل معنا
-</span> </div> <span class="sr-only">تواصل معنا عبر الواتساب</span> </a>`} ${renderComponent($$result3, "Footer", Footer, { "settingsData": settingsData, "appVersion": appVersion, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Footer", "client:component-export": "default" })}  ${renderComponent($$result3, "ToastContainer", null, { "position": "bottom-right", "rtl": true, "autoClose": 3e3, "hideProgressBar": false, "newestOnTop": true, "closeOnClick": true, "pauseOnFocusLoss": true, "draggable": true, "pauseOnHover": true, "theme": "light", "client:only": "react", "client:component-hydration": "only", "client:component-path": "react-toastify", "client:component-export": "ToastContainer" })} ` })} ` })}`;
+</span> </div> <span class="sr-only">تواصل معنا عبر الواتساب</span> </a>`} ${renderComponent($$result3, "Footer", Footer, { "settingsData": settingsData, "appVersion": appVersion, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Footer", "client:component-export": "default" })}  ${renderComponent($$result3, "ToastContainer", null, { "position": "bottom-right", "rtl": true, "autoClose": 3e3, "hideProgressBar": false, "newestOnTop": true, "closeOnClick": true, "pauseOnFocusLoss": true, "draggable": true, "pauseOnHover": true, "theme": "light", "client:only": "react", "client:component-hydration": "only", "client:component-path": "react-toastify", "client:component-export": "ToastContainer" })} `
+    })} `
+  })}`;
 }, "F:/react js projects/kamal/web-small-business-react/src/pages/shop/checkout.astro", void 0);
 
 const $$file = "F:/react js projects/kamal/web-small-business-react/src/pages/shop/checkout.astro";

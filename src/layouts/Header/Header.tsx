@@ -1,40 +1,40 @@
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, ClipboardList } from "lucide-react";
 import Link from "@/components/common/Link";
 import Image from "@/components/common/Image";
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "@/lib/navigation";
 import Cookies from "js-cookie";
 
 import { useSettings } from "@/providers";
-import { SettingsData } from "@/hooks/fetchSettings";
+import { fetchPublicSettings, SettingsData } from "@/hooks/fetchSettings";
 import LoginButton from "./LoginButton";
 import SearchBar from "./SearchBar";
 import AuthDialog from "@/components/auth/AuthDialog";
+import CircleLogo from "@/global/CircleLogo";
+
+const settingsResponse = await fetchPublicSettings();
 
 interface HeaderProps {
   currentPath?: string;
   initialIsLoggedIn?: boolean;
-  settingsData?: SettingsData | null;
+  settingsData?: SettingsData;
 }
 
 export default function Header({ currentPath = "", initialIsLoggedIn = false, settingsData }: HeaderProps) {
   // Get data from context - NO API calls!
   const { settings: contextSettings, isLogin: contextIsLogin, cartCount } = useSettings();
 
-  const settings = settingsData || contextSettings;
+  // const settings = settingsData || contextSettings;
 
-  // Initialize state from props (server source of truth) or context
-  const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn || contextIsLogin);
+  // alert(settings?.logo?.toString())
+
+  // Read cookie synchronously — no useEffect needed, no flash
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => contextIsLogin || Boolean(Cookies.get("app_token"))
+  );
   const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-  // const pathname = currentPath; // Use prop for rendering active states if needed
   const router = useRouter();
-
-  // Sync auth state from cookies - client side check
-  useEffect(() => {
-    const cookieToken = Cookies.get("app_token");
-    setIsLoggedIn(Boolean(cookieToken));
-  }, []); // Run once on mount to reconcile
 
   // Handle logout - called from LoginButton
   const handleLogout = useCallback(() => {
@@ -77,24 +77,17 @@ export default function Header({ currentPath = "", initialIsLoggedIn = false, se
               className="flex items-center gap-3"
             >
               <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm">
-                {settings?.logo ? (
-                  <Image
-                    src={settings.logo}
-                    alt={settings?.name || "شعار المتجر"}
-                    fill
-                    sizes="44px"
-                    className="object-contain"
-                    priority
-                  />
-                ) : (
-                  <span className="text-sm font-bold">
-                    {settings?.name?.charAt(0) || "S"}
-                  </span>
-                )}
+                {settingsResponse?.data?.logo ?
+                  <CircleLogo src={settingsResponse?.data?.logo} size={36} />
+                  : (
+                    <span className="text-sm font-bold">
+                      {settingsResponse?.data?.name?.charAt(0) || "S"}
+                    </span>
+                  )}
               </div>
-              {settings?.name && (
+              {settingsResponse?.data?.name && (
                 <span className="hidden text-lg font-semibold text-[var(--main-font-color)] sm:block">
-                  {settings.name}
+                  {settingsResponse?.data?.name}
                 </span>
               )}
             </Link>
@@ -106,8 +99,19 @@ export default function Header({ currentPath = "", initialIsLoggedIn = false, se
               </div>
             </div>
 
-            {/* Right side: cart + login */}
+            {/* Right side: orders + cart + login */}
             <div className="flex items-center gap-3">
+              {/* Orders Button — only for logged-in users */}
+              {isLoggedIn && (
+                <Link
+                  href="/user/orders"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
+                  aria-label="طلباتي"
+                >
+                  <ClipboardList className="h-4 w-4 text-[var(--second-font-color)]" />
+                </Link>
+              )}
+
               {/* Cart Button */}
               <Link
                 href={isLoggedIn ? "/cart" : "#"}
@@ -141,7 +145,7 @@ export default function Header({ currentPath = "", initialIsLoggedIn = false, se
       <AuthDialog
         visible={showAuthDialog}
         onHide={() => setShowAuthDialog(false)}
-        initSettings={settings || {}}
+        initSettings={settingsResponse?.data || {}}
       />
     </>
   );

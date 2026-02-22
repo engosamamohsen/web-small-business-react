@@ -8,9 +8,10 @@ const NOOP_MIDDLEWARE_FN = async (_ctx, next) => {
 };
 
 const ACTION_QUERY_PARAMS = {
-  actionName: "_astroAction"};
+  actionName: "_astroAction"
+};
 
-const __vite_import_meta_env__ = {"ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_API_URL": "https://admin-emend.cashierthru.com/api/", "PUBLIC_BASE_URL": "https://admin-emend.cashierthru.com", "PUBLIC_LAST_ROUTE_API_URL": "/api/", "SITE": "https://admin-emend.cashierthru.com", "SSR": true};
+const __vite_import_meta_env__ = { "ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_API_URL": "https://admin-osama.cashierthru.com/api/", "PUBLIC_BASE_URL": "https://admin-osama.cashierthru.com", "PUBLIC_LAST_ROUTE_API_URL": "/api/", "SITE": "https://admin-osama.cashierthru.com", "SSR": true };
 const codeToStatusMap = {
   // Implemented from tRPC error code table
   // https://trpc.io/docs/server/error-handling#error-codes

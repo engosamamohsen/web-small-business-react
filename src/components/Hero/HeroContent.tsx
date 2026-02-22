@@ -6,7 +6,7 @@ import styles from "./style.module.css";
 function HeroContent({ data }: { data: any }) {
   const linkLocation =
     data?.type === "product"
-      ? `/products/${data?.id}`
+      ? `/products/${data?.slug}`
       : data?.type === "category"
         ? `/categories/${data?.id}`
         : data?.type === "external"

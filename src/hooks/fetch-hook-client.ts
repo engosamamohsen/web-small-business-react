@@ -26,11 +26,11 @@ export async function fetchHookClient<T = any>({
     ok: boolean;
     error?: string;
 }> {
-    const subdomain = "https://emend.cashierthru.com";
+    const subdomain = "https://admin-osama.cashierthru.com";
     const lastRoute = import.meta.env.PUBLIC_LAST_ROUTE_API_URL ?? "";
 
     // if caller passes baseUrl, use it; otherwise build like server hook
-    const currentUrl = baseUrl ?? `${subdomain}${lastRoute}`;
+    const currentUrl = (baseUrl ?? `${subdomain}${lastRoute}`).replace(/\/+$/, "");
 
     // normalize slashes so you don't end up with "//v1/product"
     const fullUrl = url.startsWith("http")

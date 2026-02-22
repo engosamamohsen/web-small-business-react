@@ -32,8 +32,75 @@ export type SettingsResponse = {
 };
 
 // ===== Config =====
-const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "https://admin-emend.cashierthru.com/api";
+const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "https://admin-osama.cashierthru.com/api";
 const FETCH_TIMEOUT = 10000; // 10 seconds
+const SETTINGS_CACHE_KEY = "app_settings";
+const SETTINGS_TIMESTAMP_KEY = "app_settings_timestamp";
+const SETTINGS_CACHE_DURATION = 1000 * 60 * 60; // 1 hour in milliseconds
+
+// ===== LocalStorage Functions =====
+
+/**
+ * Get settings from localStorage
+ */
+export function getSettingsFromLocalStorage(): SettingsData | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
+    if (cached) {
+      return JSON.parse(cached) as SettingsData;
+    }
+  } catch (error) {
+    console.error("[getSettingsFromLocalStorage] Error:", error);
+  }
+  return null;
+}
+
+/**
+ * Save settings to localStorage
+ */
+export function saveSettingsToLocalStorage(settings: SettingsData): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
+    localStorage.setItem(SETTINGS_TIMESTAMP_KEY, Date.now().toString());
+  } catch (error) {
+    console.error("[saveSettingsToLocalStorage] Error:", error);
+  }
+}
+
+/**
+ * Check if cached settings are still valid
+ */
+function isCacheValid(): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const timestamp = localStorage.getItem(SETTINGS_TIMESTAMP_KEY);
+    if (!timestamp) return false;
+
+    const age = Date.now() - parseInt(timestamp, 10);
+    return age < SETTINGS_CACHE_DURATION;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Clear settings cache
+ */
+export function clearSettingsCache(): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.removeItem(SETTINGS_CACHE_KEY);
+    localStorage.removeItem(SETTINGS_TIMESTAMP_KEY);
+  } catch (error) {
+    console.error("[clearSettingsCache] Error:", error);
+  }
+}
 
 /**
  * Fetch with timeout to prevent hanging requests
@@ -125,12 +192,31 @@ export const fetchPublicSettings = async (): Promise<SettingsResponse> => {
 
 /**
  * Cached settings - for authenticated requests
- * Each unique token gets its own cache entry
+ * Uses localStorage cache to avoid multiple API calls
+ * Checks localStorage first, then calls API only if not cached or cache is invalid
  */
 export const fetchSettings = async (token?: string): Promise<SettingsResponse> => {
+  // Check localStorage cache first (only for client-side, without token)
+  if (!token && typeof window !== "undefined") {
+    const cachedSettings = getSettingsFromLocalStorage();
+    if (cachedSettings && isCacheValid()) {
+      console.log("[fetchSettings] Using cached settings from localStorage");
+      return {
+        data: cachedSettings,
+        ok: true,
+        status: 200,
+      };
+    }
+  }
 
-  // if (!token) {
-  //   return fetchPublicSettings();
-  // }
-  return fetchSettingsBase(token);
+  // Fetch from API
+  const result = await fetchSettingsBase(token);
+
+  // Save to localStorage if successful (only for public settings without token)
+  if (result.ok && result.data && !token) {
+    saveSettingsToLocalStorage(result.data);
+    console.log("[fetchSettings] Saved settings to localStorage");
+  }
+
+  return result;
 };

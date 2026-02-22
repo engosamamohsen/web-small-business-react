@@ -8,7 +8,7 @@ import { useEffect } from "react";
 
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
 import { useCart } from "@/providers";
-import { cn } from "@/utils/utils";
+import { cn, slugify } from "@/utils/utils";
 import PageLoader from "../PageLoader/PageLoader";
 import { CartItemType } from "@/types/types";
 
@@ -18,7 +18,7 @@ interface CartItemProps {
   loading: boolean;
   updateCount: (itemId: number, quantity: number, productName: string) => void;
   removeFromCart: (item: any) => void;
-  onProductClick: (productId: string) => void;
+  onProductClick: (productId: string, productName: string) => void;
 }
 
 const CartItem = ({
@@ -35,7 +35,7 @@ const CartItem = ({
     <div className="mb-4 flex w-full flex-col gap-4 rounded-xl bg-white p-4 text-start shadow-sm ring-1 ring-slate-100 transition-shadow max-md:flex-col-reverse md:flex-row md:items-center md:justify-between md:gap-6">
       {/* Image + Info */}
       <div
-        onClick={() => onProductClick(String(item.product_id))}
+        onClick={() => onProductClick(String(item.product_id), item.product_name)}
         className="flex w-full cursor-pointer gap-4 max-md:flex-col"
       >
         <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50">
@@ -246,8 +246,8 @@ export default function Cart() {
     return <EmptyCart />;
   }
 
-  const handleProductClick = (productId: string) => {
-    router.push(`/products/${productId}`);
+  const handleProductClick = (productId: string, productName: string) => {
+    router.push(`/products/${slugify(productName)}-${productId}`);
   };
 
   const handleUpdateCount = async (

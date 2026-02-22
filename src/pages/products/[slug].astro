@@ -9,11 +9,18 @@ import { ToastContainer } from "react-toastify";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { fetchHook } from "@/hooks/fetch-hook";
-import packageJson from "../../../../package.json";
+import packageJson from "../../../package.json";
 import type { ProductType } from "@/lib/types";
 
-// Get the product ID from the URL
-const { id } = Astro.params;
+// Get the slug from the URL
+const { slug } = Astro.params as { slug: string };
+
+if (!slug) {
+    return Astro.redirect("/404");
+}
+
+// Extract ID from slug (e.g., "product-name-123" -> 123)
+const id = slug.split("-").pop();
 
 if (!id) {
     return Astro.redirect("/404");
@@ -100,7 +107,7 @@ const schema =
         },
         offers: {
             "@type": "Offer",
-            url: `${Astro.url.origin}/products/${id}`,
+            url: `${Astro.url.origin}/products/${slug}`,
             priceCurrency: "EGP",
             price: productData?.price,
             availability: "https://schema.org/InStock",

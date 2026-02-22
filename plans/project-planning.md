@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-This is a **multi-tenant e-commerce platform** built with Astro and React, designed for small businesses. The application serves as a storefront for businesses to showcase products, manage shopping carts, process orders, and handle customer accounts. It integrates with an external admin API (`admin-emend.cashierthru.com`) for backend operations.
+This is a **multi-tenant e-commerce platform** built with Astro and React, designed for small businesses. The application serves as a storefront for businesses to showcase products, manage shopping carts, process orders, and handle customer accounts. It integrates with an external admin API (`admin-osama.cashierthru.com`) for backend operations.
 
 **Project Name:** alelm-v2-website  
 **Version:** 0.2.0
@@ -160,7 +160,7 @@ graph TD
 
 ### 4.7 Settings & Configuration
 - **API Endpoint:** `GET /v1/setting-profile`
-- **Base URL:** `https://admin-emend.cashierthru.com/api/`
+- **Base URL:** `https://admin-osama.cashierthru.com/api/`
 - **Dynamic Theming:** Colors loaded from API (main_color, main_bg, main_font_color)
 - **Shop Settings:** Name, logo, about us, contact info, social links (Facebook, Instagram)
 - **Tax Configuration:** VAT, tax rate, service charge
@@ -174,7 +174,7 @@ graph TD
 
 ### Base URLs
 ```env
-PUBLIC_API_URL=https://admin-emend.cashierthru.com/api/
+PUBLIC_API_URL=https://admin-osama.cashierthru.com/api/
 PUBLIC_LAST_ROUTE_API_URL=/api/
 ```
 
@@ -211,7 +211,7 @@ PUBLIC_LAST_ROUTE_API_URL=/api/
 - **Hybrid Rendering:** Static by default, dynamic on demand
 
 ### External Image Domains
-- `admin-emend.cashierthru.com`
+- `admin-osama.cashierthru.com`
 - `cdn.pixabay.com`
 - `i.ibb.co`
 - `source.unsplash.com`

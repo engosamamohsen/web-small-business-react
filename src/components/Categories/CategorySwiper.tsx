@@ -9,12 +9,8 @@ import "swiper/css/navigation";
 import { cn } from "@/utils/utils";
 import { useSearchParams } from "@/lib/navigation";
 import React from 'react';
+import { CategoryType } from "@/lib/types";
 
-interface CategoryType {
-  id: number;
-  name: string;
-  icon: string;
-}
 
 export default function CategorySwiper({ categories }: { categories: any }) {
   const searchParams = useSearchParams();
@@ -26,7 +22,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
   const onCategoryClick = (category: CategoryType) => {
     const sp = new URLSearchParams(window.location.search);
     const current = sp.get("category");
-    const nextId = category.id.toString();
+    const nextId = category.id?.toString() + "-" + category.slug.toString();
 
     if (nextId === current) {
       // Unselect category
@@ -42,7 +38,8 @@ export default function CategorySwiper({ categories }: { categories: any }) {
     sp.delete("sub_category");
     sp.set("page", "1");
     sp.set("category", nextId);
-    
+    // alert("sp:"+window.location.pathname);
+
     // Use pushState to update URL without full page reload
     window.history.pushState({}, '', `${window.location.pathname}?${sp}`);
     scrollToProducts({ elementId: "products", top: 270 });
@@ -79,7 +76,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
         >
           {categories?.categoriesData?.map((category: CategoryType) => {
             const isActive =
-              searchParams.get("category") == category.id.toString();
+              searchParams.get("category") == category.id?.toString() + "-" + category.slug.toString();
 
             return (
               <SwiperSlide

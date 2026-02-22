@@ -18,13 +18,14 @@ export { renderers } from '../renderers.mjs';
 
 function HeroContent({ data }) {
   const linkLocation = data?.type === "product" ? `/products/${data?.id}` : data?.type === "category" ? `/categories/${data?.id}` : data?.type === "external" ? data?.link || "" : "/";
-  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs(
-    Link,
-    {
-      href: linkLocation,
-      "aria-label": `Navigate to ${data.title}`,
-      className: `${styles$1.textContainer} relative z-[999] flex h-full w-full flex-col items-center justify-center gap-4 px-4 text-center`,
-      children: [
+  return /* @__PURE__ */ jsx(Fragment, {
+    children: /* @__PURE__ */ jsxs(
+      Link,
+      {
+        href: linkLocation,
+        "aria-label": `Navigate to ${data.title}`,
+        className: `${styles$1.textContainer} relative z-[999] flex h-full w-full flex-col items-center justify-center gap-4 px-4 text-center`,
+        children: [
         /* @__PURE__ */ jsx(
           "h1",
           {
@@ -33,9 +34,10 @@ function HeroContent({ data }) {
           }
         ),
         /* @__PURE__ */ jsx("p", { className: `${styles$1.desc} text-white opacity-[0.8]`, children: data.desc })
-      ]
-    }
-  ) });
+        ]
+      }
+    )
+  });
 }
 
 function SwiperBanner({ response }) {
@@ -49,24 +51,27 @@ function SwiperBanner({ response }) {
       "aria-label": "Promotional banners",
       children: [
         /* @__PURE__ */ jsx(
-          Swiper,
-          {
-            modules: [Pagination, Autoplay, Navigation],
-            pagination: hasMultipleSlides ? {
-              clickable: true
-            } : false,
-            autoplay: {
-              delay: 5e7,
-              disableOnInteraction: true
-            },
-            loop: hasMultipleSlides,
-            navigation: hasMultipleSlides ? {
-              nextEl: ".hero-next",
-              prevEl: ".hero-prev"
-            } : false,
-            className: `heroSwiper ${styles$1.heroSwiper}`,
-            children: slides.map((slide, index) => /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsxs("div", { className: styles$1.slideContent, children: [
-              /* @__PURE__ */ jsxs("div", { className: styles$1.imageContainer, children: [
+        Swiper,
+        {
+          modules: [Pagination, Autoplay, Navigation],
+          pagination: hasMultipleSlides ? {
+            clickable: true
+          } : false,
+          autoplay: {
+            delay: 5e7,
+            disableOnInteraction: true
+          },
+          loop: hasMultipleSlides,
+          navigation: hasMultipleSlides ? {
+            nextEl: ".hero-next",
+            prevEl: ".hero-prev"
+          } : false,
+          className: `heroSwiper ${styles$1.heroSwiper}`,
+          children: slides.map((slide, index) => /* @__PURE__ */ jsx(SwiperSlide, {
+            children: /* @__PURE__ */ jsxs("div", {
+              className: styles$1.slideContent, children: [
+              /* @__PURE__ */ jsxs("div", {
+                className: styles$1.imageContainer, children: [
                 /* @__PURE__ */ jsx(
                   Image,
                   {
@@ -79,12 +84,16 @@ function SwiperBanner({ response }) {
                   }
                 ),
                 /* @__PURE__ */ jsx("div", { className: styles$1.gradientOverlay })
-              ] }),
+                ]
+              }),
               /* @__PURE__ */ jsx(HeroContent, { data: slide })
-            ] }) }, slide.id ?? index))
-          }
-        ),
-        hasMultipleSlides && /* @__PURE__ */ jsxs(Fragment, { children: [
+              ]
+            })
+          }, slide.id ?? index))
+        }
+      ),
+        hasMultipleSlides && /* @__PURE__ */ jsxs(Fragment, {
+          children: [
           /* @__PURE__ */ jsx(
             "button",
             {
@@ -103,7 +112,8 @@ function SwiperBanner({ response }) {
               children: /* @__PURE__ */ jsx("span", { className: styles$1.navIcon, "aria-hidden": "true", children: "‹" })
             }
           )
-        ] })
+          ]
+        })
       ]
     }
   );
@@ -198,8 +208,8 @@ var Skeleton = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(function (i
   var context = React.useContext(PrimeReactContext);
   var props = SkeletonBase.getProps(inProps, context);
   var _SkeletonBase$setMeta = SkeletonBase.setMetaData({
-      props: props
-    }),
+    props: props
+  }),
     ptm = _SkeletonBase$setMeta.ptm,
     cx = _SkeletonBase$setMeta.cx,
     sx = _SkeletonBase$setMeta.sx,
@@ -281,37 +291,53 @@ function Product({ product, defaultImage }) {
   const hasDiscount = discountValue > 0;
   const imageSrc = product?.main_image || product?.gallery_images?.[0] || product.image || defaultImage || "";
   const categoryName = product?.category?.name;
-  return /* @__PURE__ */ jsxs("div", { className: "flex h-full min-h-[350px] flex-col", children: [
-    /* @__PURE__ */ jsxs("div", { className: "relative", children: [
-      /* @__PURE__ */ jsx(Link, { href: `/products/${product?.id}`, className: "block", children: /* @__PURE__ */ jsx("div", { className: "relative w-full aspect-square overflow-hidden bg-gray-50", children: imageSrc ? /* @__PURE__ */ jsx(
-        Image,
-        {
-          src: imageSrc,
-          alt: product?.name || "",
-          fill: true,
-          quality: 80,
-          sizes: "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw",
-          className: "object-cover transition-all duration-200 group-hover:scale-[1.03] group-hover:brightness-95"
-        }
-      ) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-gray-200", children: /* @__PURE__ */ jsx("span", { className: "text-sm text-gray-500", children: "لا توجد صورة" }) }) }) }),
-      hasDiscount && /* @__PURE__ */ jsxs("div", { className: "absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 shadow-sm", children: [
+  return /* @__PURE__ */ jsxs("div", {
+    className: "flex h-full min-h-[350px] flex-col", children: [
+    /* @__PURE__ */ jsxs("div", {
+      className: "relative", children: [
+      /* @__PURE__ */ jsx(Link, {
+        href: `/products/${product?.id}`, className: "block", children: /* @__PURE__ */ jsx("div", {
+          className: "relative w-full aspect-square overflow-hidden bg-gray-50", children: imageSrc ? /* @__PURE__ */ jsx(
+            Image,
+            {
+              src: imageSrc,
+              alt: product?.name || "",
+              fill: true,
+              quality: 80,
+              sizes: "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw",
+              className: "object-cover transition-all duration-200 group-hover:scale-[1.03] group-hover:brightness-95"
+            }
+          ) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-gray-200", children: /* @__PURE__ */ jsx("span", { className: "text-sm text-gray-500", children: "لا توجد صورة" }) })
+        })
+      }),
+        hasDiscount && /* @__PURE__ */ jsxs("div", {
+          className: "absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 shadow-sm", children: [
         /* @__PURE__ */ jsx(Flame, { fill: "red", className: "h-4 w-4 text-transparent" }),
-        /* @__PURE__ */ jsxs("span", { className: "text-xs font-semibold text-orange-600", children: [
-          "خصم ",
-          discountValue,
-          "%"
-        ] })
-      ] }),
-      !product?.is_variation ? /* @__PURE__ */ jsx(ButtonAddToCart, { product }) : null
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col justify-between gap-3 px-4 pb-5 pt-3 sm:pb-6 sm:pt-4", children: [
-      /* @__PURE__ */ jsxs("div", { className: "w-full space-y-1 text-right", children: [
+        /* @__PURE__ */ jsxs("span", {
+            className: "text-xs font-semibold text-orange-600", children: [
+              "خصم ",
+              discountValue,
+              "%"
+            ]
+          })
+          ]
+        }),
+        !product?.is_variation ? /* @__PURE__ */ jsx(ButtonAddToCart, { product }) : null
+      ]
+    }),
+    /* @__PURE__ */ jsxs("div", {
+      className: "flex flex-1 flex-col justify-between gap-3 px-4 pb-5 pt-3 sm:pb-6 sm:pt-4", children: [
+      /* @__PURE__ */ jsxs("div", {
+        className: "w-full space-y-1 text-right", children: [
         /* @__PURE__ */ jsx("h3", { className: "line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-base", children: product.name }),
-        categoryName && /* @__PURE__ */ jsx("p", { className: "text-[11px] font-medium text-slate-400 sm:text-xs", children: categoryName })
-      ] }),
+          categoryName && /* @__PURE__ */ jsx("p", { className: "text-[11px] font-medium text-slate-400 sm:text-xs", children: categoryName })
+        ]
+      }),
       /* @__PURE__ */ jsx("div", { className: "flex w-full items-end justify-between", children: /* @__PURE__ */ jsx(PriceContent, { product }) })
-    ] })
-  ] });
+      ]
+    })
+    ]
+  });
 }
 function PriceContent({ product }) {
   const basePrice = Number(product?.price) || 0;
@@ -324,84 +350,104 @@ function PriceContent({ product }) {
   const basePriceDisplay = basePrice % 1 === 0 ? basePrice.toString() : basePrice.toFixed(2);
   const savingDisplay = saving > 0 ? saving % 1 === 0 ? saving.toString() : saving.toFixed(2) : null;
   if (hasDiscount) {
-    return /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-start gap-0.5 text-right", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-baseline gap-1 text-sm sm:text-base", children: [
-        /* @__PURE__ */ jsxs("span", { className: "ml-1 text-lg font-bold text-orange-500 sm:text-xl", children: [
-          finalPriceDisplay,
-          " ج.م"
-        ] }),
-        /* @__PURE__ */ jsxs("span", { className: "text-xs text-gray-400 line-through sm:text-sm", children: [
-          basePriceDisplay,
-          " ج.م"
-        ] })
-      ] }),
-      savingDisplay && /* @__PURE__ */ jsxs("span", { className: "text-[11px] font-medium text-green-600 sm:text-xs", children: [
-        "وفرت ",
-        savingDisplay,
-        " ج.م"
-      ] })
-    ] });
+    return /* @__PURE__ */ jsxs("div", {
+      className: "flex flex-col items-start gap-0.5 text-right", children: [
+      /* @__PURE__ */ jsxs("div", {
+        className: "flex flex-wrap items-baseline gap-1 text-sm sm:text-base", children: [
+        /* @__PURE__ */ jsxs("span", {
+          className: "ml-1 text-lg font-bold text-orange-500 sm:text-xl", children: [
+            finalPriceDisplay,
+            " ج.م"
+          ]
+        }),
+        /* @__PURE__ */ jsxs("span", {
+          className: "text-xs text-gray-400 line-through sm:text-sm", children: [
+            basePriceDisplay,
+            " ج.م"
+          ]
+        })
+        ]
+      }),
+        savingDisplay && /* @__PURE__ */ jsxs("span", {
+          className: "text-[11px] font-medium text-green-600 sm:text-xs", children: [
+            "وفرت ",
+            savingDisplay,
+            " ج.م"
+          ]
+        })
+      ]
+    });
   }
-  return /* @__PURE__ */ jsxs("span", { className: "ml-1 text-lg font-bold text-orange-500 sm:text-xl", children: [
-    basePriceDisplay,
-    " ج.م"
-  ] });
+  return /* @__PURE__ */ jsxs("span", {
+    className: "ml-1 text-lg font-bold text-orange-500 sm:text-xl", children: [
+      basePriceDisplay,
+      " ج.م"
+    ]
+  });
 }
 
 function SwiperOffer({ response }) {
   const products = response?.data?.data ?? [];
   const hasProducts = products.length > 0;
-  return /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
-    Swiper,
-    {
-      modules: [Navigation, Autoplay],
-      navigation: hasProducts && products.length > 1,
-      autoplay: hasProducts ? {
-        delay: 3e3,
-        disableOnInteraction: false,
-        pauseOnMouseEnter: true
-      } : false,
-      breakpoints: {
-        320: {
-          slidesPerView: 1.2,
-          spaceBetween: 10
+  return /* @__PURE__ */ jsx("div", {
+    children: /* @__PURE__ */ jsx(
+      Swiper,
+      {
+        modules: [Navigation, Autoplay],
+        navigation: hasProducts && products.length > 1,
+        autoplay: hasProducts ? {
+          delay: 3e3,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true
+        } : false,
+        breakpoints: {
+          320: {
+            slidesPerView: 1.2,
+            spaceBetween: 10
+          },
+          480: {
+            slidesPerView: 1.8,
+            spaceBetween: 14
+          },
+          768: {
+            slidesPerView: 2.6,
+            spaceBetween: 18
+          },
+          1024: {
+            slidesPerView: 3.5,
+            spaceBetween: 22
+          },
+          1280: {
+            slidesPerView: 4,
+            spaceBetween: 24
+          }
         },
-        480: {
-          slidesPerView: 1.8,
-          spaceBetween: 14
-        },
-        768: {
-          slidesPerView: 2.6,
-          spaceBetween: 18
-        },
-        1024: {
-          slidesPerView: 3.5,
-          spaceBetween: 22
-        },
-        1280: {
-          slidesPerView: 4,
-          spaceBetween: 24
-        }
-      },
-      loop: hasProducts && products.length > 4,
-      watchOverflow: true,
-      className: `${styles$2["offer-swiper"]} min-h-[300px]`,
-      children: hasProducts ? products.map((product) => /* @__PURE__ */ jsx(SwiperSlide, { className: styles$2.slide, children: /* @__PURE__ */ jsx("div", { className: styles$2.card, children: /* @__PURE__ */ jsx(Product, { product }) }) }, product.id)) : /* @__PURE__ */ jsxs(Fragment, { children: [
+        loop: hasProducts && products.length > 4,
+        watchOverflow: true,
+        className: `${styles$2["offer-swiper"]} min-h-[300px]`,
+        children: hasProducts ? products.map((product) => /* @__PURE__ */ jsx(SwiperSlide, { className: styles$2.slide, children: /* @__PURE__ */ jsx("div", { className: styles$2.card, children: /* @__PURE__ */ jsx(Product, { product }) }) }, product.id)) : /* @__PURE__ */ jsxs(Fragment, {
+          children: [
         /* @__PURE__ */ jsx(SwiperSlide, { className: styles$2.slide, children: /* @__PURE__ */ jsx("div", { className: styles$2.skeletonCard, children: /* @__PURE__ */ jsx(Skeleton, { width: "100%", height: "100%" }) }) }),
         /* @__PURE__ */ jsx(SwiperSlide, { className: styles$2.slide, children: /* @__PURE__ */ jsx("div", { className: styles$2.skeletonCard, children: /* @__PURE__ */ jsx(Skeleton, { width: "100%", height: "100%" }) }) })
-      ] })
-    }
-  ) });
+          ]
+        })
+      }
+    )
+  });
 }
 
 function NotFoundProducts({ text = "منتجات" }) {
-  return /* @__PURE__ */ jsxs("div", { className: "flex h-full min-h-72 w-full flex-col items-center justify-center gap-5 bg-slate-100 text-center", children: [
+  return /* @__PURE__ */ jsxs("div", {
+    className: "flex h-full min-h-72 w-full flex-col items-center justify-center gap-5 bg-slate-100 text-center", children: [
     /* @__PURE__ */ jsx(PackageOpen, { className: "h-16 w-16 text-gray-500" }),
-    /* @__PURE__ */ jsxs("span", { className: "text-2xl font-semibold text-gray-500", children: [
-      "عذراً، لم يتم العثور على ",
+    /* @__PURE__ */ jsxs("span", {
+      className: "text-2xl font-semibold text-gray-500", children: [
+        "عذراً، لم يتم العثور على ",
       /* @__PURE__ */ jsx("span", { children: text })
-    ] })
-  ] });
+      ]
+    })
+    ]
+  });
 }
 
 function OfferProducts({ offerProducts }) {
@@ -412,15 +458,19 @@ function OfferProducts({ offerProducts }) {
     }
   };
   if (offerProducts?.length) {
-    return /* @__PURE__ */ jsxs("div", { className: "container py-10", children: [
+    return /* @__PURE__ */ jsxs("div", {
+      className: "container py-10", children: [
       /* @__PURE__ */ jsx("h2", { className: "mb-8 text-2xl font-bold", children: "العروض" }),
       /* @__PURE__ */ jsx(SwiperOffer, { response })
-    ] });
+      ]
+    });
   }
-  return /* @__PURE__ */ jsxs("section", { className: "container py-10", id: "products", children: [
+  return /* @__PURE__ */ jsxs("section", {
+    className: "container py-10", id: "products", children: [
     /* @__PURE__ */ jsx("h2", { className: "mb-8 text-2xl font-bold", children: "العروض" }),
     /* @__PURE__ */ jsx(NotFoundProducts, { text: "عروض" })
-  ] });
+    ]
+  });
 }
 
 function CategorySwiper({ categories }) {
@@ -444,49 +494,53 @@ function CategorySwiper({ categories }) {
     window.history.pushState({}, "", `${window.location.pathname}?${sp}`);
     scrollToProducts({ elementId: "products", top: 270 });
   };
-  return /* @__PURE__ */ jsx("div", { className: cn("relative", styles$3["fade-edges"]), children: /* @__PURE__ */ jsx("div", { className: "container py-2", children: /* @__PURE__ */ jsx(
-    Swiper,
-    {
-      modules: [Navigation, Autoplay],
-      navigation: true,
-      autoplay: searchParams.get("category") ? false : {
-        delay: 2800,
-        disableOnInteraction: true,
-        pauseOnMouseEnter: true
-      },
-      onTouchStart: (swiper) => swiper.autoplay?.stop(),
-      onClick: (swiper) => swiper.autoplay?.stop(),
-      breakpoints: {
-        320: { slidesPerView: 3.2, spaceBetween: 8 },
-        420: { slidesPerView: 4.2, spaceBetween: 10 },
-        640: { slidesPerView: 6.2, spaceBetween: 12 },
-        768: { slidesPerView: 8.2, spaceBetween: 14 },
-        1024: { slidesPerView: 10.2, spaceBetween: 14 },
-        1280: { slidesPerView: 12.2, spaceBetween: 16 },
-        1536: { slidesPerView: 14.2, spaceBetween: 18 }
-      },
-      loop: enableLoop,
-      className: cn(styles$3["categories-swiper"], "min-h-fit"),
-      children: categories?.categoriesData?.map((category) => {
-        const isActive = searchParams.get("category") == category.id.toString();
-        return /* @__PURE__ */ jsx(
-          SwiperSlide,
-          {
-            className: "group py-3 max-md:py-2",
-            children: /* @__PURE__ */ jsx(
-              CategoryBox,
-              {
-                category,
-                isActive,
-                onClick: () => onCategoryClick(category)
-              }
-            )
+  return /* @__PURE__ */ jsx("div", {
+    className: cn("relative", styles$3["fade-edges"]), children: /* @__PURE__ */ jsx("div", {
+      className: "container py-2", children: /* @__PURE__ */ jsx(
+        Swiper,
+        {
+          modules: [Navigation, Autoplay],
+          navigation: true,
+          autoplay: searchParams.get("category") ? false : {
+            delay: 2800,
+            disableOnInteraction: true,
+            pauseOnMouseEnter: true
           },
-          category.id
-        );
-      })
-    }
-  ) }) });
+          onTouchStart: (swiper) => swiper.autoplay?.stop(),
+          onClick: (swiper) => swiper.autoplay?.stop(),
+          breakpoints: {
+            320: { slidesPerView: 3.2, spaceBetween: 8 },
+            420: { slidesPerView: 4.2, spaceBetween: 10 },
+            640: { slidesPerView: 6.2, spaceBetween: 12 },
+            768: { slidesPerView: 8.2, spaceBetween: 14 },
+            1024: { slidesPerView: 10.2, spaceBetween: 14 },
+            1280: { slidesPerView: 12.2, spaceBetween: 16 },
+            1536: { slidesPerView: 14.2, spaceBetween: 18 }
+          },
+          loop: enableLoop,
+          className: cn(styles$3["categories-swiper"], "min-h-fit"),
+          children: categories?.categoriesData?.map((category) => {
+            const isActive = searchParams.get("category") == category.id.toString();
+            return /* @__PURE__ */ jsx(
+              SwiperSlide,
+              {
+                className: "group py-3 max-md:py-2",
+                children: /* @__PURE__ */ jsx(
+                  CategoryBox,
+                  {
+                    category,
+                    isActive,
+                    onClick: () => onCategoryClick(category)
+                  }
+                )
+              },
+              category.id
+            );
+          })
+        }
+      )
+    })
+  });
 }
 function CategoryBox({
   category,
@@ -504,21 +558,22 @@ function CategoryBox({
       suppressHydrationWarning: true,
       children: [
         /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: cn(
-              "relative grid place-items-center rounded-full bg-white transition-all duration-200",
-              // size responsive
-              "h-[68px] w-[68px] max-md:h-[56px] max-md:w-[56px]",
-              // base ring + shadow
-              "ring-1 ring-gray-200 shadow-sm",
-              // hover
-              "group-hover:-translate-y-0.5 group-hover:shadow-md",
-              // active
-              isActive && "ring-2 ring-[var(--main-color)] shadow-[0_6px_18px_rgba(0,0,0,0.15)] bg-orange-50/40"
-            ),
-            suppressHydrationWarning: true,
-            children: /* @__PURE__ */ jsx("div", { className: "relative h-[85%] w-[85%] overflow-hidden rounded-full", children: /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: cn(
+            "relative grid place-items-center rounded-full bg-white transition-all duration-200",
+            // size responsive
+            "h-[68px] w-[68px] max-md:h-[56px] max-md:w-[56px]",
+            // base ring + shadow
+            "ring-1 ring-gray-200 shadow-sm",
+            // hover
+            "group-hover:-translate-y-0.5 group-hover:shadow-md",
+            // active
+            isActive && "ring-2 ring-[var(--main-color)] shadow-[0_6px_18px_rgba(0,0,0,0.15)] bg-orange-50/40"
+          ),
+          suppressHydrationWarning: true,
+          children: /* @__PURE__ */ jsx("div", {
+            className: "relative h-[85%] w-[85%] overflow-hidden rounded-full", children: /* @__PURE__ */ jsx(
               Image,
               {
                 src: category.icon,
@@ -528,21 +583,22 @@ function CategoryBox({
                 className: "object-cover transition duration-200 group-hover:brightness-95",
                 priority: category.id === 1
               }
-            ) })
-          }
-        ),
+            )
+          })
+        }
+      ),
         /* @__PURE__ */ jsx(
-          "span",
-          {
-            className: cn(
-              "max-w-[88px] text-center text-[13.5px] font-semibold leading-snug text-gray-800",
-              "max-md:max-w-[72px] max-md:text-[12px]",
-              isActive && "text-[var(--main-color)]"
-            ),
-            suppressHydrationWarning: true,
-            children: category.name
-          }
-        )
+        "span",
+        {
+          className: cn(
+            "max-w-[88px] text-center text-[13.5px] font-semibold leading-snug text-gray-800",
+            "max-md:max-w-[72px] max-md:text-[12px]",
+            isActive && "text-[var(--main-color)]"
+          ),
+          suppressHydrationWarning: true,
+          children: category.name
+        }
+      )
       ]
     }
   );
@@ -577,35 +633,41 @@ const SubCategories = ({ categories }) => {
     scrollToProducts({ elementId: "products", top: 270 });
   };
   if (!categories?.length) return null;
-  return /* @__PURE__ */ jsx("div", { className: "w-full sm:w-fit sm:max-w-[440px]", children: /* @__PURE__ */ jsx("div", { className: "rounded-2xl border border-gray-200 bg-white/80 px-2 py-1 shadow-sm max-md:w-full", children: /* @__PURE__ */ jsx(
-    Swiper,
-    {
-      slidesPerView: "auto",
-      spaceBetween: 8,
-      freeMode: true,
-      modules: [FreeMode, Scrollbar],
-      scrollbar: { hide: false, draggable: true },
-      className: cn(styles$3["subcategories-swiper"], "!pb-3"),
-      children: categories.map((item) => {
-        const isActive = searchParams.get("sub_category") == item.id?.toString();
-        return /* @__PURE__ */ jsx(SwiperSlide, { className: "!w-auto", children: /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            onClick: () => onCategoryClick(item),
-            className: cn(
-              "px-3 py-1.5 text-sm font-semibold transition-all",
-              "rounded-full border bg-gray-100 text-gray-700",
-              "hover:bg-gray-200 hover:text-gray-900",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--main-color)]",
-              isActive && "border-[var(--main-color)] bg-[var(--main-color)] text-white shadow-sm"
-            ),
-            children: /* @__PURE__ */ jsx("span", { className: "block max-w-[150px] truncate text-ellipsis text-center", children: item.name })
-          }
-        ) }, item.id);
-      })
-    }
-  ) }) });
+  return /* @__PURE__ */ jsx("div", {
+    className: "w-full sm:w-fit sm:max-w-[440px]", children: /* @__PURE__ */ jsx("div", {
+      className: "rounded-2xl border border-gray-200 bg-white/80 px-2 py-1 shadow-sm max-md:w-full", children: /* @__PURE__ */ jsx(
+        Swiper,
+        {
+          slidesPerView: "auto",
+          spaceBetween: 8,
+          freeMode: true,
+          modules: [FreeMode, Scrollbar],
+          scrollbar: { hide: false, draggable: true },
+          className: cn(styles$3["subcategories-swiper"], "!pb-3"),
+          children: categories.map((item) => {
+            const isActive = searchParams.get("sub_category") == item.id?.toString();
+            return /* @__PURE__ */ jsx(SwiperSlide, {
+              className: "!w-auto", children: /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => onCategoryClick(item),
+                  className: cn(
+                    "px-3 py-1.5 text-sm font-semibold transition-all",
+                    "rounded-full border bg-gray-100 text-gray-700",
+                    "hover:bg-gray-200 hover:text-gray-900",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--main-color)]",
+                    isActive && "border-[var(--main-color)] bg-[var(--main-color)] text-white shadow-sm"
+                  ),
+                  children: /* @__PURE__ */ jsx("span", { className: "block max-w-[150px] truncate text-ellipsis text-center", children: item.name })
+                }
+              )
+            }, item.id);
+          })
+        }
+      )
+    })
+  });
 };
 
 function Categories({
@@ -614,19 +676,27 @@ function Categories({
   targetFilterCategory
 }) {
   if (!isSuccess) return null;
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("section", { className: "relative overflow-visible bg-gradient-to-b from-gray-50 to-white", children: [
+  return /* @__PURE__ */ jsxs(Fragment, {
+    children: [
+    /* @__PURE__ */ jsxs("section", {
+      className: "relative overflow-visible bg-gradient-to-b from-gray-50 to-white", children: [
       /* @__PURE__ */ jsx("div", { className: "container", children: /* @__PURE__ */ jsx("h2", { className: "pt-8 text-right text-2xl font-extrabold tracking-tight text-gray-900 max-md:pt-6 max-md:text-xl", children: "اكتشف الفئات" }) }),
       /* @__PURE__ */ jsx(CategorySwiper, { categories: { categoriesData, isSuccess } })
-    ] }),
-    /* @__PURE__ */ jsxs("section", { className: "container flex items-center justify-between py-8 max-md:flex-col max-md:items-start max-md:gap-4", children: [
+      ]
+    }),
+    /* @__PURE__ */ jsxs("section", {
+      className: "container flex items-center justify-between py-8 max-md:flex-col max-md:items-start max-md:gap-4", children: [
       /* @__PURE__ */ jsx("h2", { className: "text-right text-2xl font-extrabold tracking-tight text-gray-900 max-md:text-xl", children: targetFilterCategory?.isFilterCategory ? targetFilterCategory?.name : "المنتجات" }),
-      targetFilterCategory?.isSubCategory && /* @__PURE__ */ jsxs("div", { className: "flex max-w-full items-center gap-3 max-md:w-full max-md:flex-col max-md:items-start", children: [
+        targetFilterCategory?.isSubCategory && /* @__PURE__ */ jsxs("div", {
+          className: "flex max-w-full items-center gap-3 max-md:w-full max-md:flex-col max-md:items-start", children: [
         /* @__PURE__ */ jsx("bdi", { className: "text-sm font-bold text-gray-700 max-md:text-xs", children: "اختر الفئة الفرعية :" }),
         /* @__PURE__ */ jsx(SubCategories, { categories: targetFilterCategory?.subcategories || [] })
-      ] })
-    ] })
-  ] });
+          ]
+        })
+      ]
+    })
+    ]
+  });
 }
 
 function useProductsFilter(initialProducts, initialPagination, forcedCategory, forcedSubCategory) {
@@ -683,14 +753,16 @@ function useProductsFilter(initialProducts, initialPagination, forcedCategory, f
 }
 
 function ProductsGrid({ products, defaultImage }) {
-  return /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4", children: products?.map((product) => /* @__PURE__ */ jsx(
-    "div",
-    {
-      className: "group overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg",
-      children: /* @__PURE__ */ jsx(Product, { product, defaultImage })
-    },
-    product.id
-  )) });
+  return /* @__PURE__ */ jsx("div", {
+    className: "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4", children: products?.map((product) => /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "group overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg",
+        children: /* @__PURE__ */ jsx(Product, { product, defaultImage })
+      },
+      product.id
+    ))
+  });
 }
 function ProductsSection({
   products,
@@ -701,29 +773,39 @@ function ProductsSection({
     products?.pagination
   );
   if (isLoading) {
-    return /* @__PURE__ */ jsxs("div", { className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
+    return /* @__PURE__ */ jsxs("div", {
+      className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
       /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between sm:mb-8", children: /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-slate-900 sm:text-2xl", children: "أحدث المنتجات" }) }),
-      /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center py-16", children: [
+      /* @__PURE__ */ jsxs("div", {
+        className: "flex flex-col items-center justify-center py-16", children: [
         /* @__PURE__ */ jsx("div", { className: "h-10 w-10 animate-spin rounded-full border-4 border-solid border-[var(--main-color)] border-t-transparent" }),
         /* @__PURE__ */ jsx("p", { className: "mt-4 text-gray-500", children: "جاري تحميل المنتجات..." })
-      ] })
-    ] });
+        ]
+      })
+      ]
+    });
   }
   if (isEmpty) {
-    return /* @__PURE__ */ jsxs("div", { className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
+    return /* @__PURE__ */ jsxs("div", {
+      className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
       /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between sm:mb-8", children: /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-slate-900 sm:text-2xl", children: "أحدث المنتجات" }) }),
-      /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center py-16", children: [
+      /* @__PURE__ */ jsxs("div", {
+        className: "flex flex-col items-center justify-center py-16", children: [
         /* @__PURE__ */ jsx("div", { className: "mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100", children: /* @__PURE__ */ jsx("svg", { className: "h-8 w-8 text-gray-400", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" }) }) }),
         /* @__PURE__ */ jsx("p", { className: "text-lg font-semibold text-gray-700", children: "لا يوجد منتجات" }),
         /* @__PURE__ */ jsx("p", { className: "mt-1 text-sm text-gray-500", children: "جرب اختيار فئة أخرى" })
-      ] })
-    ] });
+        ]
+      })
+      ]
+    });
   }
   const hasProducts = filteredProducts && filteredProducts.length > 0;
-  return /* @__PURE__ */ jsxs("div", { className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
+  return /* @__PURE__ */ jsxs("div", {
+    className: "container relative mx-auto px-4 sm:px-6 lg:px-8", children: [
     /* @__PURE__ */ jsx("div", { className: "mb-6 flex items-center justify-between sm:mb-8", children: /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold text-slate-900 sm:text-2xl", children: "أحدث المنتجات" }) }),
-    hasProducts ? /* @__PURE__ */ jsx(ProductsGrid, { products: filteredProducts, defaultImage }) : /* @__PURE__ */ jsx("div", { className: "py-10 text-center text-gray-500", children: "لا توجد منتجات" })
-  ] });
+      hasProducts ? /* @__PURE__ */ jsx(ProductsGrid, { products: filteredProducts, defaultImage }) : /* @__PURE__ */ jsx("div", { className: "py-10 text-center text-gray-500", children: "لا توجد منتجات" })
+    ]
+  });
 }
 
 function SettingsCookieSync({ settings }) {
@@ -762,7 +844,7 @@ function WhatsAppButton({ phone }) {
   );
 }
 
-const $$Astro = createAstro("https://admin-emend.cashierthru.com");
+const $$Astro = createAstro("https://admin-osama.cashierthru.com");
 const prerender = false;
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
@@ -852,11 +934,15 @@ const $$Index = createComponent(async ($$result, $$props, $$slots) => {
     "\u0645\u062A\u062C\u0631 \u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A",
     "\u062A\u062C\u0627\u0631\u0629 \u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A\u0629"
   ];
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "keywords": pageKeywords, "image": settingsData?.logo }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result2, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })} ${renderComponent($$result2, "Header", Header, { "currentPath": Astro2.url.pathname, "initialIsLoggedIn": isLogin, "settingsData": settingsData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })} ${maybeRenderHead()}<main class="min-h-screen"> ${showBanner && renderTemplate`${renderComponent($$result2, "Hero", Hero, { "bannerData": bannerData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Hero/Hero", "client:component-export": "default" })}`} ${showOffers && renderTemplate`${renderComponent($$result2, "OfferProducts", OfferProducts, { "offerProducts": offerProducts, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/OfferProducts/Index", "client:component-export": "default" })}`} ${showCategories && renderTemplate`${renderComponent($$result2, "Categories", Categories, { "categoriesData": categoriesData, "isSuccess": true, "targetFilterCategory": targetFilterCategory, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/Categories/Categories", "client:component-export": "default" })}`} <section class="py-10" id="products"> ${renderComponent($$result2, "ProductsSection", ProductsSection, { "products": showProducts ? {
-    data: productsData,
-    isSuccess: true,
-    pagination: productsPagination
-  } : { isSuccess: false }, "defaultImage": settingsData?.product_default_image, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/Product/ProductsSection", "client:component-export": "default" })} </section> </main> ${renderComponent($$result2, "WhatsAppButton", WhatsAppButton, { "phone": settingsData?.whatsapp_phone, "client:idle": true, "client:component-hydration": "idle", "client:component-path": "@/components/common/WhatsAppButton", "client:component-export": "default" })} ${renderComponent($$result2, "SettingsCookieSync", SettingsCookieSync, { "settings": settingsData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/common/SettingsCookieSync", "client:component-export": "default" })} ${renderComponent($$result2, "Footer", Footer, { "settingsData": settingsData, "appVersion": appVersion, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/layouts/Footer", "client:component-export": "default" })} ` })}`;
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "keywords": pageKeywords, "image": settingsData?.logo }, {
+    "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result2, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })} ${renderComponent($$result2, "Header", Header, { "currentPath": Astro2.url.pathname, "initialIsLoggedIn": isLogin, "settingsData": settingsData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })} ${maybeRenderHead()}<main class="min-h-screen"> ${showBanner && renderTemplate`${renderComponent($$result2, "Hero", Hero, { "bannerData": bannerData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Hero/Hero", "client:component-export": "default" })}`} ${showOffers && renderTemplate`${renderComponent($$result2, "OfferProducts", OfferProducts, { "offerProducts": offerProducts, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/OfferProducts/Index", "client:component-export": "default" })}`} ${showCategories && renderTemplate`${renderComponent($$result2, "Categories", Categories, { "categoriesData": categoriesData, "isSuccess": true, "targetFilterCategory": targetFilterCategory, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/Categories/Categories", "client:component-export": "default" })}`} <section class="py-10" id="products"> ${renderComponent($$result2, "ProductsSection", ProductsSection, {
+      "products": showProducts ? {
+        data: productsData,
+        isSuccess: true,
+        pagination: productsPagination
+      } : { isSuccess: false }, "defaultImage": settingsData?.product_default_image, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/Product/ProductsSection", "client:component-export": "default"
+    })} </section> </main> ${renderComponent($$result2, "WhatsAppButton", WhatsAppButton, { "phone": settingsData?.whatsapp_phone, "client:idle": true, "client:component-hydration": "idle", "client:component-path": "@/components/common/WhatsAppButton", "client:component-export": "default" })} ${renderComponent($$result2, "SettingsCookieSync", SettingsCookieSync, { "settings": settingsData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/common/SettingsCookieSync", "client:component-export": "default" })} ${renderComponent($$result2, "Footer", Footer, { "settingsData": settingsData, "appVersion": appVersion, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/layouts/Footer", "client:component-export": "default" })} `
+  })}`;
 }, "F:/react js projects/kamal/web-small-business-react/src/pages/index.astro", void 0);
 
 const $$file = "F:/react js projects/kamal/web-small-business-react/src/pages/index.astro";

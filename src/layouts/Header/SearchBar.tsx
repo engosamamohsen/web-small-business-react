@@ -15,6 +15,7 @@ type Category = {
 type Product = {
     id?: number | string;
     product_id?: number | string;
+    slug?: string;
     name?: string;
     product_name?: string;
     main_image?: string;
@@ -108,13 +109,14 @@ export default function SearchBar() {
 
     const handleSelectProduct = (product: Product) => {
         const id = product.id ?? product.product_id;
-        if (!id) return;
+        const slug = product.slug;
+        if (!id && !slug) return;
 
         setQuery("");
         setResults([]);
         setIsOpen(false);
 
-        router.push(`/products/${id}`);
+        router.push(`/products/${slug || id}`);
     };
 
     const handleClear = () => {
