@@ -17,12 +17,12 @@ export default defineConfig({
       applyBaseStyles: false, // Use custom global styles
       config: { path: './tailwind.config.js' }
     }),
-    // sitemap({
-    //   changefreq: 'weekly',
-    //   priority: 0.7,
-    //   lastmod: new Date(),
-    //   serialize: (item) => item
-    // }),
+    sitemap({
+      changefreq: 'weekly',
+      priority: 0.7,
+      lastmod: new Date(),
+      serialize: (item) => item
+    }),
     partytown({
       config: {
         forward: ["dataLayer.push"],
