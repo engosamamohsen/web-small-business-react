@@ -114,7 +114,7 @@ export default function Header({ currentPath = "", initialIsLoggedIn = false, se
 
               {/* Cart Button */}
               <Link
-                href={isLoggedIn ? "/cart" : "#"}
+                href={isLoggedIn ? "/shop/cart" : "#"}
                 className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
                 aria-label="سلة المشتريات"
                 onClick={handleCartClick}
