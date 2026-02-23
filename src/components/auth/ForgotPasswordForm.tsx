@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import Link from "@/components/common/Link";
-import Image from "@/components/common/Image";
 import { SettingsType } from "@/lib/types";
 import { useRouter } from "@/lib/navigation";
 import {
@@ -54,7 +53,7 @@ export default function ForgotPasswordForm({
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
         {initSettings?.logo && (
-        <CircleLogo src={initSettings?.logo} className="mr-2" />
+          <CircleLogo src={initSettings?.logo} className="mr-2" />
 
         )}
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">

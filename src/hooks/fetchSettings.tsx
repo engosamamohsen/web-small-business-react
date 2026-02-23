@@ -43,7 +43,7 @@ const SERVER_CACHE_DURATION = 1000 * 60 * 5; // 5 minutes on server
 let serverSettingsCache: { data: SettingsData; timestamp: number } | null = null;
 
 // ===== LocalStorage Helpers =====
-function getSettingsFromLocalStorage(): SettingsData | null {
+export function getSettingsFromLocalStorage(): SettingsData | null {
   if (typeof window === "undefined") return null; // SSR safe
   try {
     console.log("[Settings] get settings from local storage");

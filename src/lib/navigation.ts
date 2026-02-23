@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 
 export function useRouter() {
     return {
-        push: (url: string, options?: { scroll?: boolean }) => {
+        push: (url: string, _options?: { scroll?: boolean }) => {
             window.location.href = url;
         },
         replace: (url: string) => {
@@ -25,19 +25,19 @@ export function useRouter() {
 
 export function usePathname() {
     const [pathname, setPathname] = useState('');
-    
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
         setPathname(window.location.pathname);
-        
+
         const handlePopState = () => {
             setPathname(window.location.pathname);
         };
-        
+
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
-    
+
     return pathname;
 }
 
@@ -48,30 +48,30 @@ export function useSearchParams() {
         }
         return new URLSearchParams(window.location.search);
     });
-    
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        
+
         const handlePopState = () => {
             setSearchParams(new URLSearchParams(window.location.search));
         };
-        
+
         // Listen to popstate events (back/forward buttons)
         window.addEventListener('popstate', handlePopState);
-        
+
         // Also create a custom event listener for pushState
         const originalPushState = window.history.pushState;
-        window.history.pushState = function(...args) {
+        window.history.pushState = function (...args) {
             originalPushState.apply(window.history, args);
             setSearchParams(new URLSearchParams(window.location.search));
         };
-        
+
         return () => {
             window.removeEventListener('popstate', handlePopState);
             window.history.pushState = originalPushState;
         };
     }, []);
-    
+
     return searchParams;
 }
 

@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { SettingsData, fetchSettings } from '@/hooks/fetchSettings';
+import { SettingsData } from '@/hooks/fetchSettings';
 
 export default function SettingsCookieSync({ settings }: { settings: SettingsData | null }) {
     useEffect(() => {

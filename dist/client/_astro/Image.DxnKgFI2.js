@@ -1,0 +1,1 @@
+import{j as l}from"./jsx-runtime.D_zvdyIk.js";function f({src:a,alt:e,width:i,height:n,priority:o=!1,quality:g,fill:m,className:s,...t}){const r=o?"eager":"lazy";return l.jsx("img",{src:a,alt:e,width:i,height:n,loading:r,decoding:"async",className:s,...t})}export{f as I};

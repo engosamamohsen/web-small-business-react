@@ -113,7 +113,7 @@ export const useLoginHook = () => {
     }
   };
 
-  const register = async (inputs: any) => {
+  const register = async (inputs: any, onSuccess?: () => void) => {
     try {
       setLoading(true);
 
@@ -121,7 +121,12 @@ export const useLoginHook = () => {
         `register-user`,
         transformRegisterInput(inputs),
       );
-      routes.push(`/verify/${response?.data?.email}`);
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        routes.push(`/verify/${response?.data?.email}`);
+      }
     } catch (error: any) {
       toast.error(` فشل التسجيل : ${error?.response?.data?.message}`, {
         position: "top-right",
@@ -137,7 +142,7 @@ export const useLoginHook = () => {
   return {
     loading,
     login,
-    register,
+    register: register as (inputs: any, onSuccess?: () => void) => Promise<void>,
   };
 };
 

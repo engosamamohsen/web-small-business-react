@@ -4,7 +4,6 @@ import Image from "@/components/common/Image";
 import { Flame } from "lucide-react";
 import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "./ButtonAddToCart";
-import { slugify } from "@/utils/utils";
 
 interface ProductProps {
   product: ProductType;

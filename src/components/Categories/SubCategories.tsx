@@ -18,7 +18,6 @@ import { useRouter } from "@/lib/navigation";
 
 const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const onSubCategoryClick = (category: CategoryType) => {
     console.log("onSubCategoryClick", category.name);

@@ -6,10 +6,7 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import { SettingsType } from "@/lib/types";
-
 import { fetchSettings } from "@/hooks/fetchSettings";
-
-type AuthMode = "login" | "register" | "forgotPassword";
 
 interface AuthDialogProps {
   visible: boolean;

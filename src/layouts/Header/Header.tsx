@@ -19,12 +19,12 @@ interface HeaderProps {
   settingsData?: SettingsData;
 }
 
-export default function Header({ currentPath = "", initialIsLoggedIn = false, settingsData }: HeaderProps) {
+export default function Header({ initialIsLoggedIn = false, settingsData }: HeaderProps) {
   const { settings: contextSettings, isLogin: contextIsLogin, cartCount } = useSettings();
 
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [settings, setSettings] = useState<SettingsData | null>(settingsData || contextSettings || null);
+  const [settings, setSettings] = useState<SettingsData | null>((settingsData as any) || (contextSettings as any) || null);
 
   const router = useRouter();
 
