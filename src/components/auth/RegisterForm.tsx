@@ -38,9 +38,11 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function RegisterForm({
   initSettings,
   onSwitchToLogin,
+  onSuccess,
 }: {
   initSettings: SettingsType;
   onSwitchToLogin?: () => void;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const {
@@ -55,7 +57,7 @@ export default function RegisterForm({
 
   const { loading, register: registerUser } = useLoginHook();
   const onSubmit = async (inputs: any) => {
-    await registerUser(inputs);
+    await registerUser(inputs, onSuccess);
   };
 
   const token = Cookies.get("app_token");
@@ -70,7 +72,7 @@ export default function RegisterForm({
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 text-center">
         {initSettings?.logo && (
-        <CircleLogo src={initSettings?.logo} className="mr-2" />
+          <CircleLogo src={initSettings?.logo} className="mr-2" />
 
         )}
         <div className="mb-4 mt-8 flex w-full flex-col items-center justify-center gap-3 text-black">

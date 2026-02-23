@@ -7,6 +7,8 @@ import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import { SettingsType } from "@/lib/types";
 
+import { fetchSettings } from "@/hooks/fetchSettings";
+
 type AuthMode = "login" | "register" | "forgotPassword";
 
 interface AuthDialogProps {
@@ -24,6 +26,13 @@ export default function AuthDialog({
 }: AuthDialogProps) {
   const [showRegister, setShowRegister] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  const handleSuccess = () => {
+    // Force refresh settings after login
+    fetchSettings(undefined, true).then(() => {
+      if (onSuccess) onSuccess();
+    });
+  };
 
   const handleSwitchToRegister = () => {
     setShowForgotPassword(false);
@@ -69,13 +78,14 @@ export default function AuthDialog({
           <RegisterForm
             initSettings={initSettings}
             onSwitchToLogin={handleSwitchToLogin}
+            onSuccess={handleSuccess}
           />
         ) : (
           <LoginForm
             initSettings={initSettings}
             onSwitchToRegister={handleSwitchToRegister}
             onSwitchToForgotPassword={handleSwitchToForgotPassword}
-            onSuccess={onSuccess}
+            onSuccess={handleSuccess}
           />
         )}
       </div>

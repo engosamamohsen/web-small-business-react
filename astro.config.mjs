@@ -8,7 +8,7 @@ import partytown from '@astrojs/partytown';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://admin-osama.cashierthru.com',
-  output: 'hybrid', // SSG by default, SSR on-demand
+  output: 'static', // SSG by default, SSR on-demand
   adapter: node({ mode: 'standalone' }),
 
   integrations: [

@@ -1,9 +1,9 @@
 ---
 import LoginForm from "@/components/auth/LoginForm";
-import { fetchPublicSettings } from "@/hooks/fetchSettings";
+import { fetchSettings } from "@/hooks/fetchSettings";
 
 // Fetch public settings for the page
-const settingsResponse = await fetchPublicSettings();
+const settingsResponse = await fetchSettings();
 const settingsData = settingsResponse?.data ?? null;
 
 // SEO metadata

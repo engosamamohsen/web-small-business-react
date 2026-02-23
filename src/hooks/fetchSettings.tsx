@@ -1,6 +1,6 @@
-// import { cache } from "react";
+// src/hooks/fetchSettings.ts
+import { useEffect, useState } from "react";
 
-// ===== Types =====
 export interface SettingsData {
   id: number;
   name?: string;
@@ -31,137 +31,86 @@ export type SettingsResponse = {
   error?: unknown;
 };
 
-// ===== Config =====
-const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "https://admin-osama.cashierthru.com/api";
-const FETCH_TIMEOUT = 10000; // 10 seconds
+const API_BASE_URL =
+  import.meta.env.PUBLIC_API_URL || "https://admin-osama.cashierthru.com/api";
+const FETCH_TIMEOUT = 10000;
 const SETTINGS_CACHE_KEY = "app_settings";
-const SETTINGS_TIMESTAMP_KEY = "app_settings_timestamp";
-const SETTINGS_CACHE_DURATION = 1000 * 60 * 60; // 1 hour in milliseconds
+const SETTINGS_CACHE_TIMESTAMP_KEY = "app_settings_timestamp";
+const CACHE_DURATION = 1000 * 60 * 60; // 60 minutes
+const SERVER_CACHE_DURATION = 1000 * 60 * 5; // 5 minutes on server
 
-// ===== LocalStorage Functions =====
+// ===== Server-side Cache =====
+let serverSettingsCache: { data: SettingsData; timestamp: number } | null = null;
 
-/**
- * Get settings from localStorage
- */
-export function getSettingsFromLocalStorage(): SettingsData | null {
-  if (typeof window === "undefined") return null;
-
+// ===== LocalStorage Helpers =====
+function getSettingsFromLocalStorage(): SettingsData | null {
+  if (typeof window === "undefined") return null; // SSR safe
   try {
+    console.log("[Settings] get settings from local storage");
     const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
-    if (cached) {
-      return JSON.parse(cached) as SettingsData;
-    }
-  } catch (error) {
-    console.error("[getSettingsFromLocalStorage] Error:", error);
-  }
-  return null;
-}
-
-/**
- * Save settings to localStorage
- */
-export function saveSettingsToLocalStorage(settings: SettingsData): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
-    localStorage.setItem(SETTINGS_TIMESTAMP_KEY, Date.now().toString());
-  } catch (error) {
-    console.error("[saveSettingsToLocalStorage] Error:", error);
-  }
-}
-
-/**
- * Check if cached settings are still valid
- */
-function isCacheValid(): boolean {
-  if (typeof window === "undefined") return false;
-
-  try {
-    const timestamp = localStorage.getItem(SETTINGS_TIMESTAMP_KEY);
-    if (!timestamp) return false;
+    const timestamp = localStorage.getItem(SETTINGS_CACHE_TIMESTAMP_KEY);
+    if (!cached || !timestamp) return null;
 
     const age = Date.now() - parseInt(timestamp, 10);
-    return age < SETTINGS_CACHE_DURATION;
-  } catch {
-    return false;
-  }
-}
+    if (age > CACHE_DURATION) {
+      console.log("[Settings] cached settings expired");
+      return null;
+    }
 
-/**
- * Clear settings cache
- */
-export function clearSettingsCache(): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    localStorage.removeItem(SETTINGS_CACHE_KEY);
-    localStorage.removeItem(SETTINGS_TIMESTAMP_KEY);
+    return JSON.parse(cached) as SettingsData;
   } catch (error) {
-    console.error("[clearSettingsCache] Error:", error);
+    console.log("[Settings] error reading localStorage", error);
+    return null;
   }
 }
 
-/**
- * Fetch with timeout to prevent hanging requests
- */
+function saveSettingsToLocalStorage(settings: SettingsData): void {
+  if (typeof window === "undefined") return; // SSR safe
+  try {
+    console.log("[Settings] save settings to local storage");
+    localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
+    localStorage.setItem(SETTINGS_CACHE_TIMESTAMP_KEY, Date.now().toString());
+  } catch (error) {
+    console.log("[Settings] error saving to localStorage", error);
+  }
+}
+
+// ===== Fetch with Timeout =====
 async function fetchWithTimeout(
   url: string,
-  options: RequestInit,
-  timeout: number
+  options: RequestInit
 ): Promise<Response> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
   try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
+    const res = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(timeoutId);
-    return response;
+    return res;
   } catch (error) {
     clearTimeout(timeoutId);
     throw error;
   }
 }
 
-/**
- * Base fetch function - NOT cached
- */
+// ===== Base API Fetch =====
 async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
-  const url = `${API_BASE_URL}v1/setting-profile`;
+  console.log("[Settings] fetch settings api");
+  const url = new URL("v1/setting-profile", API_BASE_URL).toString();
 
   try {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await fetchWithTimeout(
-      url,
-      {
-        headers,
-        // Removed next: { revalidate } as it is Next.js specific
-        // Astro uses standard fetch caching or build-time fetching
-      },
-      FETCH_TIMEOUT
-    );
+    const response = await fetchWithTimeout(url, { headers });
 
     if (!response.ok) {
-      return {
-        ok: false,
-        status: response.status,
-        error: `HTTP ${response.status}`,
-      };
+      return { ok: false, status: response.status, error: `HTTP ${response.status}` };
     }
 
     const result = await response.json();
-
     return {
       data: result.data,
       is_login: result.is_login ?? false,
@@ -170,53 +119,94 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
       status: response.status,
     };
   } catch (error: any) {
-    // Handle timeout
-    if (error.name === "AbortError") {
-      console.error("[fetchSettings] Request timed out");
+    if (error.name === "AbortError")
       return { ok: false, status: 408, error: "Request timeout" };
-    }
-
-    console.error("[fetchSettings] Error:", error.message);
     return { ok: false, status: 500, error: error.message };
   }
 }
 
-/**
- * Cached public settings - for metadata and unauthenticated requests
- * Deduped within the same request using React cache()
- */
-export const fetchPublicSettings = async (): Promise<SettingsResponse> => {
-  // console.log("[fetchPublicSettings] Fetching public settings");
-  return fetchSettingsBase(undefined);
-};
+// ===== Public Fetch Function (with caching and dedup) =====
+let ongoingFetch: Promise<SettingsResponse> | null = null;
 
-/**
- * Cached settings - for authenticated requests
- * Uses localStorage cache to avoid multiple API calls
- * Checks localStorage first, then calls API only if not cached or cache is invalid
- */
-export const fetchSettings = async (token?: string): Promise<SettingsResponse> => {
-  // Check localStorage cache first (only for client-side, without token)
-  if (!token && typeof window !== "undefined") {
-    const cachedSettings = getSettingsFromLocalStorage();
-    if (cachedSettings && isCacheValid()) {
-      console.log("[fetchSettings] Using cached settings from localStorage");
-      return {
-        data: cachedSettings,
-        ok: true,
-        status: 200,
-      };
+export async function fetchSettings(
+  token?: string,
+  forceRefresh: boolean = false
+): Promise<SettingsResponse> {
+  const isServer = typeof window === "undefined";
+
+  // Check Server Cache
+  if (isServer && !forceRefresh && serverSettingsCache) {
+    const age = Date.now() - serverSettingsCache.timestamp;
+    if (age < SERVER_CACHE_DURATION) {
+      return { data: serverSettingsCache.data, ok: true, status: 200 };
     }
   }
 
-  // Fetch from API
-  const result = await fetchSettingsBase(token);
+  // Check Client Cache
+  if (!isServer && !forceRefresh) {
+    const cached = getSettingsFromLocalStorage();
+    if (cached) {
+      const timestamp = localStorage.getItem(SETTINGS_CACHE_TIMESTAMP_KEY);
+      const age = timestamp ? Date.now() - parseInt(timestamp, 10) : CACHE_DURATION + 1;
 
-  // Save to localStorage if successful (only for public settings without token)
-  if (result.ok && result.data && !token) {
-    saveSettingsToLocalStorage(result.data);
-    console.log("[fetchSettings] Saved settings to localStorage");
+      // Return immediately if within duration
+      if (age < CACHE_DURATION) {
+        return { data: cached, ok: true, status: 200 };
+      }
+
+      // Background refresh if expired
+      console.log("[Settings] cache expired, refreshing in background");
+      fetchSettingsBase(token).then((res) => {
+        if (res.ok && res.data) {
+          saveSettingsToLocalStorage(res.data);
+        }
+      });
+
+      return { data: cached, ok: true, status: 200 };
+    }
   }
 
-  return result;
-};
+  // Deduplicate concurrent fetches
+  if (ongoingFetch) return ongoingFetch;
+
+  ongoingFetch = (async () => {
+    try {
+      const result = await fetchSettingsBase(token);
+      if (result.ok && result.data) {
+        if (isServer) {
+          serverSettingsCache = { data: result.data, timestamp: Date.now() };
+        } else {
+          saveSettingsToLocalStorage(result.data);
+        }
+      }
+      return result;
+    } finally {
+      ongoingFetch = null;
+    }
+  })();
+
+  return ongoingFetch;
+}
+
+// ===== React Hook for Client-side Usage =====
+export function useSettings(token?: string) {
+  const [settings, setSettings] = useState<SettingsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetchSettings(token).then((res) => {
+      if (mounted) {
+        if (res.ok && res.data) setSettings(res.data);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [token]);
+
+  return { settings, loading };
+}
