@@ -20,7 +20,7 @@ const axiosInstance = (baseUrl: string) => {
   instance.interceptors.request.use((config) => {
     NProgress.start();
     const token = Cookies.get("app_token");
-    if (token) config.headers.Authorization = "Bearer " + token;
+    if (token) config.headers.Authorization = "Token " + token;
     return config;
   });
 

@@ -25,9 +25,8 @@ export function Product({ product, defaultImage }: ProductProps) {
   const hasDiscount = discountValue > 0;
 
   const imageSrc =
-    product?.main_image ||
+    product?.product_image ||
     product?.gallery_images?.[0] ||
-    (product as any).image ||
     defaultImage ||
     "";
 
@@ -41,7 +40,7 @@ export function Product({ product, defaultImage }: ProductProps) {
             {imageSrc ? (
               <Image
                 src={imageSrc}
-                alt={product?.name || ""}
+                alt={product?.name ? `صورة المنتج ${product.name}` : "صورة منتج"}
                 fill
                 quality={80}
                 sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"

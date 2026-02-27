@@ -22,17 +22,16 @@ const PaymentMethodsList = ({
           <div
             key={method.paymentId}
             onClick={() => onSelectPaymentMethod(method)}
-            className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-4 transition-all ${
-              selectedPaymentId === method.paymentId
+            className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-4 transition-all ${selectedPaymentId === method.paymentId
                 ? "border-orange-500 bg-orange-50"
                 : "border-gray-200 hover:border-orange-300"
-            }`}
+              }`}
           >
             <div className="flex flex-col items-start justify-center gap-3">
               <div className="relative h-10 w-16 shrink-0 overflow-hidden">
                 <Image
                   src={method.logo}
-                  alt={method.name_ar}
+                  alt={`شعار طريقة الدفع ${method.name_ar}`}
                   fill
                   className="object-contain"
                   onError={(e) => {
@@ -47,11 +46,10 @@ const PaymentMethodsList = ({
               </div>
             </div>
             <div
-              className={`h-5 w-5 min-w-5 rounded-full border ${
-                selectedPaymentId === method.paymentId
+              className={`h-5 w-5 min-w-5 rounded-full border ${selectedPaymentId === method.paymentId
                   ? "border-orange-500 bg-orange-500"
                   : "border-gray-300"
-              } flex items-center justify-center`}
+                } flex items-center justify-center`}
             >
               {selectedPaymentId === method.paymentId && (
                 <div className="h-2.5 w-2.5 rounded-full bg-white"></div>

@@ -2,6 +2,9 @@ import { $api } from "@/client";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { useRouter } from "@/lib/navigation";
+import { useState } from "react";
+
+// ─── Social login (Google) ────────────────────────────────────────────────────
 
 export const addUserToDatabase = async (data: any, action: () => void) => {
   try {
@@ -22,7 +25,7 @@ export const addUserToDatabase = async (data: any, action: () => void) => {
         path: "/",
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
-      }); // Expires in 1 day
+      });
 
       toast.success("تم تسجيل الدخول بنجاح!", {
         position: "top-right",
@@ -35,8 +38,6 @@ export const addUserToDatabase = async (data: any, action: () => void) => {
       }
     }
   } catch (err: any) {
-    console.log(err.response?.data?.message);
-
     toast.error(` فشل تسجيل الدخول : ${err?.response?.data?.message}`, {
       position: "top-right",
       autoClose: 2000,
@@ -61,23 +62,36 @@ function transformUserData(data: any) {
   return formData;
 }
 
-import { useState } from "react";
+// ─── Email / password auth hook ───────────────────────────────────────────────
 
-export const useLoginHook = () => {
+export const useAuthHook = () => {
   const [loading, setLoading] = useState(false);
   const routes = useRouter();
 
   /**
-   * On Share Project action
+   * Login with email + password.
+   * HTTP 403 → email not verified → redirect to /auth/verify
    */
-  const login = async (inputs: any, onSuccess?: () => void) => {
+  const login = async (
+    inputs: any,
+    onSuccess?: () => void,
+    onNeedVerify?: (email: string) => void,
+  ) => {
     try {
       setLoading(true);
 
       const { data: response } = await $api.post(
-        `login-user`,
+        `v1/login-user`,
         transformInput(inputs),
       );
+
+      // Save token
+      Cookies.set("app_token", response?.data?.api_token, {
+        expires: 1,
+        path: "/",
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      });
 
       toast.success("تم تسجيل الدخول بنجاح!", {
         position: "top-right",
@@ -85,15 +99,7 @@ export const useLoginHook = () => {
         rtl: true,
       });
 
-      Cookies.set("app_token", response?.data?.api_token, {
-        expires: 1,
-        path: "/",
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-      }); // Expires in 1 day
-
       if (onSuccess) {
-        // Called from a dialog (e.g. cart) — stay on page and run the callback
         onSuccess();
       } else if (typeof window !== "undefined") {
         window.location.replace("/");
@@ -102,7 +108,28 @@ export const useLoginHook = () => {
         routes.refresh();
       }
     } catch (error: any) {
-      toast.error(` فشل تسجيل الدخول : ${error?.response?.data?.message}`, {
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message;
+
+      // 403 = email not verified
+      if (status === 403) {
+        toast.warn("يرجى التحقق من بريدك الإلكتروني أولاً", {
+          position: "top-right",
+          autoClose: 3000,
+          rtl: true,
+        });
+        if (onNeedVerify) {
+          // Dialog mode: parent handles navigation
+          onNeedVerify(inputs?.email || "");
+        } else {
+          // Standalone page mode: navigate via URL
+          const email = encodeURIComponent(inputs?.email || "");
+          routes.push(`/auth/verify?email=${email}&mode=register`);
+        }
+        return;
+      }
+
+      toast.error(` فشل تسجيل الدخول : ${message}`, {
         position: "top-right",
         autoClose: 2000,
         rtl: true,
@@ -113,19 +140,43 @@ export const useLoginHook = () => {
     }
   };
 
-  const register = async (inputs: any, onSuccess?: () => void) => {
+  /**
+   * Register a new user.
+   * On success → redirect to /auth/verify?email=…
+   */
+  const register = async (
+    inputs: any,
+    onSuccess?: () => void,
+    onNeedVerify?: (email: string) => void,
+  ) => {
     try {
       setLoading(true);
 
       const { data: response } = await $api.post(
-        `register-user`,
+        `v1/register-user`,
         transformRegisterInput(inputs),
       );
 
-      if (onSuccess) {
-        onSuccess();
+      if (response?.status === true || response?.status === 200) {
+        toast.success("تم التسجيل بنجاح! يرجى التحقق من بريدك الإلكتروني.", {
+          position: "top-right",
+          autoClose: 2000,
+          rtl: true,
+        });
+        if (onNeedVerify) {
+          // Dialog mode: parent handles navigation
+          onNeedVerify(inputs?.email || "");
+        } else {
+          // Standalone page mode
+          const email = encodeURIComponent(inputs?.email || "");
+          routes.push(`/auth/verify?email=${email}&mode=register`);
+        }
       } else {
-        routes.push(`/verify/${response?.data?.email}`);
+        toast.error(response?.message || "فشل التسجيل", {
+          position: "top-right",
+          autoClose: 2000,
+          rtl: true,
+        });
       }
     } catch (error: any) {
       toast.error(` فشل التسجيل : ${error?.response?.data?.message}`, {
@@ -142,16 +193,24 @@ export const useLoginHook = () => {
   return {
     loading,
     login,
-    register: register as (inputs: any, onSuccess?: () => void) => Promise<void>,
+    register: register as (
+      inputs: any,
+      onSuccess?: () => void,
+      onNeedVerify?: (email: string) => void,
+    ) => Promise<void>,
   };
 };
+
+// Keep backward-compatible alias
+export const useLoginHook = useAuthHook;
+
+// ─── Input transformers ───────────────────────────────────────────────────────
 
 const transformInput = (inputs: any) => {
   const formData = new FormData();
   formData.append("type", "1");
   formData.append("email", inputs?.email);
   formData.append("password", inputs?.password);
-
   return formData;
 };
 
@@ -163,6 +222,9 @@ const transformRegisterInput = (inputs: any) => {
   formData.append("password_confirmation", inputs?.confirmPassword);
   formData.append("register_type", "1");
   formData.append("phone", inputs?.phone);
-
+  // Debug flag — development only
+  if (import.meta.env.DEV) {
+    formData.append("debug", "true");
+  }
   return formData;
 };

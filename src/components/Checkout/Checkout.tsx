@@ -309,7 +309,7 @@ const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
             <div className="relative h-20 w-20">
               <Image
                 src={item.product_image}
-                alt={item.product_name || ""}
+                alt={item.product_name ? `صورة المنتج ${item.product_name}` : "صورة منتج"}
                 fill
                 className="rounded object-cover"
               />

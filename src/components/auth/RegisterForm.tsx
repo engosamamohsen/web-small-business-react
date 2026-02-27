@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
@@ -13,7 +14,7 @@ import { SettingsType } from "@/lib/types";
 
 import { useRouter } from "@/lib/navigation";
 import Cookies from "js-cookie";
-import { useLoginHook } from "@/hooks/auth/login";
+import { useAuthHook } from "@/hooks/auth/apiAuth";
 import CircleLogo from "@/global/CircleLogo";
 
 const registerSchema = z
@@ -39,10 +40,13 @@ export default function RegisterForm({
   initSettings,
   onSwitchToLogin,
   onSuccess,
+  onNeedVerify,
 }: {
   initSettings: SettingsType;
   onSwitchToLogin?: () => void;
   onSuccess?: () => void;
+  /** Called after successful registration — dialog mode, shows verify screen */
+  onNeedVerify?: (email: string) => void;
 }) {
   const router = useRouter();
   const {
@@ -55,9 +59,19 @@ export default function RegisterForm({
     resolver: zodResolver(registerSchema),
   });
 
-  const { loading, register: registerUser } = useLoginHook();
+  const { loading, register: registerUser } = useAuthHook();
+  const [googleLoading, setGoogleLoading] = useState(false);
   const onSubmit = async (inputs: any) => {
-    await registerUser(inputs, onSuccess);
+    await registerUser(inputs, onSuccess, onNeedVerify);
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle({ action: () => router.push("/") });
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   const token = Cookies.get("app_token");
@@ -88,20 +102,23 @@ export default function RegisterForm({
       <div className="flex flex-col items-stretch justify-center gap-4">
         <Button
           type="button"
-          loading={loading}
-          onClick={() => loginWithGoogle({ action: () => router.push("/") })}
-          className="mx-auto flex h-12 w-full flex-row-reverse items-center justify-center gap-2 rounded-full bg-orange-700 text-center text-white !shadow-none !outline-none"
+          loading={googleLoading}
+          disabled={googleLoading || loading}
+          onClick={handleGoogleLogin}
+          className="mx-auto flex h-12 w-full flex-row-reverse items-center justify-center gap-2 rounded-full bg-orange-700 text-center text-white !shadow-none !outline-none disabled:opacity-70"
           icon={
-            <Image
-              src="/icons8-google.svg"
-              alt="Google Icon"
-              width={28}
-              height={28}
-              className="mr-[6px]"
-            />
+            !googleLoading ? (
+              <Image
+                src="/icons8-google.svg"
+                alt="أيقونة التسجيل عبر جوجل"
+                width={28}
+                height={28}
+                className="mr-[6px]"
+              />
+            ) : undefined
           }
         >
-          Sign In with Google
+          {googleLoading ? "جارٍ تسجيل الدخول..." : "Sign In with Google"}
         </Button>
         <h6 className="text-center text-[18px] font-semibold text-black">أو</h6>
       </div>
@@ -231,6 +248,8 @@ export default function RegisterForm({
           type="submit"
           label="إنشاء حساب"
           className="w-full bg-[var(--main-color)] py-4 text-white"
+          loading={loading}
+          disabled={loading || googleLoading}
         />
       </div>
 

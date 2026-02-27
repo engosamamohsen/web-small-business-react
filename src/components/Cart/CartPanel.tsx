@@ -23,7 +23,7 @@ const MiniCartItem = ({ item }: { item: CartItemType }) => {
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50">
                 <Image
                     src={item.product_image || "/placeholder-image.jpg"}
-                    alt={item.product_name || "Product"}
+                    alt={item.product_name ? `صورة المنتج ${item.product_name}` : "صورة منتج في السلة"}
                     fill
                     sizes="64px"
                     className="object-cover"

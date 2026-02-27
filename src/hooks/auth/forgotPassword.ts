@@ -3,30 +3,48 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { $api } from "@/client";
-import { ResetPasswordSchemaType } from "@/components/auth/schemas";
-import Cookies from "js-cookie";
 import { useRouter } from "@/lib/navigation";
+import Cookies from "js-cookie";
+
+export interface ResetPasswordData {
+  new_password: string;
+  new_password_confirmation: string;
+  /** Confirmed email from the OTP verify step */
+  email: string;
+  /** The OTP code the user entered */
+  otp: string;
+}
 
 export const useForgotPasswordHook = () => {
-  // All React hooks at the top level
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
-  const [currentEmail, setCurrentEmail] = useState("");
-  const [showResetForm, setShowResetForm] = useState(false);
   const router = useRouter();
+
+  /**
+   * Send OTP to user email.
+   * Endpoint: POST v1/send-otp
+   */
   const sendOtp = async (data: { email: string }) => {
     setLoading(true);
     try {
-      const { data: response } = await $api.post("/send-otp", data);
-      toast.success("تم إرسال رمز التحقق إلى بريدك الإلكتروني");
-      console.log(response);
-      setCurrentEmail(data.email);
-      setShowResetForm(true); // Show reset form after successfully sending OTP
+      const formData = new FormData();
+      formData.append("email", data.email);
+      // if (import.meta.env.DEV) {
+      //   formData.append("debug", "true");
+      // }
+
+      await $api.post("v1/send-otp", formData);
+
+      toast.success("تم إرسال رمز التحقق إلى بريدك الإلكتروني", {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
       return true;
     } catch (error: any) {
-      console.log(error);
       toast.error(
         error?.response?.data?.message || "حدث خطأ أثناء إرسال رمز التحقق",
+        { position: "top-right", autoClose: 2000, rtl: true },
       );
       return false;
     } finally {
@@ -34,42 +52,84 @@ export const useForgotPasswordHook = () => {
     }
   };
 
-  const resendOtp = async (email?: string) => {
+  /**
+   * Resend OTP — same endpoint.
+   */
+  const resendOtp = async (email: string) => {
     setLoading(true);
     try {
-      const { data: response } = await $api.post("/send-otp", {
-        email: email || currentEmail,
+      const formData = new FormData();
+      formData.append("email", email);
+      // if (import.meta.env.DEV) {
+      //   formData.append("debug", "true");
+      // }
+
+      await $api.post("v1/send-otp", formData);
+
+      toast.success("تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني", {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
       });
-      toast.success("تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني");
-      console.log(response);
       return true;
     } catch (error: any) {
-      console.log(error);
-      toast.error(error?.message || "حدث خطأ أثناء إعادة إرسال رمز التحقق");
+      toast.error(
+        error?.response?.data?.message || "حدث خطأ أثناء إعادة إرسال رمز التحقق",
+        { position: "top-right", autoClose: 2000, rtl: true },
+      );
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const resetPassword = async (data: ResetPasswordSchemaType) => {
+  /**
+   * Reset password.
+   * Endpoint: POST v1/reset-password
+   * Body: { new_password, new_password_confirmation, email, otp }
+   */
+  const resetPassword = async (data: ResetPasswordData) => {
     setResetLoading(true);
+    // Read the temporary token saved after OTP verification
+    const resetToken = Cookies.get("reset_auth_token");
     try {
-      const { data: response } = await $api.post("/reset-password", {
-        new_password: data.new_password,
-        new_password_confirmation: data.new_password_confirmation,
-        token: Cookies.get("verify_token"),
-      });
-      if (response.status === 200) {
-        toast.success("تم تغيير كلمة المرور بنجاح");
-        Cookies.remove("verify_token");
-        router.push("/auth/login");
+      const { data: response } = await $api.post(
+        "v1/reset-password",
+        {
+          new_password: data.new_password,
+          new_password_confirmation: data.new_password_confirmation,
+          email: data.email,
+          otp: data.otp,
+        },
+        {
+          // Use the verify-step api_token for authorization
+          headers: resetToken
+            ? { Authorization: `Token ${resetToken}` }
+            : undefined,
+        },
+      );
+
+      if (response?.status === true || response?.status === 200) {
+        toast.success("تم تغيير كلمة المرور بنجاح", {
+          position: "top-right",
+          autoClose: 2000,
+          rtl: true,
+        });
+        // Clean up the temporary reset token
+        Cookies.remove("reset_auth_token", { path: "/" });
         return true;
+      } else {
+        toast.error(response?.message || "فشل تغيير كلمة المرور", {
+          position: "top-right",
+          autoClose: 2000,
+          rtl: true,
+        });
+        return false;
       }
     } catch (error: any) {
-      console.log(error);
       toast.error(
         error?.response?.data?.message || "حدث خطأ أثناء تغيير كلمة المرور",
+        { position: "top-right", autoClose: 2000, rtl: true },
       );
       return false;
     } finally {
@@ -77,48 +137,11 @@ export const useForgotPasswordHook = () => {
     }
   };
 
-  const verifyEmail = async (email: string, code: string) => {
-    try {
-      setLoading(true);
-
-      const { data: response } = await $api.post(
-        `verify-otp?email=${email}&otp=${code}`,
-      );
-      console.log(response);
-      Cookies.set("verify_token", response?.token, {
-        expires: 1,
-        path: "/",
-      }); // Expires in 1 day
-      toast.success("تم التحقق من البريد الإلكتروني بنجاح!", {
-        position: "top-right",
-        autoClose: 1500,
-        rtl: true,
-      });
-
-      return response;
-    } catch (error: any) {
-      toast.error(
-        `فشل التحقق: ${error?.response?.data?.message || "حدث خطأ ما"}`,
-        {
-          position: "top-right",
-          autoClose: 2000,
-          rtl: true,
-        },
-      );
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
   return {
     loading,
     resetLoading,
     sendOtp,
     resendOtp,
     resetPassword,
-    currentEmail,
-    showResetForm,
-    setShowResetForm,
-    verifyEmail,
   };
 };

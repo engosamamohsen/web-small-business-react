@@ -41,7 +41,7 @@ const CartItem = ({
         <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50">
           <Image
             src={item.product_image || "/placeholder-image.jpg"}
-            alt={item.product_name || "Product"}
+            alt={item.product_name ? `صورة المنتج ${item.product_name}` : "صورة منتج في السلة"}
             fill
             sizes="96px"
             className="object-cover"

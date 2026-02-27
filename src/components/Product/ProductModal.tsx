@@ -36,7 +36,7 @@ export default function ProductModal({
             <div className="relative aspect-square w-full md:w-1/2">
               <Image
                 src={product.image}
-                alt={product.title}
+                alt={product?.title ? `صورة المنتج ${product.title}` : "صورة منتج"}
                 fill
                 className="rounded-lg object-cover"
               />

@@ -54,7 +54,7 @@ function Profile() {
               <div className="relative mx-auto h-[200px] w-[200px] overflow-hidden rounded-full">
                 <Image
                   src={data.image_url}
-                  alt={data.name || "صورة الملف الشخصي"}
+                  alt={data.name ? `صورة الملف الشخصي لـ ${data.name}` : "صورة الملف الشخصي"}
                   width={200}
                   height={200}
                   className="h-[200px] min-h-[200px] w-[200px] rounded-full border object-cover"

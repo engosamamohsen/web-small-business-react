@@ -19,6 +19,7 @@ type Product = {
     name?: string;
     product_name?: string;
     main_image?: string;
+    product_image?: string,
     price?: number;
     discount?: number;
     category?: Category;
@@ -206,7 +207,7 @@ export default function SearchBar() {
                                 const subCategoryName = product.sub_category?.name;
                                 const price = product.price;
                                 const discount = product.discount ?? 0;
-                                const image = product.main_image;
+                                const image = product.product_image;
 
                                 return (
                                     <li key={id}>
@@ -220,7 +221,7 @@ export default function SearchBar() {
                                                 {image ? (
                                                     <Image
                                                         src={image}
-                                                        alt={name}
+                                                        alt={name ? `صورة المنتج ${name}` : "صورة منتج"}
                                                         fill
                                                         sizes="48px"
                                                         className="object-cover"

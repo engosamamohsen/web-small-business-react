@@ -41,7 +41,7 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
               <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10">
                 <Image
                   src={settings.logo}
-                  alt={siteName}
+                  alt={`شعار ${siteName}`}
                   fill
                   sizes="40px"
                   className="object-contain p-1.5"

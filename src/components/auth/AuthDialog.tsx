@@ -2,11 +2,17 @@
 
 import { useState } from "react";
 import { Dialog } from "primereact/dialog";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
+import VerifyForm from "./VerifyForm";
+import ResetPasswordForm from "./ResetPasswordForm";
 import { SettingsType } from "@/lib/types";
 import { fetchSettings } from "@/hooks/fetchSettings";
+
+type Screen = "login" | "register" | "forgotPassword" | "verify" | "resetPassword";
 
 interface AuthDialogProps {
   visible: boolean;
@@ -21,35 +27,68 @@ export default function AuthDialog({
   initSettings,
   onSuccess,
 }: AuthDialogProps) {
-  const [showRegister, setShowRegister] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [screen, setScreen] = useState<Screen>("login");
+  // State passed between screens (no URL params needed)
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [pendingOtp, setPendingOtp] = useState("");
+  const [verifyMode, setVerifyMode] = useState<"register" | "reset">("register");
 
   const handleSuccess = () => {
-    // Force refresh settings after login
     fetchSettings(undefined, true).then(() => {
       if (onSuccess) onSuccess();
     });
   };
 
-  const handleSwitchToRegister = () => {
-    setShowForgotPassword(false);
-    setShowRegister(true);
-  };
-
-  const handleSwitchToLogin = () => {
-    setShowForgotPassword(false);
-    setShowRegister(false);
-  };
-
-  const handleSwitchToForgotPassword = () => {
-    setShowForgotPassword(true);
-  };
-
   const handleHide = () => {
-    setShowRegister(false);
-    setShowForgotPassword(false);
+    setScreen("login");
+    setPendingEmail("");
+    setPendingOtp("");
     onHide();
   };
+
+  // ── Navigation callbacks passed to child forms ──────────────────────────────
+
+  /** Called by LoginForm when server returns 403 (unverified) */
+  const handleNeedVerify = (email: string) => {
+    setPendingEmail(email);
+    setVerifyMode("register");
+    setScreen("verify");
+  };
+
+  /** Called by RegisterForm after successful registration */
+  const handleRegisterNeedVerify = (email: string) => {
+    setPendingEmail(email);
+    setVerifyMode("register");
+    setScreen("verify");
+  };
+
+  /** Called by ForgotPasswordForm after OTP is sent */
+  const handleForgotNeedVerify = (email: string) => {
+    setPendingEmail(email);
+    setVerifyMode("reset");
+    setScreen("verify");
+  };
+
+  /** Called by VerifyForm after OTP is confirmed — mode=reset → show reset form */
+  const handleVerified = (email: string, otp: string) => {
+    if (verifyMode === "reset") {
+      setPendingEmail(email);
+      setPendingOtp(otp);
+      setScreen("resetPassword");
+    } else {
+      // mode=register → user is now logged in, close dialog
+      handleSuccess();
+    }
+  };
+
+  /** Called by ResetPasswordForm after password is changed */
+  const handleResetSuccess = () => {
+    setScreen("login");
+    setPendingEmail("");
+    setPendingOtp("");
+  };
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <Dialog
@@ -66,26 +105,57 @@ export default function AuthDialog({
       maskClassName="!bg-black/50"
     >
       <div className="bg-white rounded-2xl overflow-hidden">
-        {showForgotPassword ? (
+        {screen === "verify" ? (
+          <VerifyForm
+            email={pendingEmail}
+            mode={verifyMode}
+            onVerified={handleVerified}
+            onSwitchToLogin={() => setScreen("login")}
+          />
+        ) : screen === "resetPassword" ? (
+          <ResetPasswordForm
+            email={pendingEmail}
+            otp={pendingOtp}
+            onSuccess={handleResetSuccess}
+            onSwitchToLogin={() => setScreen("login")}
+          />
+        ) : screen === "forgotPassword" ? (
           <ForgotPasswordForm
             initSettings={initSettings}
-            onSwitchToLogin={handleSwitchToLogin}
+            onSwitchToLogin={() => setScreen("login")}
+            onNeedVerify={handleForgotNeedVerify}
           />
-        ) : showRegister ? (
+        ) : screen === "register" ? (
           <RegisterForm
             initSettings={initSettings}
-            onSwitchToLogin={handleSwitchToLogin}
-            onSuccess={handleSuccess}
+            onSwitchToLogin={() => setScreen("login")}
+            onNeedVerify={handleRegisterNeedVerify}
           />
         ) : (
           <LoginForm
             initSettings={initSettings}
-            onSwitchToRegister={handleSwitchToRegister}
-            onSwitchToForgotPassword={handleSwitchToForgotPassword}
+            onSwitchToRegister={() => setScreen("register")}
+            onSwitchToForgotPassword={() => setScreen("forgotPassword")}
             onSuccess={handleSuccess}
+            onNeedVerify={handleNeedVerify}
           />
         )}
       </div>
+
+      {/* Toast container scoped inside the dialog so notifications always show */}
+      <ToastContainer
+        position="top-right"
+        autoClose={2500}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        style={{ zIndex: 99999 }}
+      />
     </Dialog>
   );
 }

@@ -74,7 +74,7 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
                         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-slate-100">
                           <Image
                             src={item.main_image}
-                            alt={item.product_name || `Product #${item.id}`}
+                            alt={item.product_name ? `صورة المنتج ${item.product_name}` : `صورة المنتج رقم ${item.id}`}
                             fill
                             className="object-cover"
                           />

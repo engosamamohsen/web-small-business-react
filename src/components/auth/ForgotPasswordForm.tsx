@@ -19,9 +19,12 @@ import CircleLogo from "@/global/CircleLogo";
 export default function ForgotPasswordForm({
   initSettings,
   onSwitchToLogin,
+  onNeedVerify,
 }: {
   initSettings: SettingsType;
   onSwitchToLogin?: () => void;
+  /** Called after OTP sent — dialog mode shows verify screen */
+  onNeedVerify?: (email: string) => void;
 }) {
   const router = useRouter();
 
@@ -37,11 +40,18 @@ export default function ForgotPasswordForm({
 
   const { loading, sendOtp } = useForgotPasswordHook();
 
-  // send otp to user email
+  // send otp to user email then redirect to verify screen (reset mode)
   const onSubmit = async (inputs: FormSchemaType) => {
     const success = await sendOtp(inputs);
     if (success) {
-      router.push(`/forgot-password/${inputs.email}`);
+      if (onNeedVerify) {
+        // Dialog mode: parent handles navigation
+        onNeedVerify(inputs.email);
+      } else {
+        // Standalone page mode: navigate via URL
+        const email = encodeURIComponent(inputs.email);
+        router.push(`/auth/verify?email=${email}&mode=reset`);
+      }
     }
   };
 

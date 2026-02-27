@@ -60,7 +60,7 @@ export default function SwiperBanner({ response }: SwiperBannerProps) {
               <div className={styles.imageContainer}>
                 <Image
                   src={slide.image}
-                  alt={slide.title || "Banner image"}
+                  alt={slide.title ? `صورة إعلان ${slide.title}` : "صورة إعلانية"}
                   fill
                   sizes="100vw"
                   priority={index === 0}

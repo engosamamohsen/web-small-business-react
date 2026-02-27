@@ -29,7 +29,7 @@ export const ProductGallery = memo(({ product }: ProductGalleryProps) => {
                     <div className="relative aspect-square h-full w-full">
                         <img
                             src={data || "/placeholder-image.jpg"}
-                            alt={product?.name || "Product image"}
+                            alt={product?.name ? `صورة المنتج ${product.name}` : "صورة المنتج"}
                             width={321}
                             height={400}
                             loading={index === 0 ? "eager" : "lazy"}

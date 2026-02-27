@@ -1,10 +1,10 @@
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebase";
 
-import { addUserToDatabase } from "@/hooks/auth/login";
+import { addUserToDatabase } from "@/hooks/auth/apiAuth";
 
 export const loginWithGoogle = async ({
-  action = () => {},
+  action = () => { },
 }: {
   action?: () => void;
 }) => {

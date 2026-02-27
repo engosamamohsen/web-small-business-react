@@ -133,7 +133,7 @@ function CategoryBox({
         <div className="relative h-[85%] w-[85%] overflow-hidden rounded-full">
           <Image
             src={category.icon}
-            alt={category.name}
+            alt={`أيقونة قسم ${category.name}`}
             fill
             sizes="80px"
             className="object-cover transition duration-200 group-hover:brightness-95"

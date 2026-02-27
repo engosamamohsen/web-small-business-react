@@ -11,7 +11,7 @@ interface CircleLogoProps {
 
 export default function CircleLogo({
   src,
-  alt = "logo",
+  alt = "شعار الموقع",
   size = 80,
   className = "",
 }: CircleLogoProps) {

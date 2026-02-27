@@ -1,0 +1,62 @@
+---
+import VerifyForm from "@/components/auth/VerifyForm";
+import { fetchSettings } from "@/hooks/fetchSettings";
+
+// Fetch public settings
+const settingsResponse = await fetchSettings();
+const settingsData = settingsResponse?.data ?? null;
+
+const siteName = settingsData?.name || "المتجر";
+const pageTitle = `التحقق من البريد الإلكتروني | ${siteName}`;
+const pageDescription = "أدخل رمز التحقق المرسل إلى بريدك الإلكتروني";
+
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+
+        <!-- Preload critical fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Favicon -->
+        {settingsData?.logo && <link rel="icon" href={settingsData.logo} />}
+
+        <!-- CSS Imports -->
+        <link rel="stylesheet" href="/src/styles/globals.css" />
+        <link rel="stylesheet" href="/node_modules/nprogress/nprogress.css" />
+        <link
+            rel="stylesheet"
+            href="/node_modules/react-toastify/dist/ReactToastify.css"
+        />
+        <link
+            rel="stylesheet"
+            href="/node_modules/primereact/resources/themes/lara-light-cyan/theme.css"
+        />
+        <link rel="stylesheet" href="/node_modules/primeicons/primeicons.css" />
+    </head>
+    <body class="relative font-cairo bg-gray-50">
+        <div class="flex min-h-screen items-center justify-center px-4">
+            <VerifyForm client:only="react" />
+        </div>
+    </body>
+</html>
+
+<style is:global>
+    :root {
+        --font-cairo: "Cairo", sans-serif;
+    }
+    body {
+        font-family: var(--font-cairo);
+    }
+</style>
