@@ -20,6 +20,8 @@ export interface SettingsData {
     vat?: string;
     keywords?: string[];
     product_default_image?: string;
+    full_address?: string;
+    contact_email?: string;
     website_url?: string;
 }
 

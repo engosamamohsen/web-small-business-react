@@ -1,1 +1,0 @@
-import{j as e}from"./jsx-runtime.D_zvdyIk.js";import{I as h}from"./Image.DxnKgFI2.js";function a({src:l,alt:r="logo",size:o=80,className:t=""}){return e.jsx("div",{style:{width:o,height:o},className:`rounded-full overflow-hidden ${t}`,children:e.jsx(h,{src:l,alt:r,width:o,height:o,className:"w-full h-full object-cover"})})}export{a as C};

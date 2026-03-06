@@ -6,6 +6,7 @@ import Footer from "@/layouts/Footer";
 import ColorHandler from "@/layouts/ColorHandler";
 import LoginHandler from "@/layouts/LoginHandler";
 import { ToastContainer } from "react-toastify";
+import FaviconHandler from "@/layouts/FaviconHandler";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import packageJson from "../../../package.json";
@@ -47,7 +48,11 @@ const pageDescription = "أكمل عملية الشراء وأدخل بيانا�
 export const prerender = false;
 ---
 
-<Layout title={pageTitle} description={pageDescription}>
+<Layout
+    title={pageTitle}
+    description={pageDescription}
+    favicon={settingsData?.logo}
+>
     <SettingsProvider
         initialSettings={settingsData}
         isLogin={isLogin}
@@ -58,6 +63,7 @@ export const prerender = false;
         <!-- Color and Login Handlers -->
         <ColorHandler client:only="react" />
         <LoginHandler client:only="react" />
+        <FaviconHandler client:load />
 
         <!-- Header -->
         <Header client:load />

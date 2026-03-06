@@ -1,11 +1,12 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_Bu2_sbof.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import Cookies from 'js-cookie';
-import { d as useAsync, $ as $api, u as useRouter, f as useMergeProps, P as PrimeReactContext, r as useHandleStyle, O as ObjectUtils, m as classNames, C as ComponentBase, B as Button, I as Image, H as Header, F as Footer, p as packageJson } from '../../chunks/package_DrFn9nlR.mjs';
+import { $ as $api, u as useRouter, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, O as ObjectUtils, n as classNames, C as ComponentBase, B as Button, I as Image, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
 import 'react-toastify';
-import { P as PageLoader } from '../../chunks/PageLoader_96CyR10d.mjs';
+import { u as useAsync } from '../../chunks/useAsync_R33OG2Tx.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_hb1NStkx.mjs';
 import * as React from 'react';
 import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
 export { renderers } from '../../renderers.mjs';
@@ -149,7 +150,7 @@ function Profile() {
       Image,
       {
         src: data.image_url,
-        alt: data.name || "صورة الملف الشخصي",
+        alt: data.name ? `صورة الملف الشخصي لـ ${data.name}` : "صورة الملف الشخصي",
         width: 200,
         height: 200,
         className: "h-[200px] min-h-[200px] w-[200px] rounded-full border object-cover"
@@ -204,7 +205,7 @@ const $$Profile = createComponent(async ($$result, $$props, $$slots) => {
   const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
   const pageTitle = "\u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062E\u0635\u064A - " + (settingsData?.name || "\u0627\u0644\u0645\u062A\u062C\u0631");
   const pageDescription = "\u0639\u0631\u0636 \u0648\u0625\u062F\u0627\u0631\u0629 \u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062E\u0635\u064A \u0648\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0637\u0644\u0628\u0627\u062A";
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, { "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "UserProfile", Profile, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Profile/Index", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "favicon": settingsData?.logo }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, { "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })} ${renderComponent($$result3, "FaviconHandler", FaviconHandler, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/FaviconHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "UserProfile", Profile, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Profile/Index", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
             flex h-12 w-12 items-center overflow-hidden
             rounded-full bg-green-500 text-white shadow-lg
             transition-all duration-300

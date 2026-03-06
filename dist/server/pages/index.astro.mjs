@@ -1,16 +1,15 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_Bu2_sbof.mjs';
+import { $ as $$Layout } from '../chunks/Layout_tndNv13C.mjs';
 import { jsx, Fragment, jsxs } from 'react/jsx-runtime';
-import { L as Link, I as Image, f as useMergeProps, P as PrimeReactContext, r as useHandleStyle, m as classNames, C as ComponentBase, B as Button, c as cn, u as useRouter, N as useSearchParams, Q as fetchHookClient, H as Header, F as Footer, p as packageJson } from '../chunks/package_DrFn9nlR.mjs';
+import { L as Link, I as Image, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, n as classNames, C as ComponentBase, Q as useSearchParams, c as cn, U as fetchHookClient, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../chunks/package_CKqGA1Rw.mjs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, Navigation, FreeMode, Scrollbar } from 'swiper/modules';
 /* empty css                                 */
 import { s as styles$1, a as styles$2, b as styles$3 } from '../chunks/index.95d291e9_979YcroM.mjs';
 import * as React from 'react';
-import { useMemo, useState, useEffect } from 'react';
-import { ShoppingCart, Flame, PackageOpen } from 'lucide-react';
-import { u as useCartHook } from '../chunks/cart_CodIGWOb.mjs';
+import { useState, useRef, useMemo, useEffect } from 'react';
+import { Flame, PackageOpen } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { f as fetchSettings } from '../chunks/fetchSettings_DFAIddcx.mjs';
 import { f as fetchHook } from '../chunks/fetch-hook_BU6KRHu2.mjs';
@@ -71,7 +70,7 @@ function SwiperBanner({ response }) {
                   Image,
                   {
                     src: slide.image,
-                    alt: slide.title || "Banner image",
+                    alt: slide.title ? `صورة إعلان ${slide.title}` : "صورة إعلانية",
                     fill: true,
                     sizes: "100vw",
                     priority: index === 0,
@@ -229,78 +228,146 @@ var Skeleton = /*#__PURE__*/React.memo(/*#__PURE__*/React.forwardRef(function (i
 }));
 Skeleton.displayName = 'Skeleton';
 
-function ButtonAddToCart({ product }) {
-  const router = useRouter();
-  const token = Cookies.get("app_token");
-  const { loading, addToCart } = useCartHook();
-  return /* @__PURE__ */ jsx(
-    Button,
-    {
-      "aria-label": "Add product to cart",
-      disabled: loading,
-      loading,
-      loadingIcon: "pi pi-spin pi-spinner absolute",
-      onClick: async () => {
-        if (product?.is_variation) {
-          router.push(`/products/${product?.slug}`);
-        } else {
-          if (!token) {
-            router.push("/auth/login");
-          } else {
-            try {
-              await addToCart(product);
-            } catch (error) {
-              console.error("Error adding to cart:", error);
-              return;
-            }
-          }
-        }
-      },
-      className: cn(
-        "absolute bottom-2 left-4 flex h-10 w-10 items-center justify-center rounded-full !bg-white !opacity-[1]",
-        loading && "!cursor-not-allowed"
-      ),
-      children: !loading && /* @__PURE__ */ jsx(ShoppingCart, { className: "h-6 w-6 text-[var(--main-color)]" })
-    }
-  );
-}
-
 function getDiscountedPrice(price, discount) {
-  const discountedPrice = price - price * discount / 100;
-  return parseFloat(discountedPrice.toFixed(2));
+  return parseFloat((price - price * discount / 100).toFixed(2));
+}
+function fmt(n) {
+  return n % 1 === 0 ? n.toString() : n.toFixed(2);
 }
 function Product({ product, defaultImage }) {
   const rawDiscount = product?.discount ?? 0;
   const discountValue = typeof rawDiscount === "number" ? rawDiscount : parseFloat(String(rawDiscount)) || 0;
   const hasDiscount = discountValue > 0;
-  const imageSrc = product?.main_image || product?.gallery_images?.[0] || product.image || defaultImage || "";
+  const allImages = [
+    product?.product_image,
+    ...product?.gallery_images ?? [],
+    defaultImage
+  ].filter(Boolean);
+  const images = allImages.length > 0 ? allImages : [""];
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const touchStartX = useRef(null);
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > 44) {
+      delta > 0 ? setActiveIdx((i) => Math.max(i - 1, 0)) : setActiveIdx((i) => Math.min(i + 1, images.length - 1));
+    }
+    touchStartX.current = null;
+  };
+  const currentImage = images[activeIdx] || "";
   const categoryName = product?.category?.name;
-  return /* @__PURE__ */ jsxs("div", { className: "flex h-full min-h-[350px] flex-col", children: [
+  const productAlt = product?.name ? `صورة المنتج ${product.name}` : "صورة منتج";
+  return /* @__PURE__ */ jsxs("article", { className: "group flex h-full flex-col rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-black/[0.06] transition-shadow duration-300 hover:shadow-lg", children: [
     /* @__PURE__ */ jsxs("div", { className: "relative", children: [
-      /* @__PURE__ */ jsx(Link, { href: `/products/${product?.slug}`, className: "block", children: /* @__PURE__ */ jsx("div", { className: "relative w-full aspect-square overflow-hidden bg-gray-50", children: imageSrc ? /* @__PURE__ */ jsx(
-        Image,
+      /* @__PURE__ */ jsx(
+        Link,
         {
-          src: imageSrc,
-          alt: product?.name || "",
-          fill: true,
-          quality: 80,
-          sizes: "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw",
-          className: "object-cover transition-all duration-200 group-hover:scale-[1.03] group-hover:brightness-95"
+          href: `/products/${product?.slug}`,
+          "aria-label": `عرض تفاصيل ${product?.name ?? "المنتج"}`,
+          children: /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "relative w-full overflow-hidden bg-gray-50",
+              style: { aspectRatio: "4/3" },
+              onTouchStart: handleTouchStart,
+              onTouchEnd: handleTouchEnd,
+              children: [
+                !imgLoaded && /* @__PURE__ */ jsx("div", { className: "absolute inset-0 animate-pulse bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%]" }),
+                currentImage ? /* @__PURE__ */ jsx(
+                  Image,
+                  {
+                    src: currentImage,
+                    alt: productAlt,
+                    fill: true,
+                    quality: 80,
+                    loading: "lazy",
+                    sizes: "(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw",
+                    className: [
+                      "object-cover transition-opacity duration-300",
+                      imgLoaded ? "opacity-100" : "opacity-0"
+                    ].join(" "),
+                    onLoad: () => setImgLoaded(true)
+                  }
+                ) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-gray-100", children: /* @__PURE__ */ jsx("span", { className: "text-sm text-gray-400", children: "لا توجد صورة" }) }),
+                images.length > 1 && /* @__PURE__ */ jsx(
+                  "div",
+                  {
+                    className: "absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 md:hidden",
+                    "aria-hidden": "true",
+                    children: images.map((_, i) => /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: [
+                          "block rounded-full transition-all duration-200",
+                          i === activeIdx ? "w-4 h-[5px] bg-white shadow" : "w-[5px] h-[5px] bg-white/60"
+                        ].join(" ")
+                      },
+                      i
+                    ))
+                  }
+                )
+              ]
+            }
+          )
         }
-      ) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-gray-200", children: /* @__PURE__ */ jsx("span", { className: "text-sm text-gray-500", children: "لا توجد صورة" }) }) }) }),
-      hasDiscount && /* @__PURE__ */ jsxs("div", { className: "absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 shadow-sm", children: [
-        /* @__PURE__ */ jsx(Flame, { fill: "red", className: "h-4 w-4 text-transparent" }),
-        /* @__PURE__ */ jsxs("span", { className: "text-xs font-semibold text-orange-600", children: [
-          "خصم ",
+      ),
+      hasDiscount && /* @__PURE__ */ jsxs("div", { className: "absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 shadow-sm ring-1 ring-orange-100/80", children: [
+        /* @__PURE__ */ jsx(
+          Flame,
+          {
+            fill: "orange",
+            className: "h-3.5 w-3.5 text-transparent",
+            "aria-hidden": "true"
+          }
+        ),
+        /* @__PURE__ */ jsxs("span", { className: "text-[11px] font-bold text-orange-600", children: [
+          /* @__PURE__ */ jsx("span", { className: "sr-only", children: "خصم بنسبة " }),
           discountValue,
           "%"
         ] })
-      ] }),
-      !product?.is_variation ? /* @__PURE__ */ jsx(ButtonAddToCart, { product }) : null
+      ] })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col justify-between gap-3 px-4 pb-5 pt-3 sm:pb-6 sm:pt-4", children: [
+    images.length > 1 && /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "hidden md:flex gap-1.5 overflow-x-auto px-3 pt-2 pb-0.5",
+        role: "tablist",
+        "aria-label": "معرض صور المنتج",
+        children: images.map((src, i) => /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            role: "tab",
+            "aria-selected": i === activeIdx,
+            "aria-label": `الصورة ${i + 1}`,
+            onClick: () => setActiveIdx(i),
+            className: [
+              "relative h-[38px] w-[52px] flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 ring-2 transition-all duration-200 focus-visible:outline-none focus-visible:ring-[var(--main-color)]",
+              i === activeIdx ? "ring-[var(--main-color)] opacity-100" : "ring-transparent opacity-50 hover:opacity-90 hover:ring-gray-300"
+            ].join(" "),
+            children: src && /* @__PURE__ */ jsx(
+              Image,
+              {
+                src,
+                alt: `المنتج ${product?.name ?? ""} — الصورة ${i + 1}`,
+                fill: true,
+                sizes: "52px",
+                className: "object-cover",
+                loading: "lazy"
+              }
+            )
+          },
+          i
+        ))
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col justify-between gap-2 px-4 pb-4 pt-3", children: [
       /* @__PURE__ */ jsxs("div", { className: "w-full space-y-1 text-right", children: [
-        /* @__PURE__ */ jsx("h3", { className: "line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-base", children: product.name }),
+        /* @__PURE__ */ jsx(Link, { href: `/products/${product?.slug}`, children: /* @__PURE__ */ jsx("h3", { className: "line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors hover:text-[var(--main-color)] sm:text-base", children: product.name }) }),
         categoryName && /* @__PURE__ */ jsx("p", { className: "text-[11px] font-medium text-slate-400 sm:text-xs", children: categoryName })
       ] }),
       /* @__PURE__ */ jsx("div", { className: "flex w-full items-end justify-between", children: /* @__PURE__ */ jsx(PriceContent, { product }) })
@@ -314,32 +381,36 @@ function PriceContent({ product }) {
   const hasDiscount = basePrice > 0 && discountValue > 0;
   const finalPrice = hasDiscount ? getDiscountedPrice(basePrice, discountValue) : basePrice;
   const saving = hasDiscount ? basePrice - finalPrice : 0;
-  const finalPriceDisplay = finalPrice % 1 === 0 ? finalPrice.toString() : finalPrice.toFixed(2);
-  const basePriceDisplay = basePrice % 1 === 0 ? basePrice.toString() : basePrice.toFixed(2);
-  const savingDisplay = saving > 0 ? saving % 1 === 0 ? saving.toString() : saving.toFixed(2) : null;
   if (hasDiscount) {
-    return /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-start gap-0.5 text-right", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-baseline gap-1 text-sm sm:text-base", children: [
-        /* @__PURE__ */ jsxs("span", { className: "ml-1 text-lg font-bold text-orange-500 sm:text-xl", children: [
-          finalPriceDisplay,
+    return /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-start gap-0.5 text-right", dir: "rtl", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-baseline gap-1.5", children: [
+        /* @__PURE__ */ jsxs("span", { className: "text-lg font-bold text-orange-500 sm:text-xl", children: [
+          fmt(finalPrice),
           " ج.م"
         ] }),
         /* @__PURE__ */ jsxs("span", { className: "text-xs text-gray-400 line-through sm:text-sm", children: [
-          basePriceDisplay,
+          fmt(basePrice),
           " ج.م"
         ] })
       ] }),
-      savingDisplay && /* @__PURE__ */ jsxs("span", { className: "text-[11px] font-medium text-green-600 sm:text-xs", children: [
+      saving > 0 && /* @__PURE__ */ jsxs("span", { className: "rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-700", children: [
         "وفرت ",
-        savingDisplay,
+        fmt(saving),
         " ج.م"
       ] })
     ] });
   }
-  return /* @__PURE__ */ jsxs("span", { className: "ml-1 text-lg font-bold text-orange-500 sm:text-xl", children: [
-    basePriceDisplay,
-    " ج.م"
-  ] });
+  return /* @__PURE__ */ jsxs(
+    "span",
+    {
+      className: "text-lg font-bold text-orange-500 sm:text-xl",
+      dir: "rtl",
+      children: [
+        fmt(basePrice),
+        " ج.م"
+      ]
+    }
+  );
 }
 
 function SwiperOffer({ response }) {
@@ -516,7 +587,7 @@ function CategoryBox({
               Image,
               {
                 src: category.icon,
-                alt: category.name,
+                alt: `أيقونة قسم ${category.name}`,
                 fill: true,
                 sizes: "80px",
                 className: "object-cover transition duration-200 group-hover:brightness-95",
@@ -838,7 +909,7 @@ const $$Index = createComponent(async ($$result, $$props, $$slots) => {
     "\u0645\u062A\u062C\u0631 \u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A",
     "\u062A\u062C\u0627\u0631\u0629 \u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A\u0629"
   ];
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "keywords": pageKeywords, "image": settingsData?.logo }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result2, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })} ${renderComponent($$result2, "Header", Header, { "currentPath": Astro2.url.pathname, "initialIsLoggedIn": isLogin, "settingsData": settingsData || void 0, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })} ${maybeRenderHead()}<main class="min-h-screen"> ${showBanner && renderTemplate`${renderComponent($$result2, "Hero", Hero, { "bannerData": bannerData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Hero/Hero", "client:component-export": "default" })}`} ${showOffers && renderTemplate`${renderComponent($$result2, "OfferProducts", OfferProducts, { "offerProducts": offerProducts, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/OfferProducts/Index", "client:component-export": "default" })}`} ${showCategories && renderTemplate`${renderComponent($$result2, "Categories", Categories, { "categoriesData": categoriesData, "isSuccess": true, "targetFilterCategory": targetFilterCategory, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/Categories/Categories", "client:component-export": "default" })}`} <section class="py-10" id="products"> ${renderComponent($$result2, "ProductsSection", ProductsSection, { "products": showProducts ? {
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "keywords": pageKeywords, "image": settingsData?.logo, "favicon": settingsData?.logo }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result2, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })} ${renderComponent($$result2, "FaviconHandler", FaviconHandler, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/FaviconHandler", "client:component-export": "default" })} ${renderComponent($$result2, "Header", Header, { "currentPath": Astro2.url.pathname, "initialIsLoggedIn": isLogin, "settingsData": settingsData || void 0, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })} ${maybeRenderHead()}<main class="min-h-screen"> ${showBanner && renderTemplate`${renderComponent($$result2, "Hero", Hero, { "bannerData": bannerData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Hero/Hero", "client:component-export": "default" })}`} ${showOffers && renderTemplate`${renderComponent($$result2, "OfferProducts", OfferProducts, { "offerProducts": offerProducts, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/OfferProducts/Index", "client:component-export": "default" })}`} ${showCategories && renderTemplate`${renderComponent($$result2, "Categories", Categories, { "categoriesData": categoriesData, "isSuccess": true, "targetFilterCategory": targetFilterCategory, "client:visible": true, "client:component-hydration": "visible", "client:component-path": "@/components/Categories/Categories", "client:component-export": "default" })}`} <section class="py-10" id="products"> ${renderComponent($$result2, "ProductsSection", ProductsSection, { "products": showProducts ? {
     data: productsData,
     isSuccess: true,
     pagination: productsPagination

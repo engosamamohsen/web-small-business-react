@@ -18,8 +18,12 @@ export interface SettingsData {
   vat?: string;
   keywords?: string[];
   product_default_image?: string;
+  full_address?: string;
+  contact_email?: string;
   created_at?: string;
   updated_at?: string;
+  plan_type?: string;
+  shop_type?: string;
 }
 
 export type SettingsResponse = {

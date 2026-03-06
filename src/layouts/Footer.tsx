@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "@/components/common/Image";
-import { Facebook, Instagram, Phone } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { usePathname } from "@/lib/navigation";
 import { cn } from "@/utils/utils";
 import { useSettingsData } from "@/providers/SettingsProvider";
@@ -66,6 +66,23 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
                       {p}
                     </a>
                   ))}
+                </div>
+              )}
+              {settings?.contact_email && (
+                <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <Mail size={12} className="shrink-0" />
+                  <a
+                    href={`mailto:${settings.contact_email}`}
+                    className="hover:text-white"
+                  >
+                    {settings.contact_email}
+                  </a>
+                </div>
+              )}
+              {settings?.full_address && (
+                <div className="flex items-start gap-2 text-xs text-gray-400">
+                  <MapPin size={12} className="mt-0.5 shrink-0" />
+                  <span>{settings.full_address}</span>
                 </div>
               )}
             </div>

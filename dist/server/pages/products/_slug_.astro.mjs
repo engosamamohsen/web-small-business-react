@@ -1,17 +1,17 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, u as unescapeHTML, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_Bu2_sbof.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import parse from 'html-react-parser';
 import React__default, { useState, useEffect, useMemo, memo, lazy, useCallback, Suspense } from 'react';
+import { b as useSettings, c as cn, d as useSettingsData, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 /* empty css                                    */
 import { s as styles } from '../../chunks/_slug_.f3890f68_BNLXg2IS.mjs';
-import { u as useCartHook } from '../../chunks/cart_CodIGWOb.mjs';
+import { u as useCartHook } from '../../chunks/cart_C8eeB-G5.mjs';
 import Cookies from 'js-cookie';
-import { a as useSettings, c as cn, H as Header, F as Footer, p as packageJson } from '../../chunks/package_DrFn9nlR.mjs';
-import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_dMQJa-tv.mjs';
+import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_CUjcIWSc.mjs';
 import { toast } from 'react-toastify';
 import { Minus, Plus, ShoppingCart, Zap, ChevronDown, Check, Share2 } from 'lucide-react';
 import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
@@ -95,7 +95,7 @@ const ProductGallery = memo(({ product }) => {
         "img",
         {
           src: data || "/placeholder-image.jpg",
-          alt: product?.name || "Product image",
+          alt: product?.name ? `صورة المنتج ${product.name}` : "صورة المنتج",
           width: 321,
           height: 400,
           loading: index === 0 ? "eager" : "lazy",
@@ -288,7 +288,7 @@ const ProductOptions = memo(({
 });
 ProductOptions.displayName = "ProductOptions";
 
-const AuthDialog = lazy(() => import('../../chunks/package_DrFn9nlR.mjs').then(n => n.U));
+const AuthDialog = lazy(() => import('../../chunks/package_CKqGA1Rw.mjs').then(n => n.V));
 const CartActions = memo(({
   product,
   currentColor,
@@ -616,9 +616,14 @@ const ShareButton = ({ productName, className = "" }) => {
   );
 };
 
-const CartPanel = lazy(() => import('../../chunks/CartPanel_UwRIuUZH.mjs'));
-function DetailPage({ product }) {
+const CartPanel = lazy(() => import('../../chunks/CartPanel_BDDlEl3p.mjs'));
+function DetailPage({
+  product,
+  settings: settingsProp
+}) {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const contextSettings = useSettingsData();
+  const settings = settingsProp ?? contextSettings;
   const {
     selectedSize,
     setSelectedSize,
@@ -829,6 +834,63 @@ function DetailPage({ product }) {
               ] })
             ] })
           ] })
+        ] }) }),
+        /* @__PURE__ */ jsx(PolicySection, { title: "سياسة الشحن", icon: "🚚", children: /* @__PURE__ */ jsxs("div", { className: "space-y-4 text-right", children: [
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "1. مناطق الشحن" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "نقوم بالشحن إلى جميع المحافظات داخل جمهورية مصر العربية." })
+          ] }),
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "2. مدة تجهيز الطلب" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "يتم تجهيز الطلب خلال مدة تتراوح بين 24 إلى 48 ساعة من تأكيد الطلب." })
+          ] }),
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "3. مدة الشحن والتوصيل" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "تتراوح مدة الشحن عادة بين 2 إلى 5 أيام عمل حسب المحافظة وموقع العميل." })
+          ] }),
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "4. رسوم الشحن" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "قد تختلف رسوم الشحن حسب موقع التوصيل ويتم توضيحها للعميل قبل إتمام عملية الشراء." })
+          ] }),
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "5. تأكيد الطلب" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "قد يتم التواصل مع العميل عبر الهاتف أو البريد الإلكتروني لتأكيد الطلب قبل الشحن." })
+          ] }),
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "6. في حالة تأخر الشحن" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "في بعض الحالات الاستثنائية (مثل العطل الرسمية أو الظروف الجوية) قد يحدث تأخير بسيط في الشحن، وسيتم إبلاغ العميل بذلك." })
+          ] }),
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "7. استلام الطلب" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "يرجى التأكد من سلامة المنتج عند الاستلام، وفي حال وجود أي مشكلة يرجى التواصل معنا خلال 24 ساعة من استلام الطلب." })
+          ] }),
+          /* @__PURE__ */ jsxs("section", { children: [
+            /* @__PURE__ */ jsx("h4", { className: "mb-2 font-bold text-slate-700", children: "8. التواصل معنا" }),
+            /* @__PURE__ */ jsx("p", { className: "text-slate-600", children: "في حال وجود أي استفسار بخصوص الشحن أو الطلبات يمكنكم التواصل معنا:" }),
+            /* @__PURE__ */ jsxs("ul", { className: "mt-2 space-y-1.5 text-slate-600", children: [
+              settings?.contact_email && /* @__PURE__ */ jsxs("li", { className: "flex gap-2", children: [
+                /* @__PURE__ */ jsx("span", { children: "•" }),
+                /* @__PURE__ */ jsxs("span", { children: [
+                  "البريد الإلكتروني: ",
+                  /* @__PURE__ */ jsx("a", { href: `mailto:${settings.contact_email}`, className: "text-[var(--main-color)] hover:underline", children: settings.contact_email })
+                ] })
+              ] }),
+              settings?.whatsapp_phone && /* @__PURE__ */ jsxs("li", { className: "flex gap-2", children: [
+                /* @__PURE__ */ jsx("span", { children: "•" }),
+                /* @__PURE__ */ jsxs("span", { children: [
+                  "واتساب: ",
+                  /* @__PURE__ */ jsx("a", { href: `https://wa.me/${settings.whatsapp_phone.replace(/\D/g, "")}`, target: "_blank", rel: "noreferrer", className: "text-[var(--main-color)] hover:underline", children: settings.whatsapp_phone })
+                ] })
+              ] }),
+              settings?.phone && /* @__PURE__ */ jsxs("li", { className: "flex gap-2", children: [
+                /* @__PURE__ */ jsx("span", { children: "•" }),
+                /* @__PURE__ */ jsxs("span", { children: [
+                  "هاتف: ",
+                  /* @__PURE__ */ jsx("a", { href: `tel:${settings.phone}`, className: "text-[var(--main-color)] hover:underline", children: settings.phone })
+                ] })
+              ] })
+            ] })
+          ] })
         ] }) })
       ] })
     ] }),
@@ -916,7 +978,7 @@ const $$slug = createComponent(async ($$result, $$props, $$slots) => {
     },
     category: productData?.category?.name
   }) || "";
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "keywords": pageKeywords, "image": productImage, "imageWidth": 1200, "imageHeight": 630 }, { "default": async ($$result2) => renderTemplate(_a || (_a = __template([" ", '  <script type="application/ld+json">', "<\/script> "])), renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, { "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "DetailPage", DetailPage, { "product": productData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/products/DetailPage", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "keywords": pageKeywords, "image": productImage, "imageWidth": 1200, "imageHeight": 630, "favicon": settingsData?.logo }, { "default": async ($$result2) => renderTemplate(_a || (_a = __template([" ", '  <script type="application/ld+json">', "<\/script> "])), renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, { "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })} ${renderComponent($$result3, "FaviconHandler", FaviconHandler, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/FaviconHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "DetailPage", DetailPage, { "product": productData, "settings": settingsData, "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/products/DetailPage", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
             flex h-12 w-12 items-center overflow-hidden
             rounded-full bg-green-500 text-white shadow-lg
             transition-all duration-300

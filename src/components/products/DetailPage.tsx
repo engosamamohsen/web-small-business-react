@@ -3,6 +3,8 @@ import parse from "html-react-parser";
 import { ProductType } from "@/lib/types";
 import { useProductOptions } from "./hooks/useProductOptions";
 import { useMemo, useState, lazy, Suspense } from "react";
+import { useSettingsData } from "@/providers/SettingsProvider";
+import type { SettingsData } from "@/providers/SettingsProvider";
 
 // Detail sub-components
 import {
@@ -19,8 +21,19 @@ import {
 // Cart panel (lazy — not needed until user clicks "Add to Cart")
 const CartPanel = lazy(() => import("@/components/Cart/CartPanel"));
 
-export default function DetailPage({ product }: { product: ProductType }) {
+export default function DetailPage({
+    product,
+    settings: settingsProp,
+}: {
+    product: ProductType;
+    settings?: SettingsData | null;
+}) {
     const [isCartOpen, setIsCartOpen] = useState(false);
+    // Prefer explicitly-passed prop (works across Astro island boundaries)
+    // Fall back to context (works when rendered inside a SettingsProvider)
+    const contextSettings = useSettingsData();
+    const settings = settingsProp ?? contextSettings;
+
 
     const {
         selectedSize,
@@ -232,6 +245,66 @@ export default function DetailPage({ product }: { product: ProductType }) {
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>قد يختلف وقت إعداد الطلب والشحن عند اختيار الدفع عند الاستلام بسبب الإجراءات الإضافية.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>لا يمكن إرجاع الطلبات المدفوعة نقدًا عند الاستلام إلا وفقًا لسياسة الإرجاع العامة.</span></li>
+                                </ul>
+                            </section>
+                        </div>
+                    </PolicySection>
+
+                    {/* Shipping Policy */}
+                    <PolicySection title="سياسة الشحن" icon="🚚">
+                        <div className="space-y-4 text-right">
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">1. مناطق الشحن</h4>
+                                <p className="text-slate-600">نقوم بالشحن إلى جميع المحافظات داخل جمهورية مصر العربية.</p>
+                            </section>
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">2. مدة تجهيز الطلب</h4>
+                                <p className="text-slate-600">يتم تجهيز الطلب خلال مدة تتراوح بين 24 إلى 48 ساعة من تأكيد الطلب.</p>
+                            </section>
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">3. مدة الشحن والتوصيل</h4>
+                                <p className="text-slate-600">تتراوح مدة الشحن عادة بين 2 إلى 5 أيام عمل حسب المحافظة وموقع العميل.</p>
+                            </section>
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">4. رسوم الشحن</h4>
+                                <p className="text-slate-600">قد تختلف رسوم الشحن حسب موقع التوصيل ويتم توضيحها للعميل قبل إتمام عملية الشراء.</p>
+                            </section>
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">5. تأكيد الطلب</h4>
+                                <p className="text-slate-600">قد يتم التواصل مع العميل عبر الهاتف أو البريد الإلكتروني لتأكيد الطلب قبل الشحن.</p>
+                            </section>
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">6. في حالة تأخر الشحن</h4>
+                                <p className="text-slate-600">في بعض الحالات الاستثنائية (مثل العطل الرسمية أو الظروف الجوية) قد يحدث تأخير بسيط في الشحن، وسيتم إبلاغ العميل بذلك.</p>
+                            </section>
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">7. استلام الطلب</h4>
+                                <p className="text-slate-600">يرجى التأكد من سلامة المنتج عند الاستلام، وفي حال وجود أي مشكلة يرجى التواصل معنا خلال 24 ساعة من استلام الطلب.</p>
+                            </section>
+                            <section>
+                                <h4 className="mb-2 font-bold text-slate-700">8. التواصل معنا</h4>
+                                <p className="text-slate-600">
+                                    في حال وجود أي استفسار بخصوص الشحن أو الطلبات يمكنكم التواصل معنا:
+                                </p>
+                                <ul className="mt-2 space-y-1.5 text-slate-600">
+                                    {settings?.contact_email && (
+                                        <li className="flex gap-2">
+                                            <span>•</span>
+                                            <span>البريد الإلكتروني: <a href={`mailto:${settings.contact_email}`} className="text-[var(--main-color)] hover:underline">{settings.contact_email}</a></span>
+                                        </li>
+                                    )}
+                                    {settings?.whatsapp_phone && (
+                                        <li className="flex gap-2">
+                                            <span>•</span>
+                                            <span>واتساب: <a href={`https://wa.me/${settings.whatsapp_phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-[var(--main-color)] hover:underline">{settings.whatsapp_phone}</a></span>
+                                        </li>
+                                    )}
+                                    {settings?.phone && (
+                                        <li className="flex gap-2">
+                                            <span>•</span>
+                                            <span>هاتف: <a href={`tel:${settings.phone}`} className="text-[var(--main-color)] hover:underline">{settings.phone}</a></span>
+                                        </li>
+                                    )}
                                 </ul>
                             </section>
                         </div>

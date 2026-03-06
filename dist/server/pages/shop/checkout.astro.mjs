@@ -1,21 +1,22 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_Bu2_sbof.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import * as React from 'react';
 import React__default, { useState } from 'react';
-import { $ as $api, d as useAsync, c as cn, e as IconBase, f as useMergeProps, P as PrimeReactContext, g as usePrevious, h as useStyle, i as useResizeListener, j as useEventListener, k as DomHandler, l as useUpdateEffect$1, O as ObjectUtils, m as classNames, C as ComponentBase, S as SpinnerIcon, n as IconUtils, o as useDebounce, q as PrimeReact, r as useHandleStyle, t as useOverlayListener, v as useMountEffect, w as useUnmountEffect, Z as ZIndexUtils, T as Tooltip, x as FilterService, y as localeOption, z as TimesIcon, A as Portal, E as CSSTransition, G as ariaLabel, R as Ripple, J as OverlayService, D as Dialog, B as Button, K as InputText, L as Link, I as Image, u as useRouter, H as Header, F as Footer, p as packageJson } from '../../chunks/package_DrFn9nlR.mjs';
+import { $ as $api, c as cn, f as IconBase, g as useMergeProps, P as PrimeReactContext, h as usePrevious, i as useStyle, j as useResizeListener, k as useEventListener, l as DomHandler, m as useUpdateEffect$1, O as ObjectUtils, n as classNames, C as ComponentBase, S as SpinnerIcon, o as IconUtils, q as useDebounce, r as PrimeReact, t as useHandleStyle, v as useOverlayListener, w as useMountEffect, x as useUnmountEffect, Z as ZIndexUtils, T as Tooltip, y as FilterService, z as localeOption, A as TimesIcon, E as Portal, G as CSSTransition, J as ariaLabel, R as Ripple, K as OverlayService, D as Dialog, B as Button, M as InputText, L as Link, I as Image, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { t as transformSelectData } from '../../chunks/global_CwaxDU9D.mjs';
-import { u as useAsyncRetry } from '../../chunks/useAsyncRetry_Cp8pDtnV.mjs';
-import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_dMQJa-tv.mjs';
+import { u as useAsyncRetry } from '../../chunks/useAsyncRetry_Dtdux-0Q.mjs';
+import { u as useAsync } from '../../chunks/useAsync_R33OG2Tx.mjs';
+import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_CUjcIWSc.mjs';
 import { z } from 'zod';
 import { S as Styles } from '../../chunks/checkout.68f73e18_D1efFPgj.mjs';
 import { CircleX } from 'lucide-react';
-import { a as useCartServices } from '../../chunks/cart_CodIGWOb.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_96CyR10d.mjs';
+import { a as useCartServices } from '../../chunks/cart_C8eeB-G5.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_hb1NStkx.mjs';
 import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
 export { renderers } from '../../renderers.mjs';
 
@@ -3672,7 +3673,7 @@ const OrderSummary = ({ items, total, shippingFees }) => /* @__PURE__ */ jsxs("d
           Image,
           {
             src: item.product_image,
-            alt: item.product_name || "",
+            alt: item.product_name ? `صورة المنتج ${item.product_name}` : "صورة منتج",
             fill: true,
             className: "rounded object-cover"
           }
@@ -3774,7 +3775,7 @@ const $$Checkout = createComponent(async ($$result, $$props, $$slots) => {
   const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
   const pageTitle = "\u0625\u062A\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628 - " + (settingsData?.name || "\u0627\u0644\u0645\u062A\u062C\u0631");
   const pageDescription = "\u0623\u0643\u0645\u0644 \u0639\u0645\u0644\u064A\u0629 \u0627\u0644\u0634\u0631\u0627\u0621 \u0648\u0623\u062F\u062E\u0644 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0634\u062D\u0646 \u0648\u0627\u0644\u062F\u0641\u0639";
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, { "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "CheckoutPage", CheckoutPage, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Checkout/Checkout", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": pageTitle, "description": pageDescription, "favicon": settingsData?.logo }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "SettingsProvider", null, { "initialSettings": settingsData, "isLogin": isLogin, "cartCount": cartCount, "token": token, "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/providers", "client:component-export": "SettingsProvider" }, { "default": async ($$result3) => renderTemplate`  ${renderComponent($$result3, "ColorHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/ColorHandler", "client:component-export": "default" })} ${renderComponent($$result3, "LoginHandler", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/layouts/LoginHandler", "client:component-export": "default" })} ${renderComponent($$result3, "FaviconHandler", FaviconHandler, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/FaviconHandler", "client:component-export": "default" })}  ${renderComponent($$result3, "Header", Header, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/layouts/Header/Header", "client:component-export": "default" })}  ${maybeRenderHead()}<main class="min-h-screen"> ${renderComponent($$result3, "CheckoutPage", CheckoutPage, { "client:load": true, "client:component-hydration": "load", "client:component-path": "@/components/Checkout/Checkout", "client:component-export": "default" })} </main>  ${whatsappLink && renderTemplate`<a${addAttribute(whatsappLink, "href")} target="_blank" rel="noopener noreferrer" aria-label="تواصل عبر الواتساب" class="group fixed left-4 top-40 z-50"> <div class="
             flex h-12 w-12 items-center overflow-hidden
             rounded-full bg-green-500 text-white shadow-lg
             transition-all duration-300

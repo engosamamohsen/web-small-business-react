@@ -17,6 +17,7 @@ interface Props {
     image?: string;
     imageWidth?: number;
     imageHeight?: number;
+    favicon?: string;
 }
 
 const {
@@ -26,6 +27,7 @@ const {
     image,
     imageWidth,
     imageHeight,
+    favicon,
 } = Astro.props;
 
 // Get cookies for auth - currently unused
@@ -45,6 +47,11 @@ const {
             href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href={favicon || "/favicon.ico"} />
+        <link rel="shortcut icon" href={favicon || "/favicon.ico"} />
+        <link rel="apple-touch-icon" href={favicon || "/favicon.ico"} />
 
         <!-- SEO Component -->
         <SEO
