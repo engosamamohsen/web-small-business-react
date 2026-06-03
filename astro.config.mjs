@@ -3,11 +3,13 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 import partytown from '@astrojs/partytown';
+import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://cashierthru.com',  // base domain, not a specific tenant
   output: 'static',
+  adapter: node({ mode: 'standalone' }),
 
   integrations: [
     react(),
