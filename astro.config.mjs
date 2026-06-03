@@ -1,20 +1,18 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
-import node from '@astrojs/node';
 import sitemap from '@astrojs/sitemap';
 import partytown from '@astrojs/partytown';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://admin-osama.cashierthru.com',
-  output: 'static', // SSG by default, SSR on-demand
-  adapter: node({ mode: 'standalone' }),
+  site: 'https://cashierthru.com',  // base domain, not a specific tenant
+  output: 'static',
 
   integrations: [
     react(),
     tailwind({
-      applyBaseStyles: false, // Use custom global styles
+      applyBaseStyles: false,
       config: { path: './tailwind.config.js' }
     }),
     sitemap({
@@ -30,9 +28,8 @@ export default defineConfig({
     }),
   ],
 
-  // Image optimization
   image: {
-    domains: ['admin-osama.cashierthru.com'],
+    // No hardcoded domains needed — wildcard remotePatterns covers all tenants
     remotePatterns: [
       { protocol: 'https', hostname: '*.cashierthru.com' },
       { protocol: 'https', hostname: 'cdn.pixabay.com' },
@@ -42,13 +39,11 @@ export default defineConfig({
     ]
   },
 
-  // Build optimizations
   build: {
-    inlineStylesheets: 'auto', // Critical for LCP improvement
+    inlineStylesheets: 'auto',
     assets: '_astro'
   },
 
-  // Vite configuration
   vite: {
     build: {
       cssCodeSplit: true,
@@ -66,21 +61,16 @@ export default defineConfig({
     }
   },
 
-  // Dev server
   server: {
     port: 3000,
     host: true
   },
 
-  // Prefetch strategy
   prefetch: {
     prefetchAll: false,
     defaultStrategy: 'tap'
   },
 
-  // Clean URLs
   trailingSlash: 'never',
-
-  // Compression
   compressHTML: true
 });
