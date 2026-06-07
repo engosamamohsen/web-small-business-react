@@ -25,26 +25,30 @@ export function getBaseUrl(): string {
 
 /**
  * Returns the admin API origin for the current tenant.
+ * Always derived from window.location.origin in the browser — never static.
  *
  * "myrestaurant.cashierthru.com" → "https://admin-myrestaurant.cashierthru.com"
  * "fashionstore.cashierthru.com" → "https://admin-fashionstore.cashierthru.com"
- * "localhost"                    → "http://localhost:3000"  (dev, no transformation)
+ * "shop1.cashierthru.com"        → "https://admin-shop1.cashierthru.com"
+ * "localhost" / SSR              → origin as-is (no subdomain to transform)
  */
 export function getAdminOrigin(): string {
-  if (isLocalDev()) {
-    return import.meta.env.PUBLIC_BASE_URL || "http://localhost:3000";
+  // SSR / Astro build-time: window unavailable, use env fallback unchanged.
+  if (typeof window === "undefined") {
+    return SSR_FALLBACK;
   }
 
-  const frontendOrigin = getBaseUrl();
+  const { protocol, hostname } = window.location;
 
   try {
-    const { protocol, hostname } = new URL(frontendOrigin);
     const parts = hostname.split(".");
 
-    // Already has admin- prefix — avoid double-prefixing
-    if (parts[0].startsWith("admin-")) return frontendOrigin;
+    // Already prefixed — avoid double-prefixing if visiting admin-*.cashierthru.com
+    if (parts[0].startsWith("admin-")) {
+      return `${protocol}//${hostname}`;
+    }
 
-    // "myrestaurant.cashierthru.com" → "admin-myrestaurant.cashierthru.com"
+    // "myrestaurant.cashierthru.com" (3+ parts) → "admin-myrestaurant.cashierthru.com"
     if (parts.length >= 3) {
       parts[0] = `admin-${parts[0]}`;
       return `${protocol}//${parts.join(".")}`;
@@ -53,7 +57,8 @@ export function getAdminOrigin(): string {
     // fall through
   }
 
-  return frontendOrigin;
+  // localhost or bare hostname — return origin unchanged
+  return window.location.origin;
 }
 
 /**
