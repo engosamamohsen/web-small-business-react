@@ -1,6 +1,6 @@
 import { f as createComponent, h as addAttribute, r as renderTemplate, l as renderHead, k as renderComponent } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
 /* empty css                                    */
 export { renderers } from '../../renderers.mjs';
 

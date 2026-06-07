@@ -1,0 +1,1 @@
+import"./index.DeO6U63H.js";const o="http://localhost:3000";function r(){if(typeof window>"u")return o;const{protocol:n,hostname:i}=window.location;try{const t=i.split(".");if(t[0].startsWith("admin-"))return`${n}//${i}`;if(t.length>=3)return t[0]=`admin-${t[0]}`,`${n}//${t.join(".")}`}catch{}return window.location.origin}function a(){return`${r()}/api/`}export{a as g};

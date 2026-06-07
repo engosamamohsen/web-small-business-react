@@ -1,8 +1,8 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_tndNv13C.mjs';
+import { $ as $$Layout } from '../chunks/Layout_DVvCfkNe.mjs';
 import { jsx, Fragment, jsxs } from 'react/jsx-runtime';
-import { L as Link, I as Image, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, n as classNames, C as ComponentBase, Q as useSearchParams, c as cn, U as fetchHookClient, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../chunks/package_CKqGA1Rw.mjs';
+import { L as Link, I as Image, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, n as classNames, C as ComponentBase, Q as useSearchParams, c as cn, U as fetchHookClient, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../chunks/package_0TvmtaRv.mjs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, Navigation, FreeMode, Scrollbar } from 'swiper/modules';
 /* empty css                                 */
@@ -11,8 +11,8 @@ import * as React from 'react';
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { Flame, PackageOpen } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { f as fetchSettings } from '../chunks/fetchSettings_DFAIddcx.mjs';
-import { f as fetchHook } from '../chunks/fetch-hook_BU6KRHu2.mjs';
+import { f as fetchSettings } from '../chunks/fetchSettings_Cs_m47S2.mjs';
+import { f as fetchHook } from '../chunks/fetch-hook_sAz3v3-P.mjs';
 export { renderers } from '../renderers.mjs';
 
 function HeroContent({ data }) {
@@ -840,7 +840,7 @@ function WhatsAppButton({ phone }) {
   );
 }
 
-const $$Astro = createAstro("https://admin-osama.cashierthru.com");
+const $$Astro = createAstro("https://*.cashierthru.com");
 const prerender = false;
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);

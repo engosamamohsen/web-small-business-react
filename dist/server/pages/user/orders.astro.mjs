@@ -1,14 +1,14 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
-import { L as Link, c as cn, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
+import { L as Link, c as cn, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
 import { f as formatDate } from '../../chunks/global_CwaxDU9D.mjs';
-import { b as useOrderServices } from '../../chunks/order_Dcs1bORS.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_hb1NStkx.mjs';
+import { b as useOrderServices } from '../../chunks/order_cu7dEtUp.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CXJ1Vp6T.mjs';
 import { Package, ChevronLeft, XCircle, CheckCircle2, Truck, Clock3 } from 'lucide-react';
-import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const EmptyOrderList = () => /* @__PURE__ */ jsxs("div", { className: "mx-auto flex min-h-[700px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center", children: [
@@ -153,7 +153,7 @@ function OrderList() {
   );
 }
 
-const $$Astro = createAstro("https://admin-osama.cashierthru.com");
+const $$Astro = createAstro("https://*.cashierthru.com");
 const prerender = false;
 const $$Orders = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);

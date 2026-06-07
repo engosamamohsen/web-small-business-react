@@ -1,13 +1,13 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
 import { jsx, jsxs } from 'react/jsx-runtime';
-import { e as useCart, s as slugify, L as Link, I as Image, c as cn, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
+import { e as useCart, s as slugify, L as Link, I as Image, c as cn, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
 import { Minus, Plus, X } from 'lucide-react';
 import { useEffect } from 'react';
-import { a as useCartServices, u as useCartHook } from '../../chunks/cart_C8eeB-G5.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_hb1NStkx.mjs';
-import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
+import { a as useCartServices, u as useCartHook } from '../../chunks/cart_BZ6pBIbF.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CXJ1Vp6T.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const CartItem = ({
@@ -247,7 +247,7 @@ function Cart() {
   ] });
 }
 
-const $$Astro = createAstro("https://admin-osama.cashierthru.com");
+const $$Astro = createAstro("https://*.cashierthru.com");
 const prerender = false;
 const $$Cart = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);

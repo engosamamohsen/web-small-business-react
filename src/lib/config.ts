@@ -18,6 +18,7 @@ const SSR_FALLBACK =
  */
 export function getBaseUrl(): string {
   if (typeof window !== "undefined") {
+    console.log("osama->> origin:"+window.location.origin)
     return window.location.origin;
   }
   return SSR_FALLBACK;
@@ -35,6 +36,7 @@ export function getBaseUrl(): string {
 export function getAdminOrigin(): string {
   // SSR / Astro build-time: window unavailable, use env fallback unchanged.
   if (typeof window === "undefined") {
+    console.log("osama->> origin:"+SSR_FALLBACK)
     return SSR_FALLBACK;
   }
 
@@ -72,6 +74,8 @@ export function getAdminOrigin(): string {
  *   "https://admin-myrestaurant.cashierthru.com/api/v1/endpoint"
  */
 export function getApiUrl(): string {
+      console.log("osama->> origin:"+getAdminOrigin())
+
   return `${getAdminOrigin()}/api/`;
 }
 

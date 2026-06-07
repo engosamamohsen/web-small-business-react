@@ -1,23 +1,23 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import * as React from 'react';
 import React__default, { useState } from 'react';
-import { $ as $api, c as cn, f as IconBase, g as useMergeProps, P as PrimeReactContext, h as usePrevious, i as useStyle, j as useResizeListener, k as useEventListener, l as DomHandler, m as useUpdateEffect$1, O as ObjectUtils, n as classNames, C as ComponentBase, S as SpinnerIcon, o as IconUtils, q as useDebounce, r as PrimeReact, t as useHandleStyle, v as useOverlayListener, w as useMountEffect, x as useUnmountEffect, Z as ZIndexUtils, T as Tooltip, y as FilterService, z as localeOption, A as TimesIcon, E as Portal, G as CSSTransition, J as ariaLabel, R as Ripple, K as OverlayService, D as Dialog, B as Button, M as InputText, L as Link, I as Image, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
+import { $ as $api, c as cn, f as IconBase, g as useMergeProps, P as PrimeReactContext, h as usePrevious, i as useStyle, j as useResizeListener, k as useEventListener, l as DomHandler, m as useUpdateEffect$1, O as ObjectUtils, n as classNames, C as ComponentBase, S as SpinnerIcon, o as IconUtils, q as useDebounce, r as PrimeReact, t as useHandleStyle, v as useOverlayListener, w as useMountEffect, x as useUnmountEffect, Z as ZIndexUtils, T as Tooltip, y as FilterService, z as localeOption, A as TimesIcon, E as Portal, G as CSSTransition, J as ariaLabel, R as Ripple, K as OverlayService, D as Dialog, B as Button, M as InputText, L as Link, I as Image, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-toastify';
 import { t as transformSelectData } from '../../chunks/global_CwaxDU9D.mjs';
 import { u as useAsyncRetry } from '../../chunks/useAsyncRetry_Dtdux-0Q.mjs';
 import { u as useAsync } from '../../chunks/useAsync_R33OG2Tx.mjs';
-import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_CUjcIWSc.mjs';
+import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_DSbhQRSU.mjs';
 import { z } from 'zod';
 import { S as Styles } from '../../chunks/checkout.68f73e18_D1efFPgj.mjs';
 import { CircleX } from 'lucide-react';
-import { a as useCartServices } from '../../chunks/cart_C8eeB-G5.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_hb1NStkx.mjs';
-import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
+import { a as useCartServices } from '../../chunks/cart_BZ6pBIbF.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CXJ1Vp6T.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const useGovernorate = () => {
@@ -3752,7 +3752,7 @@ const OrderSummary = ({ items, total, shippingFees }) => /* @__PURE__ */ jsxs("d
   ] })
 ] });
 
-const $$Astro = createAstro("https://admin-osama.cashierthru.com");
+const $$Astro = createAstro("https://*.cashierthru.com");
 const prerender = false;
 const $$Checkout = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);

@@ -1,14 +1,14 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import Cookies from 'js-cookie';
-import { $ as $api, u as useRouter, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, O as ObjectUtils, n as classNames, C as ComponentBase, B as Button, I as Image, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
+import { $ as $api, u as useRouter, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, O as ObjectUtils, n as classNames, C as ComponentBase, B as Button, I as Image, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
 import 'react-toastify';
 import { u as useAsync } from '../../chunks/useAsync_R33OG2Tx.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_hb1NStkx.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CXJ1Vp6T.mjs';
 import * as React from 'react';
-import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const useProfileServices = () => {
@@ -182,7 +182,7 @@ function Profile() {
   ] }) }) });
 }
 
-const $$Astro = createAstro("https://admin-osama.cashierthru.com");
+const $$Astro = createAstro("https://*.cashierthru.com");
 const prerender = false;
 const $$Profile = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);

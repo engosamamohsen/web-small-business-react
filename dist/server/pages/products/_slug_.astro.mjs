@@ -1,21 +1,21 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, u as unescapeHTML, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_tndNv13C.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import parse from 'html-react-parser';
 import React__default, { useState, useEffect, useMemo, memo, lazy, useCallback, Suspense } from 'react';
-import { b as useSettings, c as cn, d as useSettingsData, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_CKqGA1Rw.mjs';
+import { b as useSettings, c as cn, d as useSettingsData, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 /* empty css                                    */
 import { s as styles } from '../../chunks/_slug_.f3890f68_BNLXg2IS.mjs';
-import { u as useCartHook } from '../../chunks/cart_C8eeB-G5.mjs';
+import { u as useCartHook } from '../../chunks/cart_BZ6pBIbF.mjs';
 import Cookies from 'js-cookie';
-import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_CUjcIWSc.mjs';
+import { u as useUpdateEffect, I as InputTextarea } from '../../chunks/inputtextarea.esm_DSbhQRSU.mjs';
 import { toast } from 'react-toastify';
 import { Minus, Plus, ShoppingCart, Zap, ChevronDown, Check, Share2 } from 'lucide-react';
-import { f as fetchSettings } from '../../chunks/fetchSettings_DFAIddcx.mjs';
-import { f as fetchHook } from '../../chunks/fetch-hook_BU6KRHu2.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
+import { f as fetchHook } from '../../chunks/fetch-hook_sAz3v3-P.mjs';
 export { renderers } from '../../renderers.mjs';
 
 function useProductOptions(product) {
@@ -288,7 +288,7 @@ const ProductOptions = memo(({
 });
 ProductOptions.displayName = "ProductOptions";
 
-const AuthDialog = lazy(() => import('../../chunks/package_CKqGA1Rw.mjs').then(n => n.V));
+const AuthDialog = lazy(() => import('../../chunks/package_0TvmtaRv.mjs').then(n => n.V));
 const CartActions = memo(({
   product,
   currentColor,
@@ -296,7 +296,8 @@ const CartActions = memo(({
   selectedVariations,
   productVariations,
   totalPrice,
-  onAddedToCart
+  onAddedToCart,
+  settings: settingsProp
 }) => {
   const [count, setCount] = useState(1);
   const [productNote, setProductNote] = useState("");
@@ -304,12 +305,15 @@ const CartActions = memo(({
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
   const { loading, addToCart } = useCartHook();
-  const { settings } = useSettings();
+  const { settings: contextSettings } = useSettings();
+  const settings = settingsProp ?? contextSettings;
   const discount = product.discount ? parseInt(String(product.discount), 10) : 0;
-  const finalPrice = discount > 0 ? getDiscountedPrice(product?.price, discount) : totalPrice * count;
+  const basePrice = totalPrice * count;
+  const finalPrice = discount > 0 ? Math.round(basePrice * (1 - discount / 100) * 100) / 100 : basePrice;
   const doAddToCart = useCallback(async () => {
     try {
       const { variations } = selectedVariations;
+      console.log("variations", variations);
       await addToCart({
         ...product,
         count,
@@ -616,7 +620,7 @@ const ShareButton = ({ productName, className = "" }) => {
   );
 };
 
-const CartPanel = lazy(() => import('../../chunks/CartPanel_BDDlEl3p.mjs'));
+const CartPanel = lazy(() => import('../../chunks/CartPanel_BvQ_LNh_.mjs'));
 function DetailPage({
   product,
   settings: settingsProp
@@ -669,7 +673,7 @@ function DetailPage({
             },
             tag.id
           )) }),
-          /* @__PURE__ */ jsx(PriceDisplay, { product, currentPrice: product?.price || 0 }),
+          /* @__PURE__ */ jsx(PriceDisplay, { product, currentPrice }),
           product?.description && /* @__PURE__ */ jsx("div", { className: "mt-2 text-sm leading-relaxed text-slate-600", children: parsedDescription }),
           product?.description_steps && product.description_steps.length > 0 && /* @__PURE__ */ jsxs("div", { className: "mt-3", children: [
             /* @__PURE__ */ jsx("h3", { className: "mb-2 text-base font-semibold text-slate-800", children: "المواصفات الأساسية" }),
@@ -707,7 +711,8 @@ function DetailPage({
               currentColor: selectedColor,
               currentSize: selectedSize,
               selectedVariations: formattedVariations,
-              onAddedToCart: () => setIsCartOpen(true)
+              onAddedToCart: () => setIsCartOpen(true),
+              settings
             }
           )
         ] })
@@ -902,7 +907,7 @@ var __freeze = Object.freeze;
 var __defProp = Object.defineProperty;
 var __template = (cooked, raw) => __freeze(__defProp(cooked, "raw", { value: __freeze(cooked.slice()) }));
 var _a;
-const $$Astro = createAstro("https://admin-osama.cashierthru.com");
+const $$Astro = createAstro("https://*.cashierthru.com");
 async function getStaticPaths() {
   return [];
 }
