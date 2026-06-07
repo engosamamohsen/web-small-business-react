@@ -40,7 +40,7 @@ export default function ProductsSection({
             <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-6 flex items-center justify-between sm:mb-8">
                     <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
-                        أحدث المنتجات
+                        أهم المنتجات
                     </h2>
                 </div>
                 <div className="flex flex-col items-center justify-center py-16">
@@ -57,7 +57,7 @@ export default function ProductsSection({
             <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-6 flex items-center justify-between sm:mb-8">
                     <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
-                        أحدث المنتجات
+                        أهم المنتجات
                     </h2>
                 </div>
                 <div className="flex flex-col items-center justify-center py-16">
@@ -79,7 +79,7 @@ export default function ProductsSection({
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex items-center justify-between sm:mb-8">
                 <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
-                    أحدث المنتجات
+                    أهم المنتجات
                 </h2>
             </div>
 
