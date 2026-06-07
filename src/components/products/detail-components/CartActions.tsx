@@ -30,6 +30,7 @@ interface CartActionsProps {
     selectedVariations: FormattedVariations;
     productVariations: { is_required?: boolean; id?: string }[];
     onAddedToCart?: () => void;
+    settings?: Record<string, any> | null;
 }
 
 export const CartActions = memo(({
@@ -40,6 +41,7 @@ export const CartActions = memo(({
     productVariations,
     totalPrice,
     onAddedToCart,
+    settings: settingsProp,
 }: CartActionsProps) => {
     const [count, setCount] = useState(1);
     const [productNote, setProductNote] = useState("");
@@ -49,17 +51,22 @@ export const CartActions = memo(({
     const [pendingAction, setPendingAction] = useState<"cart" | "buynow" | null>(null);
 
     const { loading, addToCart } = useCartHook();
-    const { settings } = useSettings();
+    // Prefer explicitly-passed prop (works across Astro island boundaries)
+    // Fall back to context (works when rendered inside a shared SettingsProvider)
+    const { settings: contextSettings } = useSettings();
+    const settings = settingsProp ?? contextSettings;
     const discount = product.discount ? parseInt(String(product.discount), 10) : 0;
 
+    const basePrice = totalPrice * count;
     const finalPrice = discount > 0
-        ? getDiscountedPrice(product?.price, discount)
-        : totalPrice * count;
+        ? Math.round(basePrice * (1 - discount / 100) * 100) / 100
+        : basePrice;
 
     // ── Core cart add (called directly or after login) ──────────────────────
     const doAddToCart = useCallback(async () => {
         try {
             const { variations } = selectedVariations;
+            console.log("variations", variations);
             await addToCart({
                 ...product,
                 count,

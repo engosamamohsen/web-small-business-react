@@ -1,6 +1,7 @@
 "use client";
 
 import Cookies from "js-cookie";
+import { getApiUrl } from "@/lib/config";
 
 type FetchHookClientOptions = {
     url: string;          // relative API path, e.g. "v1/product?name=..."
@@ -26,11 +27,8 @@ export async function fetchHookClient<T = any>({
     ok: boolean;
     error?: string;
 }> {
-    const subdomain = "https://admin-osama.cashierthru.com";
-    const lastRoute = import.meta.env.PUBLIC_LAST_ROUTE_API_URL ?? "";
-
-    // if caller passes baseUrl, use it; otherwise build like server hook
-    const currentUrl = (baseUrl ?? `${subdomain}${lastRoute}`).replace(/\/+$/, "");
+    // if caller passes baseUrl, use it; otherwise resolve from current origin
+    const currentUrl = (baseUrl ?? getApiUrl()).replace(/\/+$/, "");
 
     // normalize slashes so you don't end up with "//v1/product"
     const fullUrl = url.startsWith("http")

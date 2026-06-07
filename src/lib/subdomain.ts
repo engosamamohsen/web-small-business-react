@@ -1,11 +1,11 @@
 
-export default async function getSubdomain() {
-    // Return the base URL from env var or window location
-    if (typeof window !== "undefined") {
-        // Client side: use env var or current origin fallback
-        return import.meta.env.PUBLIC_BASE_URL || window.location.origin;
-    }
+import { getBaseUrl } from "./config";
 
-    // Server side: use env var
-    return import.meta.env.PUBLIC_BASE_URL || "";
+/**
+ * Returns the current tenant's origin URL.
+ * Delegates to getBaseUrl() in config.ts which reads window.location.origin
+ * at runtime (client) or falls back to PUBLIC_BASE_URL at build time (SSR).
+ */
+export default async function getSubdomain(): Promise<string> {
+  return getBaseUrl();
 }

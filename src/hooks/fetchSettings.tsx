@@ -1,5 +1,6 @@
 // src/hooks/fetchSettings.ts
 import { useEffect, useState } from "react";
+import { getApiUrl } from "@/lib/config";
 
 export interface SettingsData {
   id: number;
@@ -35,8 +36,9 @@ export type SettingsResponse = {
   error?: unknown;
 };
 
-const API_BASE_URL =
-  import.meta.env.PUBLIC_API_URL || "https://admin-osama.cashierthru.com/api";
+// Resolved at call time from window.location.origin — never a hardcoded domain.
+// Returns e.g. "https://myrestaurant.cashierthru.com/api/"
+const getApiBase = () => getApiUrl();
 const FETCH_TIMEOUT = 10000;
 const SETTINGS_CACHE_KEY = "app_settings";
 const SETTINGS_CACHE_TIMESTAMP_KEY = "app_settings_timestamp";
@@ -99,7 +101,7 @@ async function fetchWithTimeout(
 // ===== Base API Fetch =====
 async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
   console.log("[Settings] fetch settings api");
-  const url = new URL("v1/setting-profile", API_BASE_URL).toString();
+  const url = new URL("v1/setting-profile", getApiBase()).toString();
 
   try {
     const headers: HeadersInit = {

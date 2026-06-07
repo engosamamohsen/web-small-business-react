@@ -56,17 +56,24 @@ export default function LoginForm({
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
-      await loginWithGoogle({ action: () => router.push("/") });
+      // In dialog mode, call onSuccess to let the parent handle post-login flow
+      // (e.g. close dialog, run pending action). In standalone page mode, go home.
+      const action = onSuccess
+        ? () => onSuccess()
+        : () => router.push("/");
+      await loginWithGoogle({ action });
     } finally {
       setGoogleLoading(false);
     }
   };
 
+  // Only auto-redirect if NOT in dialog mode (no onSuccess callback).
+  // In dialog mode the parent handles post-login navigation.
   useEffect(() => {
-    if (Cookies.get("app_token")) {
+    if (!onSuccess && Cookies.get("app_token")) {
       router.push("/");
     }
-  }, [router]);
+  }, [router, onSuccess]);
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}

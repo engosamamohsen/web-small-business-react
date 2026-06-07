@@ -105,7 +105,7 @@ export default function DetailPage({
                         )}
 
                         {/* Price */}
-                        <PriceDisplay product={product} currentPrice={product?.price || 0} />
+                        <PriceDisplay product={product} currentPrice={currentPrice} />
 
                         {/* Description */}
                         {product?.description && (
@@ -160,6 +160,7 @@ export default function DetailPage({
                             currentSize={selectedSize}
                             selectedVariations={formattedVariations}
                             onAddedToCart={() => setIsCartOpen(true)}
+                            settings={settings}
                         />
                     </div>
                 </div>
