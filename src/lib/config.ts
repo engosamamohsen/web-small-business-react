@@ -47,14 +47,14 @@ export function getAdminOrigin(): string {
 
     // Already prefixed — avoid double-prefixing if visiting admin-*.cashierthru.com
     if (parts[0].startsWith("admin-")) {
-      alert(`${protocol}//${hostname}`);
+      // alert(`${protocol}//${hostname}`);
       return `${protocol}//${hostname}`;
     }
 
     // "myrestaurant.cashierthru.com" (3+ parts) → "admin-myrestaurant.cashierthru.com"
     if (parts.length >= 3) {
       parts[0] = `admin-${parts[0]}`;
-      alert(`${protocol}//${parts.join(".")}`);
+      // alert(`${protocol}//${parts.join(".")}`);
       return `${protocol}//${parts.join(".")}`;
     }
   } catch {
