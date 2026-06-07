@@ -18,7 +18,7 @@ const SSR_FALLBACK =
  */
 export function getBaseUrl(): string {
   if (typeof window !== "undefined") {
-    console.log("osama->> origin:"+window.location.origin)
+    // console.log("osama->> origin:"+window.location.origin)
     return window.location.origin;
   }
   return SSR_FALLBACK;
@@ -36,7 +36,7 @@ export function getBaseUrl(): string {
 export function getAdminOrigin(): string {
   // SSR / Astro build-time: window unavailable, use env fallback unchanged.
   if (typeof window === "undefined") {
-    console.log("osama->> origin:"+SSR_FALLBACK)
+    // console.log("osama->> origin:"+SSR_FALLBACK)
     return SSR_FALLBACK;
   }
 
@@ -47,12 +47,14 @@ export function getAdminOrigin(): string {
 
     // Already prefixed — avoid double-prefixing if visiting admin-*.cashierthru.com
     if (parts[0].startsWith("admin-")) {
+      alert(`${protocol}//${hostname}`);
       return `${protocol}//${hostname}`;
     }
 
     // "myrestaurant.cashierthru.com" (3+ parts) → "admin-myrestaurant.cashierthru.com"
     if (parts.length >= 3) {
       parts[0] = `admin-${parts[0]}`;
+      alert(`${protocol}//${parts.join(".")}`);
       return `${protocol}//${parts.join(".")}`;
     }
   } catch {
@@ -74,7 +76,7 @@ export function getAdminOrigin(): string {
  *   "https://admin-myrestaurant.cashierthru.com/api/v1/endpoint"
  */
 export function getApiUrl(): string {
-      console.log("osama->> origin:"+getAdminOrigin())
+      // console.log("osama->> origin:"+getAdminOrigin())
 
   return `${getAdminOrigin()}/api/`;
 }
