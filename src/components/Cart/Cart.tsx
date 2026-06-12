@@ -8,7 +8,8 @@ import { useEffect } from "react";
 
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
 import { useCart } from "@/providers";
-import { cn, slugify } from "@/utils/utils";
+import { cn } from "@/utils/utils";
+import { buildProductPath } from "@/lib/product-url";
 import PageLoader from "../PageLoader/PageLoader";
 import { CartItemType } from "@/types/types";
 
@@ -247,7 +248,8 @@ export default function Cart() {
   }
 
   const handleProductClick = (productId: string, productName: string) => {
-    router.push(`/products/${slugify(productName)}-${productId}`);
+    // Cart items carry no slug — the details page 301s to the canonical slug
+    router.push(buildProductPath({ id: productId, name: productName }));
   };
 
   const handleUpdateCount = async (

@@ -6,6 +6,7 @@ import Image from "@/components/common/Image";
 import { Flame } from "lucide-react";
 import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "./ButtonAddToCart";
+import { buildProductPath } from "@/lib/product-url";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ export function Product({ product, defaultImage }: ProductProps) {
       <div className="relative">
         {/* Main image */}
         <Link
-          href={`/products/${product?.slug}`}
+          href={buildProductPath(product)}
           aria-label={`عرض تفاصيل ${product?.name ?? "المنتج"}`}
         >
           <div
@@ -209,7 +210,7 @@ export function Product({ product, defaultImage }: ProductProps) {
       {/* ── Content ───────────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col justify-between gap-2 px-4 pb-4 pt-3">
         <div className="w-full space-y-1 text-right">
-          <Link href={`/products/${product?.slug}`}>
+          <Link href={buildProductPath(product)}>
             <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors hover:text-[var(--main-color)] sm:text-base">
               {product.name}
             </h3>

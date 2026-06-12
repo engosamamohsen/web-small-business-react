@@ -29,7 +29,7 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
       className={cn(
         "mt-10 border-t border-white/10 bg-black/95 text-white",
         "backdrop-blur",
-        pathname.startsWith("/products") ? "max-md:pb-72" : "",
+        pathname.startsWith("/product") ? "max-md:pb-72" : "",
       )}
     >
       <div className="container mx-auto px-4 py-8 md:py-10">

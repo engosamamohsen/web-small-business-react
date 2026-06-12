@@ -1,0 +1,230 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import DetailPage from "@/components/products/DetailPage";
+import Header from "@/layouts/Header/Header";
+import Footer from "@/layouts/Footer";
+import ColorHandler from "@/layouts/ColorHandler";
+import LoginHandler from "@/layouts/LoginHandler";
+import { ToastContainer } from "react-toastify";
+import FaviconHandler from "@/layouts/FaviconHandler";
+import { SettingsProvider } from "@/providers";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { fetchHook } from "@/hooks/fetch-hook";
+import { buildProductPath, parseProductParam } from "@/lib/product-url";
+import packageJson from "../../../package.json";
+import type { ProductType } from "@/lib/types";
+
+// SEO-friendly URL: /product/{id}-{slug}  (e.g. /product/8-ft-shaorma-frakh-8)
+// The id leads so it parses unambiguously even when the slug ends in a number.
+const { slug: rawParam } = Astro.params as { slug: string };
+
+const parsed = parseProductParam(rawParam);
+
+if (!parsed) {
+    return Astro.redirect("/404");
+}
+
+const { id } = parsed;
+
+// Get auth token from cookies
+const token = Astro.cookies.get("app_token")?.value;
+
+// Fetch settings for the page
+const settingsResponse = await fetchSettings(token);
+
+// Extract data with defaults
+const settingsData = settingsResponse?.data ?? null;
+const isLogin = settingsResponse?.ok
+    ? Boolean(settingsResponse?.is_login)
+    : false;
+const cartCount = settingsResponse?.cart_count ?? 0;
+const appVersion = (packageJson as any).version;
+
+// Build WhatsApp link
+function buildWhatsAppLink(phone?: string | null): string | null {
+    if (!phone) return null;
+    const digitsOnly = phone.replace(/[^\d]/g, "");
+    if (!digitsOnly) return null;
+    return `https://wa.me/${encodeURIComponent(digitsOnly)}`;
+}
+
+const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
+
+// Fetch product details — same API contract as before, id-only
+let productData: ProductType | null = null;
+try {
+    const response = await fetchHook({
+        url: `v1/product-details?product_id=${id}`,
+        init: {},
+    });
+
+    if (response?.ok && response?.data?.data) {
+        productData = response.data.data;
+    }
+} catch (error) {
+    console.error("Error fetching product details:", error);
+}
+
+// If product not found, redirect to 404
+if (!productData) {
+    return Astro.redirect("/404");
+}
+
+// Canonical URL handling: if the URL slug doesn't match the API slug,
+// 301-redirect to the canonical /product/{id}-{slug}
+const canonicalPath = buildProductPath({ ...productData, id });
+let currentPath = Astro.url.pathname;
+try {
+    // pathname may be percent-encoded; compare decoded to avoid redirect loops
+    currentPath = decodeURIComponent(currentPath);
+} catch {
+    // malformed encoding — fall back to the raw pathname
+}
+if (currentPath !== canonicalPath) {
+    return Astro.redirect(canonicalPath, 301);
+}
+
+const canonicalUrl = `${Astro.url.origin}${canonicalPath}`;
+
+// SEO metadata
+const pageTitle = productData?.name || "تفاصيل المنتج";
+const pageDescription =
+    productData?.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
+    "عرض تفاصيل ومواصفات المنتج";
+const pageKeywords = [
+    productData?.name,
+    productData?.category?.name,
+    "منتج",
+    "شراء أونلاين",
+].filter(Boolean) as string[];
+const productImage =
+    productData?.main_image ||
+    productData?.gallery_images?.[0] ||
+    productData?.image;
+
+// Schema.org JSON-LD
+const schema =
+    JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: productData?.name,
+        description: productData?.description?.replace(/<[^>]*>/g, ""),
+        image: productImage,
+        brand: {
+            "@type": "Brand",
+            name: settingsData?.name || "Store",
+        },
+        offers: {
+            "@type": "Offer",
+            url: canonicalUrl,
+            priceCurrency: "EGP",
+            price: productData?.price,
+            availability: "https://schema.org/InStock",
+            seller: {
+                "@type": "Organization",
+                name: settingsData?.name || "Store",
+            },
+        },
+        category: productData?.category?.name,
+    }) || "";
+
+// Rendered on demand — product ids/slugs are unknown at build time
+export const prerender = false;
+---
+
+<Layout
+    title={pageTitle}
+    description={pageDescription}
+    keywords={pageKeywords}
+    image={productImage}
+    imageWidth={1200}
+    imageHeight={630}
+    favicon={settingsData?.logo}
+    canonical={canonicalUrl}
+>
+    <SettingsProvider
+        initialSettings={settingsData}
+        isLogin={isLogin}
+        cartCount={cartCount}
+        token={token}
+        client:only="react"
+    >
+        <!-- Color and Login Handlers -->
+        <ColorHandler client:only="react" />
+        <LoginHandler client:only="react" />
+        <FaviconHandler client:load />
+
+        <!-- Header -->
+        <Header client:load />
+
+        <!-- Main Content -->
+        <main class="min-h-screen">
+            <DetailPage
+                product={productData}
+                settings={settingsData}
+                client:load
+            />
+        </main>
+
+        <!-- WhatsApp Floating Button -->
+        {
+            whatsappLink && (
+                <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="تواصل عبر الواتساب"
+                    class="group fixed left-4 top-40 z-50"
+                >
+                    <div
+                        class="
+            flex h-12 w-12 items-center overflow-hidden
+            rounded-full bg-green-500 text-white shadow-lg
+            transition-all duration-300
+            group-hover:w-[150px] group-hover:shadow-xl
+          "
+                    >
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center">
+                            <i class="pi pi-whatsapp text-2xl" />
+                        </div>
+                        <span
+                            class="
+              max-w-0 translate-x-2 whitespace-nowrap text-sm font-medium
+              opacity-0 transition-all duration-300
+              group-hover:max-w-[100px] group-hover:translate-x-0 group-hover:opacity-100
+            "
+                        >
+                            تواصل معنا
+                        </span>
+                    </div>
+                    <span class="sr-only">تواصل معنا عبر الواتساب</span>
+                </a>
+            )
+        }
+
+        <!-- Footer -->
+        <Footer
+            settingsData={settingsData}
+            appVersion={appVersion}
+            client:visible
+        />
+
+        <!-- Toast Notifications -->
+        <ToastContainer
+            position="bottom-right"
+            rtl={true}
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={true}
+            closeOnClick={true}
+            pauseOnFocusLoss={true}
+            draggable={true}
+            pauseOnHover={true}
+            theme="light"
+            client:only="react"
+        />
+    </SettingsProvider>
+
+    <!-- Product Structured Data (JSON-LD) -->
+    <script is:inline type="application/ld+json" set:html={schema} />
+</Layout>

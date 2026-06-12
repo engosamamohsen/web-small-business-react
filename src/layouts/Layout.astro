@@ -18,6 +18,7 @@ interface Props {
     imageWidth?: number;
     imageHeight?: number;
     favicon?: string;
+    canonical?: string;
 }
 
 const {
@@ -28,6 +29,7 @@ const {
     imageWidth,
     imageHeight,
     favicon,
+    canonical,
 } = Astro.props;
 
 // Get cookies for auth - currently unused
@@ -61,6 +63,7 @@ const {
             image={image}
             imageWidth={imageWidth}
             imageHeight={imageHeight}
+            canonical={canonical}
         />
 
         <!-- Analytics -->

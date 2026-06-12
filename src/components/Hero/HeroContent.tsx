@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "@/components/common/Link";
+import { buildProductPath } from "@/lib/product-url";
 import styles from "./style.module.css";
 
 function HeroContent({ data }: { data: any }) {
   const linkLocation =
     data?.type === "product"
-      ? `/products/${data?.slug}`
+      ? data?.id
+        ? buildProductPath(data)
+        : `/products/${data?.slug}`
       : data?.type === "category"
         ? `/categories/${data?.id}`
         : data?.type === "external"

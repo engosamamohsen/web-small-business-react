@@ -5,6 +5,7 @@ import { useRouter } from "@/lib/navigation";
 import { Search } from "lucide-react";
 import Image from "@/components/common/Image";
 import { fetchHookClient } from "@/hooks/fetch-hook-client";
+import { buildProductPath } from "@/lib/product-url";
 
 type Category = {
     id?: number | string;
@@ -117,7 +118,12 @@ export default function SearchBar() {
         setResults([]);
         setIsOpen(false);
 
-        router.push(`/products/${slug || id}`);
+        // No id → legacy /products/{slug} route resolves it and 301s to canonical
+        router.push(
+            id
+                ? buildProductPath({ id, slug, name: product.name })
+                : `/products/${slug}`,
+        );
     };
 
     const handleClear = () => {

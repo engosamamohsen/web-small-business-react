@@ -2,6 +2,7 @@
 
 import { useCartHook } from "@/hooks/cart/cart";
 import { ProductType } from "@/lib/types";
+import { buildProductPath } from "@/lib/product-url";
 import { cn } from "@/utils/utils";
 import Cookies from "js-cookie";
 import { ShoppingCart } from "lucide-react";
@@ -25,7 +26,7 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
 
 
         if (product?.is_variation) {
-          router.push(`/products/${product?.slug}`);
+          router.push(buildProductPath(product));
         } else {
           if (!token) {
             router.push("/auth/login");
