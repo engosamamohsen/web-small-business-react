@@ -9,6 +9,13 @@ const PROD_DOMAIN = "cashierthru.com";
 const SSR_FALLBACK =
   import.meta.env.PUBLIC_BASE_URL || "http://localhost:3000";
 
+// API origin used while developing (`npm run dev`) where localhost has no
+// tenant subdomain to derive the admin API from. Test tenant by default.
+// import.meta.env.DEV is true only on the dev server, so production builds
+// are unaffected and keep the pure window.location.origin behavior.
+const DEV_API_ORIGIN =
+  import.meta.env.PUBLIC_DEV_API_ORIGIN || "https://admin-asly.cashierthru.com";
+
 // ─── Core helpers ─────────────────────────────────────────────────────────────
 
 /**
@@ -21,7 +28,9 @@ export function getBaseUrl(): string {
     // console.log("osama->> origin:"+window.location.origin)
     return window.location.origin;
   }
-  return SSR_FALLBACK;
+  // Dev-server SSR: server-side fetches (fetch-hook.ts) append "/api/" to this,
+  // so point them at the test tenant's admin API instead of localhost.
+  return import.meta.env.DEV ? DEV_API_ORIGIN : SSR_FALLBACK;
 }
 
 /**
@@ -31,13 +40,14 @@ export function getBaseUrl(): string {
  * "myrestaurant.cashierthru.com" → "https://admin-myrestaurant.cashierthru.com"
  * "fashionstore.cashierthru.com" → "https://admin-fashionstore.cashierthru.com"
  * "shop1.cashierthru.com"        → "https://admin-shop1.cashierthru.com"
- * "localhost" / SSR              → origin as-is (no subdomain to transform)
+ * "localhost" (npm run dev)      → DEV_API_ORIGIN (test tenant)
+ * "localhost" / SSR (prod build) → origin as-is (no subdomain to transform)
  */
 export function getAdminOrigin(): string {
   // SSR / Astro build-time: window unavailable, use env fallback unchanged.
   if (typeof window === "undefined") {
     // console.log("osama->> origin:"+SSR_FALLBACK)
-    return SSR_FALLBACK;
+    return import.meta.env.DEV ? DEV_API_ORIGIN : SSR_FALLBACK;
   }
 
   const { protocol, hostname } = window.location;
@@ -61,6 +71,11 @@ export function getAdminOrigin(): string {
     // fall through
   }
 
+  // localhost or bare hostname on the dev server — default to the test tenant
+  if (import.meta.env.DEV) {
+    return DEV_API_ORIGIN;
+  }
+
   // localhost or bare hostname — return origin unchanged
   return window.location.origin;
 }
@@ -70,7 +85,7 @@ export function getAdminOrigin(): string {
  *
  * "myrestaurant.cashierthru.com" → "https://admin-myrestaurant.cashierthru.com/api/"
  * "fashionstore.cashierthru.com" → "https://admin-fashionstore.cashierthru.com/api/"
- * "localhost:3000"               → "http://localhost:3000/api/"
+ * "localhost:3000" (npm run dev) → "https://admin-asly.cashierthru.com/api/"
  *
  * Combined with "v1/endpoint" paths this produces:
  *   "https://admin-myrestaurant.cashierthru.com/api/v1/endpoint"
