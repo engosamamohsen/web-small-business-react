@@ -41,7 +41,8 @@ if (!productData) {
     return Astro.redirect("/404");
 }
 
-return Astro.redirect(buildProductPath({ ...productData, id }), 301);
+// API id + slug are authoritative; keep query params (utm etc.) across the redirect
+return Astro.redirect(buildProductPath(productData) + Astro.url.search, 301);
 
 export const prerender = false;
 ---

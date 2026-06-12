@@ -64,6 +64,14 @@ export function Product({ product, defaultImage }: ProductProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
 
+  // Images served from browser cache (e.g. after navigating back from product
+  // details) finish loading BEFORE React hydrates, so onLoad never fires and
+  // the image would stay at opacity-0 behind the skeleton forever. Checking
+  // .complete on mount catches those.
+  const handleImgRef = (node: HTMLImageElement | null) => {
+    if (node?.complete) setImgLoaded(true);
+  };
+
   // Touch swipe
   const touchStartX = useRef<number | null>(null);
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -109,6 +117,7 @@ export function Product({ product, defaultImage }: ProductProps) {
 
             {currentImage ? (
               <Image
+                ref={handleImgRef}
                 src={currentImage}
                 alt={productAlt}
                 fill
@@ -120,6 +129,7 @@ export function Product({ product, defaultImage }: ProductProps) {
                   imgLoaded ? "opacity-100" : "opacity-0",
                 ].join(" ")}
                 onLoad={() => setImgLoaded(true)}
+                onError={() => setImgLoaded(true)}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gray-100">

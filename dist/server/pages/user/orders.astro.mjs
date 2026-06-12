@@ -1,14 +1,15 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_Dbf_rlpT.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
-import { L as Link, c as cn, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
+import { c as cn } from '../../chunks/product-url_CFiTjzDR.mjs';
+import { L as Link, u as useRouter, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_DEA60gZM.mjs';
 import { f as formatDate } from '../../chunks/global_CwaxDU9D.mjs';
-import { b as useOrderServices } from '../../chunks/order_cu7dEtUp.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_CXJ1Vp6T.mjs';
+import { b as useOrderServices } from '../../chunks/order_Db663jWn.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CBiXZYNJ.mjs';
 import { Package, ChevronLeft, XCircle, CheckCircle2, Truck, Clock3 } from 'lucide-react';
-import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_CHiU20By.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const EmptyOrderList = () => /* @__PURE__ */ jsxs("div", { className: "mx-auto flex min-h-[700px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center", children: [

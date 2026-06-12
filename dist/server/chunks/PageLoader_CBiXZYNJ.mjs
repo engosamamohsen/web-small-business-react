@@ -1,5 +1,5 @@
 import { jsxs, jsx } from 'react/jsx-runtime';
-import { c as cn } from './package_0TvmtaRv.mjs';
+import { c as cn } from './product-url_CFiTjzDR.mjs';
 
 function PageLoader({ text, className }) {
   return /* @__PURE__ */ jsxs(

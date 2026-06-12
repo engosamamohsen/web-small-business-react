@@ -9,6 +9,8 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
     priority?: boolean;
     quality?: number;
     fill?: boolean;
+    /** React 19: ref is a regular prop — forwarded to the underlying <img> via {...props} */
+    ref?: React.Ref<HTMLImageElement>;
 }
 
 export default function Image({

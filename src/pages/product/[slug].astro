@@ -70,9 +70,10 @@ if (!productData) {
     return Astro.redirect("/404");
 }
 
-// Canonical URL handling: if the URL slug doesn't match the API slug,
-// 301-redirect to the canonical /product/{id}-{slug}
-const canonicalPath = buildProductPath({ ...productData, id });
+// Canonical URL handling: if the URL doesn't match the API's id+slug,
+// 301-redirect to the canonical /product/{id}-{slug}.
+// Uses the API's id (not the URL's) so variants like /product/08-… redirect too.
+const canonicalPath = buildProductPath(productData);
 let currentPath = Astro.url.pathname;
 try {
     // pathname may be percent-encoded; compare decoded to avoid redirect loops
@@ -81,7 +82,8 @@ try {
     // malformed encoding — fall back to the raw pathname
 }
 if (currentPath !== canonicalPath) {
-    return Astro.redirect(canonicalPath, 301);
+    // keep query params (utm etc.) across the redirect
+    return Astro.redirect(canonicalPath + Astro.url.search, 301);
 }
 
 const canonicalUrl = `${Astro.url.origin}${canonicalPath}`;

@@ -1,14 +1,14 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_Dbf_rlpT.mjs';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import Cookies from 'js-cookie';
-import { $ as $api, u as useRouter, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, O as ObjectUtils, n as classNames, C as ComponentBase, B as Button, I as Image, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
+import { $ as $api, u as useRouter, f as useMergeProps, P as PrimeReactContext, r as useHandleStyle, O as ObjectUtils, m as classNames, C as ComponentBase, B as Button, I as Image, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_DEA60gZM.mjs';
 import 'react-toastify';
 import { u as useAsync } from '../../chunks/useAsync_R33OG2Tx.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_CXJ1Vp6T.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CBiXZYNJ.mjs';
 import * as React from 'react';
-import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_CHiU20By.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const useProfileServices = () => {

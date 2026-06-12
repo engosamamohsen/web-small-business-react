@@ -5,16 +5,19 @@ import { buildProductPath } from "@/lib/product-url";
 import styles from "./style.module.css";
 
 function HeroContent({ data }: { data: any }) {
-  const linkLocation =
-    data?.type === "product"
-      ? data?.id
-        ? buildProductPath(data)
-        : `/products/${data?.slug}`
-      : data?.type === "category"
-        ? `/categories/${data?.id}`
-        : data?.type === "external"
-          ? data?.link || ""
-          : "/";
+  // Banner API contract: {type, product_id, category_id, link, title, desc, image}
+  const linkLocation = (() => {
+    if (data?.type === "product") {
+      if (data?.product_id != null)
+        return buildProductPath({ id: data.product_id });
+      if (data?.slug) return `/products/${data.slug}`; // legacy banner shape
+    }
+    // Category banners filter the home products grid to that category
+    if (data?.type === "category" && data?.category_id != null)
+      return `/?category=${data.category_id}#products`;
+    if (data?.link) return data.link;
+    return "/";
+  })();
   return (
     <>
       <Link

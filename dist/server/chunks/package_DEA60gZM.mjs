@@ -3,7 +3,9 @@ import { User, LogOut, Search, ClipboardList, ShoppingCart, Phone, Mail, MapPin,
 import * as React from 'react';
 import React__default, { useContext, useEffect, useState, useRef, createContext, Children, cloneElement, useCallback } from 'react';
 import Cookies from 'js-cookie';
-import { a as getApiUrl, f as fetchSettings } from './fetchSettings_Cs_m47S2.mjs';
+import { f as fetchSettings } from './fetchSettings_CHiU20By.mjs';
+import { a as getApiUrl } from './config_CmU9rHaS.mjs';
+import { b as buildProductPath, c as cn } from './product-url_CFiTjzDR.mjs';
 import { CSSTransition as CSSTransition$1 } from 'react-transition-group';
 import ReactDOM from 'react-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -17,15 +19,6 @@ import { getStorage } from 'firebase/storage';
 import axios from 'axios';
 import NProgress from 'nprogress';
 import { z } from 'zod';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs) {
-  return twMerge(clsx(inputs));
-}
-function slugify(text) {
-  return text.toString().toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w-]+/g, "").replace(/--+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
-}
 
 function _arrayWithHoles$6(r) {
   if (Array.isArray(r)) return r;
@@ -6746,7 +6739,9 @@ function SearchBar() {
     setQuery("");
     setResults([]);
     setIsOpen(false);
-    router.push(`/products/${slug || id}`);
+    router.push(
+      id ? buildProductPath({ id, slug, name: product.name }) : `/products/${slug}`
+    );
   };
   const handleClear = () => {
     setQuery("");
@@ -9244,7 +9239,7 @@ function Footer({ settingsData, appVersion }) {
       className: cn(
         "mt-10 border-t border-white/10 bg-black/95 text-white",
         "backdrop-blur",
-        pathname.startsWith("/products") ? "max-md:pb-72" : ""
+        pathname.startsWith("/product") ? "max-md:pb-72" : ""
       ),
       children: /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-4 py-8 md:py-10", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-6 md:flex-row md:items-center md:justify-between", children: [
@@ -9365,4 +9360,4 @@ const version = "0.2.0";
 const packageJson = {
   version};
 
-export { $api as $, TimesIcon as A, Button as B, ComponentBase as C, Dialog as D, Portal as E, FaviconHandler as F, CSSTransition as G, Header as H, Image as I, ariaLabel as J, OverlayService as K, Link as L, InputText as M, KeyFilter as N, ObjectUtils as O, PrimeReactContext as P, useSearchParams as Q, Ripple as R, SpinnerIcon as S, Tooltip as T, fetchHookClient as U, AuthDialog$1 as V, ZIndexUtils as Z, Footer as a, useSettings as b, cn as c, useSettingsData as d, useCart as e, IconBase as f, useMergeProps as g, usePrevious as h, useStyle as i, useResizeListener as j, useEventListener as k, DomHandler as l, useUpdateEffect as m, classNames as n, IconUtils as o, packageJson as p, useDebounce as q, PrimeReact as r, slugify as s, useHandleStyle as t, useRouter as u, useOverlayListener as v, useMountEffect as w, useUnmountEffect as x, FilterService as y, localeOption as z };
+export { $api as $, CSSTransition as A, Button as B, ComponentBase as C, Dialog as D, ariaLabel as E, FaviconHandler as F, OverlayService as G, Header as H, Image as I, InputText as J, KeyFilter as K, Link as L, useSearchParams as M, fetchHookClient as N, ObjectUtils as O, PrimeReactContext as P, AuthDialog$1 as Q, Ripple as R, SpinnerIcon as S, Tooltip as T, ZIndexUtils as Z, Footer as a, useSettings as b, useSettingsData as c, useCart as d, IconBase as e, useMergeProps as f, usePrevious as g, useStyle as h, useResizeListener as i, useEventListener as j, DomHandler as k, useUpdateEffect as l, classNames as m, IconUtils as n, useDebounce as o, packageJson as p, PrimeReact as q, useHandleStyle as r, useOverlayListener as s, useMountEffect as t, useRouter as u, useUnmountEffect as v, FilterService as w, localeOption as x, TimesIcon as y, Portal as z };

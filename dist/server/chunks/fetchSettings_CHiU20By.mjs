@@ -1,33 +1,5 @@
 import 'react';
-
-const SSR_FALLBACK = "http://localhost:3000";
-function getBaseUrl() {
-  if (typeof window !== "undefined") {
-    return window.location.origin;
-  }
-  return SSR_FALLBACK;
-}
-function getAdminOrigin() {
-  if (typeof window === "undefined") {
-    return SSR_FALLBACK;
-  }
-  const { protocol, hostname } = window.location;
-  try {
-    const parts = hostname.split(".");
-    if (parts[0].startsWith("admin-")) {
-      return `${protocol}//${hostname}`;
-    }
-    if (parts.length >= 3) {
-      parts[0] = `admin-${parts[0]}`;
-      return `${protocol}//${parts.join(".")}`;
-    }
-  } catch {
-  }
-  return window.location.origin;
-}
-function getApiUrl() {
-  return `${getAdminOrigin()}/api/`;
-}
+import { a as getApiUrl } from './config_CmU9rHaS.mjs';
 
 const getApiBase = () => getApiUrl();
 const FETCH_TIMEOUT = 1e4;
@@ -148,4 +120,4 @@ async function fetchSettings(token, forceRefresh = false) {
   return ongoingFetch;
 }
 
-export { getApiUrl as a, fetchSettings as f, getBaseUrl as g };
+export { fetchSettings as f };

@@ -1,7 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Hero from "@/components/Hero/Hero";
-import OfferProducts from "@/components/OfferProducts/Index";
 import Categories from "@/components/Categories/Categories";
 import ProductsSection from "@/components/Product/ProductsSection";
 
@@ -34,14 +33,22 @@ const extractId = (param: string | undefined) => param?.match(/^(\d+)/)?.[1];
 const categoryId = extractId(categoryParam);
 const subCategoryId = extractId(subCategoryParam);
 
+// Products list — same paginated v1/product API as before
+const productsUrl = `v1/product${categoryId ? `?category_id=${categoryId}` : ""}${
+    subCategoryId ? `&sub_category_id=${subCategoryId}` : ""
+}${subCategoryId || categoryId ? `&` : "?"}page=${currentPage}&limit=${limit}`;
+
 // ============================================
-// PARALLEL API CALLS - Improved SSR Performance
+// PARALLEL API CALLS - settings + banner + categories + products in one round trip
 // Using allSettled to prevent one failure from breaking the entire page
 // ============================================
-const [settingsResult, homeResult] = await Promise.allSettled([
-    fetchSettings(token),
-    fetchHook({ url: "v1/home", init: {}, token }),
-]);
+const [settingsResult, bannerResult, categoriesResult, productsResult] =
+    await Promise.allSettled([
+        fetchSettings(token),
+        fetchHook({ url: "v1/banner", init: {}, token }),
+        fetchHook({ url: "v1/categories", init: {}, token }),
+        fetchHook({ url: productsUrl, init: {} }),
+    ]);
 
 // Extract settings data (handle rejected promises)
 const settingsResponse =
@@ -52,21 +59,30 @@ const isLogin = settingsResponse?.ok
     : false;
 const appVersion = packageJson.version;
 
-// Extract home data
-const homeResponse =
-    homeResult?.status === "fulfilled" ? homeResult.value : null;
-const homeData = homeResponse?.ok ? homeResponse?.data?.data : null;
-
-// Process banner data
-const bannerData: any[] = homeData?.banners ?? [];
+// Banner — GET v1/banner → {status, message, data: [...]}
+// Section is hidden entirely when the API fails or returns an empty list.
+const bannerResponse =
+    bannerResult?.status === "fulfilled" ? bannerResult.value : null;
+const bannerData: any[] =
+    bannerResponse?.ok && Array.isArray(bannerResponse?.data?.data)
+        ? bannerResponse.data.data
+        : [];
 const showBanner = bannerData.length > 0;
 
-// Process offer products (popular_products from home API)
-const offerProducts: any[] = homeData?.popular_products ?? [];
-const showOffers = offerProducts.length > 0;
-
-// Process categories
-const categoriesData: any[] = homeData?.categories ?? [];
+// Categories — GET v1/categories → {status, message, data: {data: [...]}}
+// Used for the category filter only (products come from v1/product).
+// Only categories that contain active products are shown, and the heavy
+// products_active payload is stripped before reaching the client island.
+const categoriesResponse =
+    categoriesResult?.status === "fulfilled" ? categoriesResult.value : null;
+const allCategories: any[] =
+    categoriesResponse?.ok &&
+    Array.isArray(categoriesResponse?.data?.data?.data)
+        ? categoriesResponse.data.data.data
+        : [];
+const categoriesData: any[] = allCategories
+    .filter((category: any) => (category?.products_active?.length ?? 0) > 0)
+    .map(({ products_active, ...category }: any) => category);
 const showCategories = categoriesData.length > 0;
 
 // Handle subcategories — match on the numeric ID extracted from the URL param
@@ -84,32 +100,17 @@ const targetFilterCategory = (() => {
     };
 })();
 
-// ============================================
-// Products - Fetch separately (depends on category)
-// ============================================
+// Products — extract from the parallel result
 let productsData: Product[] = [];
 let productsPagination: any = { last_page: 1 };
 let showProducts = false;
 
-try {
-    const productsUrl = `v1/product${categoryId ? `?category_id=${categoryId}` : ""}${
-        subCategoryId ? `&sub_category_id=${subCategoryId}` : ""
-    }${subCategoryId || categoryId ? `&` : "?"}page=${currentPage}&limit=${limit}`;
-
-    const productsResponse = await fetchHook({
-        url: productsUrl,
-        init: {},
-    });
-
-    if (productsResponse?.ok && productsResponse?.data?.data) {
-        productsData = productsResponse.data.data;
-        productsPagination = productsResponse.data.pagination || {
-            last_page: 1,
-        };
-        showProducts = true;
-    }
-} catch (error) {
-    console.error("Error fetching products:", error);
+const productsResponse =
+    productsResult?.status === "fulfilled" ? productsResult.value : null;
+if (productsResponse?.ok && productsResponse?.data?.data) {
+    productsData = productsResponse.data.data;
+    productsPagination = productsResponse.data.pagination || { last_page: 1 };
+    showProducts = true;
 }
 
 // SEO metadata
@@ -142,12 +143,6 @@ const pageKeywords = settingsData?.keywords || [
 
     <main class="min-h-screen">
         {showBanner && <Hero bannerData={bannerData} client:load />}
-
-        {
-            showOffers && (
-                <OfferProducts offerProducts={offerProducts} client:visible />
-            )
-        }
 
         {
             showCategories && (

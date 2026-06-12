@@ -1,21 +1,22 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_DVvCfkNe.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_Dbf_rlpT.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import React__default, { useEffect, useState, useMemo, Suspense } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { CircleX, ArrowBigLeftDash } from 'lucide-react';
 import { s as styles } from '../../chunks/_id_.08fbb95e_BU9H0_4q.mjs';
-import { I as Image, $ as $api, u as useRouter, D as Dialog, B as Button, c as cn, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_0TvmtaRv.mjs';
+import { c as cn } from '../../chunks/product-url_CFiTjzDR.mjs';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { I as Image, $ as $api, u as useRouter, D as Dialog, B as Button, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../../chunks/package_DEA60gZM.mjs';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Cookies from 'js-cookie';
 import { u as useAsyncRetry } from '../../chunks/useAsyncRetry_Dtdux-0Q.mjs';
-import { u as usePayment, a as useOrderDetailServices } from '../../chunks/order_cu7dEtUp.mjs';
+import { u as usePayment, a as useOrderDetailServices } from '../../chunks/order_Db663jWn.mjs';
 import { f as formatDate } from '../../chunks/global_CwaxDU9D.mjs';
-import { P as PageLoader } from '../../chunks/PageLoader_CXJ1Vp6T.mjs';
-import { f as fetchSettings } from '../../chunks/fetchSettings_Cs_m47S2.mjs';
+import { P as PageLoader } from '../../chunks/PageLoader_CBiXZYNJ.mjs';
+import { f as fetchSettings } from '../../chunks/fetchSettings_CHiU20By.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const getOrderStatus = (status) => {

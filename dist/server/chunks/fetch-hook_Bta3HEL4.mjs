@@ -1,4 +1,4 @@
-import { g as getBaseUrl } from './fetchSettings_Cs_m47S2.mjs';
+import { g as getBaseUrl } from './config_CmU9rHaS.mjs';
 
 async function getSubdomain() {
   return getBaseUrl();

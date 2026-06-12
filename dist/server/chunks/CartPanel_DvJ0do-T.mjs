@@ -1,8 +1,9 @@
 import { jsxs, Fragment, jsx } from 'react/jsx-runtime';
 import { useEffect, useRef } from 'react';
 import { ShoppingCart, ArrowLeft, X } from 'lucide-react';
-import { c as cn, L as Link, I as Image } from './package_0TvmtaRv.mjs';
-import { a as useCartServices } from './cart_BZ6pBIbF.mjs';
+import { L as Link, I as Image } from './package_DEA60gZM.mjs';
+import { a as useCartServices } from './cart_C9Mo9Ik1.mjs';
+import { c as cn } from './product-url_CFiTjzDR.mjs';
 
 const MiniCartItem = ({ item }) => {
   const qty = parseInt(item.qty);

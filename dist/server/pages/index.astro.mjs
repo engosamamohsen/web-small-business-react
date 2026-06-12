@@ -1,22 +1,23 @@
 import { e as createAstro, f as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_BA59mY36.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_DVvCfkNe.mjs';
+import { $ as $$Layout } from '../chunks/Layout_Dbf_rlpT.mjs';
 import { jsx, Fragment, jsxs } from 'react/jsx-runtime';
-import { L as Link, I as Image, g as useMergeProps, P as PrimeReactContext, t as useHandleStyle, n as classNames, C as ComponentBase, Q as useSearchParams, c as cn, U as fetchHookClient, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../chunks/package_0TvmtaRv.mjs';
+import { L as Link, I as Image, f as useMergeProps, P as PrimeReactContext, r as useHandleStyle, m as classNames, C as ComponentBase, M as useSearchParams, N as fetchHookClient, F as FaviconHandler, H as Header, a as Footer, p as packageJson } from '../chunks/package_DEA60gZM.mjs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, Navigation, FreeMode, Scrollbar } from 'swiper/modules';
 /* empty css                                 */
 import { s as styles$1, a as styles$2, b as styles$3 } from '../chunks/index.95d291e9_979YcroM.mjs';
+import { b as buildProductPath, c as cn } from '../chunks/product-url_CFiTjzDR.mjs';
 import * as React from 'react';
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { Flame, PackageOpen } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { f as fetchSettings } from '../chunks/fetchSettings_Cs_m47S2.mjs';
-import { f as fetchHook } from '../chunks/fetch-hook_sAz3v3-P.mjs';
+import { f as fetchSettings } from '../chunks/fetchSettings_CHiU20By.mjs';
+import { f as fetchHook } from '../chunks/fetch-hook_Bta3HEL4.mjs';
 export { renderers } from '../renderers.mjs';
 
 function HeroContent({ data }) {
-  const linkLocation = data?.type === "product" ? `/products/${data?.slug}` : data?.type === "category" ? `/categories/${data?.id}` : data?.type === "external" ? data?.link || "" : "/";
+  const linkLocation = data?.type === "product" ? data?.id ? buildProductPath(data) : `/products/${data?.slug}` : data?.type === "category" ? `/categories/${data?.id}` : data?.type === "external" ? data?.link || "" : "/";
   return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs(
     Link,
     {
@@ -266,7 +267,7 @@ function Product({ product, defaultImage }) {
       /* @__PURE__ */ jsx(
         Link,
         {
-          href: `/products/${product?.slug}`,
+          href: buildProductPath(product),
           "aria-label": `عرض تفاصيل ${product?.name ?? "المنتج"}`,
           children: /* @__PURE__ */ jsxs(
             "div",
@@ -367,7 +368,7 @@ function Product({ product, defaultImage }) {
     ),
     /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col justify-between gap-2 px-4 pb-4 pt-3", children: [
       /* @__PURE__ */ jsxs("div", { className: "w-full space-y-1 text-right", children: [
-        /* @__PURE__ */ jsx(Link, { href: `/products/${product?.slug}`, children: /* @__PURE__ */ jsx("h3", { className: "line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors hover:text-[var(--main-color)] sm:text-base", children: product.name }) }),
+        /* @__PURE__ */ jsx(Link, { href: buildProductPath(product), children: /* @__PURE__ */ jsx("h3", { className: "line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors hover:text-[var(--main-color)] sm:text-base", children: product.name }) }),
         categoryName && /* @__PURE__ */ jsx("p", { className: "text-[11px] font-medium text-slate-400 sm:text-xs", children: categoryName })
       ] }),
       /* @__PURE__ */ jsx("div", { className: "flex w-full items-end justify-between", children: /* @__PURE__ */ jsx(PriceContent, { product }) })
