@@ -41,20 +41,25 @@ export function getBaseUrl(): string {
  * "fashionstore.cashierthru.com" → "https://admin-fashionstore.cashierthru.com"
  * "shop1.cashierthru.com"        → "https://admin-shop1.cashierthru.com"
  * "localhost" (npm run dev)      → DEV_API_ORIGIN (test tenant)
- * "localhost" / SSR (prod build) → origin as-is (no subdomain to transform)
- */export function getAdminOrigin(): string {
-  console.log("osama->> getAdminOrigin");
-
+ * SSR (prod build)               → PUBLIC_BASE_URL transformed to admin-* origin
+ */
+export function getAdminOrigin(): string {
   // SSR / Astro build-time
   if (typeof window === "undefined") {
-    console.log("osama->> SSR origin:", SSR_FALLBACK);
-    return import.meta.env.DEV ? DEV_API_ORIGIN : SSR_FALLBACK;
+    if (import.meta.env.DEV) return DEV_API_ORIGIN;
+    // Transform https://shop.cashierthru.com → https://admin-shop.cashierthru.com
+    try {
+      const url = new URL(SSR_FALLBACK);
+      const parts = url.hostname.split(".");
+      if (parts.length >= 3) {
+        const adminHost = `admin-${parts[0]}.${parts.slice(1).join(".")}`;
+        return `${url.protocol}//${adminHost}`;
+      }
+    } catch {}
+    return SSR_FALLBACK;
   }
 
-  console.log("osama->> getAdminOrigin browser");
-
   const { protocol, hostname } = window.location;
-  console.log("osama->> hostname:", hostname);
 
   // localhost / IP handling
   if (
@@ -67,7 +72,6 @@ export function getBaseUrl(): string {
   }
 
   const parts = hostname.split(".");
-  console.log("osama->> parts:", parts);
 
   // MUST be tenant.cashierthru.com
   if (parts.length >= 3) {

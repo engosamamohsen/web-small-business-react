@@ -48,4 +48,4 @@ pm2 restart 0
 
 echo ""
 echo "==> Deploy complete."
-echo "    Site: $(grep PUBLIC_BASE_URL $ENV_FILE | cut -d= -f2)"
+echo "    Shop URL: $(grep PUBLIC_BASE_URL $ENV_FILE | cut -d= -f2)"
