@@ -2,7 +2,7 @@
 //
 // Builds the order message + wa.me link per docs/subscription-modes-task.md.
 // Number and shop name come from the setting-profile API (settings.whatsapp_phone
-// / settings.name); storeConfig only provides fallbacks.
+// / settings.name / settings.shop_type); storeConfig only provides fallbacks.
 
 import { storeConfig } from "@/lib/store-config";
 import type { CartItemType } from "@/types/types";
@@ -23,10 +23,20 @@ export function normalizeWhatsappNumber(
     return digits;
 }
 
-/** Greeting includes the shop name without doubling "مطعم مطعم …". */
-function buildGreeting(shopName?: string | null): string {
+/**
+ * Greeting includes the shop name and adapts to shop_type.
+ * - restaurant + name without "مطعم" → "مرحبا بك فى مطعم {name}"
+ * - restaurant + name already starts with "مطعم" → "مرحبا بك فى {name}"
+ * - any other shop_type → "مرحبا بك فى {name}" (no category prefix)
+ */
+function buildGreeting(shopName?: string | null, shopType?: string | null): string {
     const name = shopName?.trim();
     if (!name) return "مرحبا بك";
+    // Non-restaurant shops: skip the "مطعم" prefix entirely
+    if (shopType && shopType !== "restaurant") {
+        return `مرحبا بك فى ${name}`;
+    }
+    // Restaurant (or type unknown): prefix only when the name doesn't already include it
     return name.startsWith("مطعم")
         ? `مرحبا بك فى ${name}`
         : `مرحبا بك فى مطعم ${name}`;
@@ -37,9 +47,13 @@ function formatPrice(value: number): string {
 }
 
 /**
- * Order message, e.g.:
+ * Order message sent via WhatsApp. All values come from the settings-profile API:
+ * - shop name  → settings.name
+ * - shop type  → settings.shop_type  (drives greeting prefix)
  *
- *   مرحبا بك فى مطعم عيدو
+ * Example output for a restaurant named "ROKA'S KITCHEN":
+ *
+ *   مرحبا بك فى مطعم ROKA'S KITCHEN
  *
  *   السلام عليكم
  *
@@ -57,9 +71,10 @@ export function buildWhatsAppOrderMessage(
     items: CartItemType[],
     totalPrice: number,
     shopName?: string | null,
+    shopType?: string | null,
 ): string {
     const lines: string[] = [
-        buildGreeting(shopName),
+        buildGreeting(shopName, shopType),
         "",
         "السلام عليكم",
         "",
@@ -84,17 +99,27 @@ export function buildWhatsAppOrderMessage(
 
 /**
  * Full wa.me URL for the order, or null when no usable number exists.
+ * All values are resolved dynamically from the setting-profile API at runtime.
  */
 export function buildWhatsAppOrderUrl(
     items: CartItemType[],
     totalPrice: number,
-    settings?: { name?: string | null; whatsapp_phone?: string | null } | null,
+    settings?: {
+        name?: string | null;
+        whatsapp_phone?: string | null;
+        shop_type?: string | null;
+    } | null,
 ): string | null {
     const number =
         normalizeWhatsappNumber(settings?.whatsapp_phone) ??
         normalizeWhatsappNumber(storeConfig.fallbackWhatsappNumber);
     if (!number || !items.length) return null;
 
-    const message = buildWhatsAppOrderMessage(items, totalPrice, settings?.name);
+    const message = buildWhatsAppOrderMessage(
+        items,
+        totalPrice,
+        settings?.name,
+        settings?.shop_type,
+    );
     return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }

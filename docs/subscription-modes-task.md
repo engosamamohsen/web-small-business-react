@@ -89,14 +89,19 @@ When the user presses Checkout:
 4. **Clear the cart only after successful WhatsApp launch.**
 
 The message **starts with a greeting that includes the shop name** taken from
-the setting-profile API (`data.name`):
-`مرحبا بك فى مطعم {shop_name}`
+the setting-profile API (`data.name`). The prefix adapts to `data.shop_type`:
 
-Example message (Arabic, RTL — encode with `encodeURIComponent`;
-shop name "مطعم عيدو" comes from `data.name`):
+- `shop_type === "restaurant"` and name does not start with "مطعم" →
+  `مرحبا بك فى مطعم {name}`
+- `shop_type === "restaurant"` and name already starts with "مطعم" →
+  `مرحبا بك فى {name}` (no doubling)
+- any other `shop_type` → `مرحبا بك فى {name}` (no category prefix)
+
+Example message for a restaurant named "ROKA'S KITCHEN"
+(Arabic, RTL — encode with `encodeURIComponent`):
 
 ```text
-مرحبا بك فى مطعم عيدو
+مرحبا بك فى مطعم ROKA'S KITCHEN
 
 السلام عليكم
 
@@ -115,11 +120,6 @@ shop name "مطعم عيدو" comes from `data.name`):
 شكراً
 ```
 
-> Note: `data.name` may already contain the word "مطعم" (e.g. "مطعم عيدو") —
-> avoid doubling it ("مطعم مطعم عيدو"); prefix only when the name doesn't
-> already start with it. `data.shop_type` ("restaurant") is available if the
-> wording should differ per shop type later.
-
 ### WhatsApp number & shop name source — setting-profile API
 
 Both values come from the **existing settings endpoint** — do not hardcode:
@@ -136,31 +136,42 @@ GET v1/setting-profile
     "message": "Show setting profile",
     "data": {
         "id": 1,
-        "name": "مطعم عيدو",
-        "about_us": "أصل المأكولات السورية والغربية\r\nجميع أنواع الشاورما(وجبات، ساندوتشات، بالوزن)\r\nألذ فراخ شواية وبروستد",
-        "phone": "01277775319",
-        "whatsapp_phone": "01093341796",
-        "contact_email": "aidochiken251@gmail.com",
-        "full_address": "العاشر من رمضان سكاي مول مقابل نادي الرواد",
-        "logo": "https://admin-asly.cashierthru.com/image/setting/1778930684_6a0853fcc14ff.png",
+        "name": "ROKA'S KITCHEN",
+        "about_us": "ROKA'S KITCHEN",
+        "phone": "+201112124464",
+        "whatsapp_phone": "201112124464",
+        "contact_email": null,
+        "full_address": null,
+        "logo": "https://admin-roka.cashierthru.com/image/setting/1781285911_6a2c44171a193.png",
         "main_color": null,
-        "main_bg": "#921111",
-        "facebook_link": "https://www.facebook.com/Aidochiken/",
-        "instagram_link": "https://aidochicken.com/index?page=default#",
-        "tax": 5,
-        "service": 10,
-        "vat": "2.00",
-        "keywords": ["ffff"],
-        "product_default_image": "https://admin-asly.cashierthru.com/image/setting/1776977265_69ea8571b8aa4.jpg",
-        "created_at": "2026-04-21 01:22:20",
-        "updated_at": "2026-05-16 14:24:44",
+        "main_bg": "#804040",
+        "facebook_link": "https://www.facebook.com/",
+        "instagram_link": "https://www.instagram.com/shawermaelreem/",
+        "tax": 0,
+        "service": 0,
+        "vat": "0.00",
+        "keywords": ["مطاعم", "وجبات", "فراخ", "لحوم", "شاورما", "محاشي"],
+        "product_default_image": "https://admin-roka.cashierthru.com/image/setting/1781286040_6a2c449827e2f.jpg",
+        "created_at": "2026-06-11 15:56:37",
+        "updated_at": "2026-06-12 20:40:40",
         "shop_type": "restaurant"
+    },
+    "current_subscription_plan": {
+        "id": 1,
+        "name": "خطة الرسوم الثابتة",
+        "type": "normal",
+        "subscription_status": {
+            "status": "active",
+            "can_access": true
+        }
     }
 }
 ```
 
-- **WhatsApp number** → `data.whatsapp_phone` (e.g. `"01093341796"`)
-- **Shop name for the greeting** → `data.name` (e.g. `"مطعم عيدو"`)
+- **WhatsApp number** → `data.whatsapp_phone` (e.g. `"201112124464"`)
+- **Shop name for the greeting** → `data.name` (e.g. `"ROKA'S KITCHEN"`)
+- **Shop type** → `data.shop_type` (e.g. `"restaurant"`) — drives greeting prefix logic
+- **Future dynamic plan** → `current_subscription_plan.subscription_status.can_access` and plan `type` can replace the static `CURRENT_PLAN` constant when ready
 - This endpoint is already wrapped by `fetchSettings()` in
   `src/hooks/fetchSettings.tsx` (it calls `v1/setting-profile` with
   localStorage + server-side caching built in) — reuse it; the static
@@ -228,7 +239,7 @@ Where each requirement lands in `web-small-business-react`:
 
 - The tenant test environment is `https://admin-asly.cashierthru.com` (dev default
   via `PUBLIC_DEV_API_ORIGIN` in `.env`; `npm run dev` already points there).
-- Product URLs are canonical at `/product/{id}-{slug}` (see `src/lib/product-url.ts`).
+- Product URLs are canonical at `/product/{slug}` where the API slug already embeds the id at the end (e.g. `ft-shaorma-frakh-8`). See `src/lib/product-url.ts`.
 - "Successful WhatsApp launch" on web: opening `wa.me` in a new tab — treat a
   non-blocked `window.open` as success before clearing the cart; popup blockers
   must not wipe the cart.
