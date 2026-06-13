@@ -65,8 +65,7 @@ export default defineConfig({
 
   server: {
     port: 3000,
-    host: true,
-    allowedHosts: ['roka.cashierthru.com']
+    host: true
   },
 
   prefetch: {

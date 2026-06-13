@@ -1,1 +1,0 @@
-import{b as r}from"./providers.DoQ4MeAo.js";import{r as e}from"./index.DeO6U63H.js";import"./jsx-runtime.D_zvdyIk.js";function s({isLogin:t}){const{setIsLogin:o}=r();return e.useEffect(()=>{typeof t=="boolean"&&o(t)},[t,o]),null}export{s as default};

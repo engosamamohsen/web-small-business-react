@@ -41,6 +41,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# build output — never commit these; each server builds its own
+/dist
+/.astro
+
 # custom ignored files
 src/client/index.ts
 src/app/subdomain.ts

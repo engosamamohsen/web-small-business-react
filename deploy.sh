@@ -16,7 +16,7 @@ else
   echo "WARNING: No .env file found. Creating one from .env.example ..."
   if [ -f ".env.example" ]; then
     cp ".env.example" "$ENV_FILE"
-    echo "IMPORTANT: Edit .env with your real production values before using this server."
+    echo "IMPORTANT: Edit .env with your real production values before continuing."
     cat "$ENV_FILE"
   else
     echo "ERROR: Neither .env nor .env.example found. Aborting."
@@ -24,12 +24,14 @@ else
   fi
 fi
 
-# 2. Pull latest code (safe — no --hard reset, no clean)
+# 2. Discard any local changes to tracked source files so git pull never blocks.
+#    dist/ and .astro/ are now in .gitignore so they are safe — git won't touch them.
+echo "==> Resetting tracked source files to match origin..."
 git fetch origin
 git checkout "$BRANCH"
-git pull origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
 
-# 3. Restore .env if git somehow lost it (shouldn't happen, but safety net)
+# 3. Restore .env (reset --hard would have removed it if it were tracked; it's not, but just in case)
 if [ ! -f "$ENV_FILE" ] && [ -f "$ENV_BACKUP" ]; then
   cp "$ENV_BACKUP" "$ENV_FILE"
   echo "==> .env restored from backup"
