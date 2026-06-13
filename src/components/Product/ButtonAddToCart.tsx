@@ -3,6 +3,7 @@
 import { useCartHook } from "@/hooks/cart/cart";
 import { ProductType } from "@/lib/types";
 import { buildProductPath } from "@/lib/product-url";
+import { storeConfig } from "@/lib/store-config";
 import { cn } from "@/utils/utils";
 import Cookies from "js-cookie";
 import { ShoppingCart } from "lucide-react";
@@ -28,7 +29,8 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
         if (product?.is_variation) {
           router.push(buildProductPath(product));
         } else {
-          if (!token) {
+          // BASIC plan: local cart needs no login
+          if (storeConfig.canAuthenticate && !token) {
             router.push("/auth/login");
           } else {
             try {

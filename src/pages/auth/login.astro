@@ -1,6 +1,12 @@
 ---
 import LoginForm from "@/components/auth/LoginForm";
 import { fetchSettings } from "@/hooks/fetchSettings";
+import { storeConfig } from "@/lib/store-config";
+
+// BASIC plan: authentication is disabled — this screen doesn't exist
+if (!storeConfig.canAuthenticate) {
+    return Astro.redirect("/");
+}
 
 // Fetch public settings for the page
 const settingsResponse = await fetchSettings();

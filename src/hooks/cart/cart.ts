@@ -7,20 +7,32 @@ import Cookies from "js-cookie";
 import { $api } from "@/client";
 import { CartResponseType } from "@/types/types";
 import { useCart } from "@/providers/SettingsProvider";
+import { storeConfig } from "@/lib/store-config";
+import {
+  readLocalCart,
+  addLocalCartItem,
+  updateLocalCartQty,
+  removeLocalCartItem,
+  localCartCount,
+} from "@/lib/cart/local-cart";
 
 /**
- * Hook for fetching cart data
+ * Hook for fetching cart data.
+ * PREMIUM → basket API; BASIC → localStorage cart (same response shape).
  */
 export const useCartServices = () => {
   const router = useRouter();
 
   const { value, loading, error, retry } = useAsyncRetry(async () => {
+    if (storeConfig.usesLocalCart) {
+      return { data: { data: readLocalCart() } };
+    }
     return $api.get("v1/basket");
   }, []);
 
-  // Handle 403 - redirect to login
+  // Handle 403 - redirect to login (premium only; basic never authenticates)
   const errorStatus = (error as any)?.status;
-  if (errorStatus === 403) {
+  if (storeConfig.canAuthenticate && errorStatus === 403) {
     Cookies.remove("app_token");
     router.push("/auth/login");
   }
@@ -34,19 +46,31 @@ export const useCartServices = () => {
 };
 
 /**
- * Hook for cart actions (add, update, remove)
+ * Hook for cart actions (add, update, remove).
+ * Same interface for both plans; BASIC mutates the local cart.
  */
 export const useCartHook = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   // Get cart actions from context
-  const { incrementCartCount } = useCart();
+  const { incrementCartCount, setCartCount } = useCart();
 
   /**
    * Add product to cart
    */
   const addToCart = async (product: any) => {
+    if (storeConfig.usesLocalCart) {
+      addLocalCartItem(product);
+      setCartCount(localCartCount());
+      toast.success(`تمت إضافة ${product.name} إلى سلة التسوق`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      return { status: true };
+    }
+
     try {
       setLoading(true);
 
@@ -74,6 +98,17 @@ export const useCartHook = () => {
    * Update item quantity
    */
   const updateCount = async (product: any) => {
+    if (storeConfig.usesLocalCart) {
+      updateLocalCartQty(Number(product?.cart_item_id), Number(product?.qty));
+      setCartCount(localCartCount());
+      toast.success(`تم تحديث ${product.product_name} في سلة التسوق`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      return { status: true };
+    }
+
     try {
       setLoading(true);
 
@@ -100,6 +135,20 @@ export const useCartHook = () => {
    * Remove item from cart
    */
   const removeFromCart = async (product: any) => {
+    // Callers pass { cart_item_id: <full cart item> }
+    const cartItem = product?.cart_item_id;
+
+    if (storeConfig.usesLocalCart) {
+      removeLocalCartItem(Number(cartItem?.cart_item_id ?? cartItem));
+      setCartCount(localCartCount());
+      toast.success(`تم حذف ${cartItem?.product_name ?? "المنتج"} من السلة`, {
+        position: "top-right",
+        autoClose: 2000,
+        rtl: true,
+      });
+      return { status: true };
+    }
+
     try {
       setLoading(true);
 
@@ -139,7 +188,7 @@ export const useCartHook = () => {
 // ===== Helper Functions =====
 
 function handleError(error: any, router: ReturnType<typeof useRouter>) {
-  if (error?.status === 403) {
+  if (storeConfig.canAuthenticate && error?.status === 403) {
     Cookies.remove("app_token");
     router.push("/auth/login");
   }

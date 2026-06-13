@@ -9,13 +9,15 @@ import { ToastContainer } from "react-toastify";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
+import { storeConfig } from "@/lib/store-config";
 import packageJson from "../../../package.json";
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
 
-// If not logged in, redirect to login
-if (!token) {
+// If not logged in, redirect to login (premium only — the BASIC plan cart
+// is local and never requires authentication)
+if (storeConfig.canAuthenticate && !token) {
     return Astro.redirect("/auth/login");
 }
 

@@ -9,7 +9,13 @@ import { ToastContainer } from "react-toastify";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
+import { storeConfig } from "@/lib/store-config";
 import packageJson from "../../../package.json";
+
+// BASIC plan: accounts are disabled — this screen doesn't exist
+if (!storeConfig.canAuthenticate) {
+    return Astro.redirect("/");
+}
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;

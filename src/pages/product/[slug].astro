@@ -14,8 +14,8 @@ import { buildProductPath, parseProductParam } from "@/lib/product-url";
 import packageJson from "../../../package.json";
 import type { ProductType } from "@/lib/types";
 
-// SEO-friendly URL: /product/{id}-{slug}  (e.g. /product/8-ft-shaorma-frakh-8)
-// The id leads so it parses unambiguously even when the slug ends in a number.
+// SEO-friendly URL: /product/{slug}  (e.g. /product/ft-shaorma-frakh-8)
+// The id is the trailing number embedded in the API slug.
 const { slug: rawParam } = Astro.params as { slug: string };
 
 const parsed = parseProductParam(rawParam);
@@ -70,9 +70,8 @@ if (!productData) {
     return Astro.redirect("/404");
 }
 
-// Canonical URL handling: if the URL doesn't match the API's id+slug,
-// 301-redirect to the canonical /product/{id}-{slug}.
-// Uses the API's id (not the URL's) so variants like /product/08-… redirect too.
+// Canonical URL handling: if the URL doesn't match the API's slug,
+// 301-redirect to the canonical /product/{slug}.
 const canonicalPath = buildProductPath(productData);
 let currentPath = Astro.url.pathname;
 try {

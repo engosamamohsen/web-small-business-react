@@ -12,6 +12,7 @@ import LoginButton from "./LoginButton";
 import SearchBar from "./SearchBar";
 import AuthDialog from "@/components/auth/AuthDialog";
 import CircleLogo from "@/global/CircleLogo";
+import { storeConfig } from "@/lib/store-config";
 
 interface HeaderProps {
   currentPath?: string;
@@ -50,6 +51,8 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
   }, [router]);
 
   const handleCartClick = (e: React.MouseEvent) => {
+    // BASIC plan: the cart is local — always accessible, never gate on login
+    if (!storeConfig.canAuthenticate) return;
     if (!isLoggedIn) {
       e.preventDefault();
       setShowAuthDialog(true);
@@ -99,7 +102,7 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
               )}
 
               <Link
-                href={isLoggedIn ? "/shop/cart" : "#"}
+                href={!storeConfig.canAuthenticate || isLoggedIn ? "/shop/cart" : "#"}
                 className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
                 aria-label="سلة المشتريات"
                 onClick={handleCartClick}
@@ -112,7 +115,9 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
                 )}
               </Link>
 
-              <LoginButton isLoggedIn={isLoggedIn} onLogout={handleLogout} onOpenAuthDialog={openAuthDialog} />
+              {storeConfig.canAuthenticate && (
+                <LoginButton isLoggedIn={isLoggedIn} onLogout={handleLogout} onOpenAuthDialog={openAuthDialog} />
+              )}
             </div>
           </div>
 
@@ -123,7 +128,9 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
         </div>
       </header>
 
-      <AuthDialog visible={showAuthDialog} onHide={() => setShowAuthDialog(false)} initSettings={settings || {}} />
+      {storeConfig.canAuthenticate && (
+        <AuthDialog visible={showAuthDialog} onHide={() => setShowAuthDialog(false)} initSettings={settings || {}} />
+      )}
     </>
   );
 }

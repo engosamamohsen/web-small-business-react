@@ -1,6 +1,8 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useState, useCallback } from "react";
+import { createContext, useContext, ReactNode, useState, useCallback, useEffect } from "react";
+import { storeConfig } from "@/lib/store-config";
+import { localCartCount, LOCAL_CART_EVENT } from "@/lib/cart/local-cart";
 
 // ===== Types =====
 export interface SettingsData {
@@ -67,6 +69,16 @@ export function SettingsProvider({
 }) {
     const [cartCount, setCartCountState] = useState(initialCartCount);
     const [isLogin, setIsLogin] = useState(initialIsLogin);
+
+    // BASIC plan: the badge reflects the localStorage cart, not the server's
+    // cart_count. Sync on mount and on every local-cart mutation.
+    useEffect(() => {
+        if (!storeConfig.usesLocalCart) return;
+        const sync = () => setCartCountState(localCartCount());
+        sync();
+        window.addEventListener(LOCAL_CART_EVENT, sync);
+        return () => window.removeEventListener(LOCAL_CART_EVENT, sync);
+    }, []);
 
     const setCartCount = useCallback((count: number) => {
         setCartCountState(count);

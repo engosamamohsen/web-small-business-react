@@ -7,9 +7,13 @@ import { useRouter } from "@/lib/navigation";
 import { useEffect } from "react";
 
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
-import { useCart } from "@/providers";
+import { useCart, useSettings } from "@/providers";
 import { cn } from "@/utils/utils";
 import { buildProductPath } from "@/lib/product-url";
+import { storeConfig } from "@/lib/store-config";
+import { buildWhatsAppOrderUrl } from "@/lib/whatsapp-order";
+import { clearLocalCart } from "@/lib/cart/local-cart";
+import { toast } from "react-toastify";
 import PageLoader from "../PageLoader/PageLoader";
 import { CartItemType } from "@/types/types";
 
@@ -162,10 +166,12 @@ const OrderSummary = ({
   subtotal,
   shipping = 0,
   tax = 0,
+  onWhatsAppOrder,
 }: {
   subtotal: number;
   shipping?: number;
   tax?: number;
+  onWhatsAppOrder?: () => void;
 }) => {
   const total = subtotal + shipping + tax;
 
@@ -190,12 +196,23 @@ const OrderSummary = ({
           </div>
         </div>
       </div>
-      <Link
-        href="/shop/checkout"
-        className="block w-full rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
-      >
-        إتمام الشراء
-      </Link>
+      {storeConfig.checkoutMode === "whatsapp" ? (
+        <button
+          type="button"
+          onClick={onWhatsAppOrder}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 py-3 text-center font-semibold text-white transition-colors hover:bg-green-600"
+        >
+          <i className="pi pi-whatsapp text-lg" aria-hidden="true" />
+          اطلب عبر واتساب
+        </button>
+      ) : (
+        <Link
+          href="/shop/checkout"
+          className="block w-full rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
+        >
+          إتمام الشراء
+        </Link>
+      )}
     </div>
   );
 };
@@ -225,6 +242,41 @@ export default function Cart() {
   const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
   const { loading, removeFromCart, updateCount } = useCartHook();
   const { setCartCount } = useCart();
+  const { settings } = useSettings();
+
+  // BASIC plan checkout: cart → WhatsApp order.
+  // The cart is cleared ONLY after WhatsApp actually opened — a popup
+  // blocker must not wipe the customer's cart.
+  const handleWhatsAppOrder = () => {
+    const items = cartResponse?.cart_items ?? [];
+    const url = buildWhatsAppOrderUrl(
+      items,
+      cartResponse?.total_price ?? 0,
+      settings,
+    );
+    if (!url) {
+      toast.error("رقم الواتساب غير متوفر حالياً", { rtl: true });
+      return;
+    }
+
+    const win = window.open(url, "_blank");
+    if (win) {
+      try {
+        win.opener = null;
+      } catch {
+        // cross-origin — ignore
+      }
+      clearLocalCart();
+      setCartCount(0);
+      retry();
+      toast.success("تم تجهيز طلبك في واتساب", { rtl: true });
+    } else {
+      // popup blocked — keep the cart, tell the user
+      toast.error("تعذر فتح واتساب — يرجى السماح بالنوافذ المنبثقة", {
+        rtl: true,
+      });
+    }
+  };
 
   // Sync cart count when data changes
   useEffect(() => {
@@ -291,7 +343,10 @@ export default function Cart() {
           ))}
         </div>
         <div className="lg:self-start">
-          <OrderSummary subtotal={cartResponse.total_price} />
+          <OrderSummary
+            subtotal={cartResponse.total_price}
+            onWhatsAppOrder={handleWhatsAppOrder}
+          />
         </div>
       </div>
     </div>

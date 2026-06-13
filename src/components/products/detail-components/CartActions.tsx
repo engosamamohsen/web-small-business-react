@@ -9,6 +9,7 @@ import { getDiscountedPrice } from "@/lib/pricing-utils";
 import { toast } from "react-toastify";
 import { ShoppingCart, Zap, Plus, Minus } from "lucide-react";
 import { useSettings } from "@/providers";
+import { storeConfig } from "@/lib/store-config";
 
 // Lazy-load AuthDialog — only needed when user is not logged in
 const AuthDialog = lazy(() => import("@/components/auth/AuthDialog"));
@@ -61,6 +62,11 @@ export const CartActions = memo(({
     const finalPrice = discount > 0
         ? Math.round(basePrice * (1 - discount / 100) * 100) / 100
         : basePrice;
+    // Final per-unit price (variations + discount included) — the local cart
+    // stores this so BASIC-plan prices match what the user saw.
+    const finalUnitPrice = discount > 0
+        ? Math.round(totalPrice * (1 - discount / 100) * 100) / 100
+        : totalPrice;
 
     // ── Core cart add (called directly or after login) ──────────────────────
     const doAddToCart = useCallback(async () => {
@@ -74,6 +80,7 @@ export const CartActions = memo(({
                 currentSize,
                 product_note: productNote,
                 variations,
+                local_unit_price: finalUnitPrice,
             });
             setProductNote("");
             onAddedToCart?.();
@@ -82,7 +89,7 @@ export const CartActions = memo(({
                 error instanceof Error ? error.message : "فشل إضافة المنتج إلى السلة"
             );
         }
-    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, onAddedToCart]);
+    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, finalUnitPrice, onAddedToCart]);
 
     // ── Core buy now (called directly or after login) ────────────────────────
     const doBuyNow = useCallback(async () => {
@@ -95,6 +102,7 @@ export const CartActions = memo(({
                 currentSize,
                 product_note: productNote,
                 variations,
+                local_unit_price: finalUnitPrice,
             });
             window.location.href = "/shop/cart";
         } catch (error) {
@@ -102,10 +110,13 @@ export const CartActions = memo(({
                 error instanceof Error ? error.message : "فشل إضافة المنتج إلى السلة"
             );
         }
-    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote]);
+    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, finalUnitPrice]);
 
     // ── Auth guard ────────────────────────────────────────────────────────────
     const requireAuth = useCallback((action: "cart" | "buynow") => {
+        // BASIC plan: cart is local — never ask the user to authenticate
+        if (!storeConfig.canAuthenticate) return true;
+
         const token = Cookies.get("app_token");
         if (!token) {
             setPendingAction(action);
@@ -237,18 +248,20 @@ export const CartActions = memo(({
                 <div className="h-20 md:hidden" />
             </div>
 
-            {/* Auth Dialog — shown when user is not logged in */}
-            <Suspense fallback={null}>
-                <AuthDialog
-                    visible={showAuthDialog}
-                    onHide={() => {
-                        setShowAuthDialog(false);
-                        setPendingAction(null);
-                    }}
-                    initSettings={settings || {}}
-                    onSuccess={handleLoginSuccess}
-                />
-            </Suspense>
+            {/* Auth Dialog — shown when user is not logged in (premium only) */}
+            {storeConfig.canAuthenticate && (
+                <Suspense fallback={null}>
+                    <AuthDialog
+                        visible={showAuthDialog}
+                        onHide={() => {
+                            setShowAuthDialog(false);
+                            setPendingAction(null);
+                        }}
+                        initSettings={settings || {}}
+                        onSuccess={handleLoginSuccess}
+                    />
+                </Suspense>
+            )}
         </>
     );
 });

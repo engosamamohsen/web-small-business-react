@@ -7,7 +7,7 @@ import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://*.cashierthru.com',  // base domain, not a specific tenant
+  site: 'https://cashierthru.com',  // base domain, not a specific tenant
   output: 'static',
   adapter: node({ mode: 'standalone' }),
 
