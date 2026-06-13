@@ -176,8 +176,6 @@ export function Product({ product, defaultImage }: ProductProps) {
 
 
 
-        {/* Add to cart */}
-        {/* {!product?.is_variation && <ButtonAddToCart product={product} />} */}
       </div>
 
       {/* ── Thumbnail strip — desktop only ────────────────────────────── */}
@@ -233,8 +231,11 @@ export function Product({ product, defaultImage }: ProductProps) {
           )}
         </div>
 
-        <div className="flex w-full items-end justify-between">
+        <div className="flex w-full items-center justify-between">
           <PriceContent product={product} />
+          
+          {/* Add to cart / Choose options */}
+          <ButtonAddToCart product={product} />
         </div>
       </div>
     </article>

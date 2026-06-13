@@ -13,6 +13,7 @@ import SearchBar from "./SearchBar";
 import AuthDialog from "@/components/auth/AuthDialog";
 import CircleLogo from "@/global/CircleLogo";
 import { storeConfig } from "@/lib/store-config";
+import { localCartCount, LOCAL_CART_EVENT } from "@/lib/cart/local-cart";
 
 interface HeaderProps {
   currentPath?: string;
@@ -21,11 +22,14 @@ interface HeaderProps {
 }
 
 export default function Header({ initialIsLoggedIn = false, settingsData }: HeaderProps) {
-  const { settings: contextSettings, isLogin: contextIsLogin, cartCount } = useSettings();
+  const { settings: contextSettings, isLogin: contextIsLogin, cartCount: contextCartCount } = useSettings();
 
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [settings, setSettings] = useState<SettingsData | null>((settingsData as any) || (contextSettings as any) || null);
+  // For BASIC plan: maintain badge count directly from localStorage so the
+  // badge updates even when the Header is an isolated island (no SettingsProvider).
+  const [localCount, setLocalCount] = useState(0);
 
   const router = useRouter();
 
@@ -42,6 +46,18 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
       });
     }
   }, [settings]);
+
+  // BASIC plan: sync badge from localStorage so it updates even when the
+  // Header is an isolated Astro island with no SettingsProvider above it.
+  useEffect(() => {
+    if (!storeConfig.usesLocalCart) return;
+    const sync = () => setLocalCount(localCartCount());
+    sync();
+    window.addEventListener(LOCAL_CART_EVENT, sync);
+    return () => window.removeEventListener(LOCAL_CART_EVENT, sync);
+  }, []);
+
+  const cartCount = storeConfig.usesLocalCart ? localCount : contextCartCount;
 
   const handleLogout = useCallback(() => {
     Cookies.remove("app_token");

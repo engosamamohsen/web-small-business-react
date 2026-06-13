@@ -12,6 +12,7 @@ import ColorHandler from "@/layouts/ColorHandler";
 import LoginHandler from "@/layouts/LoginHandler";
 import SettingsCookieSync from "@/components/common/SettingsCookieSync";
 import WhatsAppButton from "@/components/common/WhatsAppButton";
+import { ToastContainer } from "react-toastify";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { fetchHook } from "@/hooks/fetch-hook";
@@ -140,6 +141,7 @@ const pageKeywords = settingsData?.keywords || [
         settingsData={settingsData || undefined}
         client:load
     />
+    <ToastContainer position="top-right" rtl={true} client:load />
 
     <main class="min-h-screen">
         {showBanner && <Hero bannerData={bannerData} client:load />}

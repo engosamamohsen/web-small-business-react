@@ -13,6 +13,7 @@ import { buildProductPath } from "@/lib/product-url";
 import { storeConfig } from "@/lib/store-config";
 import { buildWhatsAppOrderUrl } from "@/lib/whatsapp-order";
 import { clearLocalCart } from "@/lib/cart/local-cart";
+import { trackWhatsAppOrder } from "@/lib/firebase-tracker";
 import { toast } from "react-toastify";
 import PageLoader from "../PageLoader/PageLoader";
 import { CartItemType } from "@/types/types";
@@ -258,6 +259,10 @@ export default function Cart() {
       toast.error("رقم الواتساب غير متوفر حالياً", { rtl: true });
       return;
     }
+
+    // Fire-and-forget — counter increments in the background; failure never
+    // blocks the redirect or clears the cart.
+    trackWhatsAppOrder().catch(() => {});
 
     const win = window.open(url, "_blank");
     if (win) {
