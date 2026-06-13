@@ -66,6 +66,7 @@ function deriveAdminOrigin(hostname: string, protocol: string): string {
 }
 
 export const onRequest = defineMiddleware((context, next) => {
+    console.log("middleware running");
     const hostname = extractHostname(context.request, context.url.hostname);
     const protocol = extractProtocol(context.request, context.url.protocol);
     const adminOrigin = deriveAdminOrigin(hostname, protocol);

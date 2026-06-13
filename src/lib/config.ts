@@ -42,42 +42,44 @@ export function getBaseUrl(): string {
  * "shop1.cashierthru.com"        → "https://admin-shop1.cashierthru.com"
  * "localhost" (npm run dev)      → DEV_API_ORIGIN (test tenant)
  * "localhost" / SSR (prod build) → origin as-is (no subdomain to transform)
- */
-export function getAdminOrigin(): string {
-  // SSR / Astro build-time: window unavailable, use env fallback unchanged.
+ */export function getAdminOrigin(): string {
+  console.log("osama->> getAdminOrigin");
+
+  // SSR / Astro build-time
   if (typeof window === "undefined") {
-    // console.log("osama->> origin:"+SSR_FALLBACK)
+    console.log("osama->> SSR origin:", SSR_FALLBACK);
     return import.meta.env.DEV ? DEV_API_ORIGIN : SSR_FALLBACK;
   }
 
+  console.log("osama->> getAdminOrigin browser");
+
   const { protocol, hostname } = window.location;
+  console.log("osama->> hostname:", hostname);
 
-  try {
-    const parts = hostname.split(".");
-
-    // Already prefixed — avoid double-prefixing if visiting admin-*.cashierthru.com
-    if (parts[0].startsWith("admin-")) {
-      // alert(`${protocol}//${hostname}`);
-      return `${protocol}//${hostname}`;
-    }
-
-    // "myrestaurant.cashierthru.com" (3+ parts) → "admin-myrestaurant.cashierthru.com"
-    if (parts.length >= 3) {
-      parts[0] = `admin-${parts[0]}`;
-      // alert(`${protocol}//${parts.join(".")}`);
-      return `${protocol}//${parts.join(".")}`;
-    }
-  } catch {
-    // fall through
-  }
-
-  // localhost or bare hostname on the dev server — default to the test tenant
-  if (import.meta.env.DEV) {
+  // localhost / IP handling
+  if (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.startsWith("192.168.") ||
+    hostname.startsWith("10.")
+  ) {
     return DEV_API_ORIGIN;
   }
 
-  // localhost or bare hostname — return origin unchanged
-  return window.location.origin;
+  const parts = hostname.split(".");
+  console.log("osama->> parts:", parts);
+
+  // MUST be tenant.cashierthru.com
+  if (parts.length >= 3) {
+    const tenant = parts[0];
+
+    const adminHost = `admin-${tenant}.${parts.slice(1).join(".")}`;
+
+    return `${protocol}//${adminHost}`;
+  }
+
+  // fallback
+  return `${protocol}//${hostname}`;
 }
 
 /**
@@ -176,6 +178,7 @@ export interface TenantConfig {
  * const { shopName, apiUrl } = useShopConfig();
  */
 export function useShopConfig(): TenantConfig {
+  console.log("osama->> useShopConfig");
   return useMemo(
     () => ({
       baseUrl: getBaseUrl(),

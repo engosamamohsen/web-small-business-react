@@ -101,7 +101,7 @@ async function fetchWithTimeout(
 
 // ===== Base API Fetch =====
 async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<SettingsResponse> {
-  console.log("[Settings] fetch settings api");
+  console.log("[Settings] fetch settings api 2", baseUrl);
   const url = new URL("v1/setting-profile", baseUrl ?? getApiBase()).toString();
 
   try {
