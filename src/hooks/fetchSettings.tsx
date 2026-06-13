@@ -46,7 +46,8 @@ const CACHE_DURATION = 1000 * 60 * 60; // 60 minutes
 const SERVER_CACHE_DURATION = 1000 * 60 * 5; // 5 minutes on server
 
 // ===== Server-side Cache =====
-let serverSettingsCache: { data: SettingsData; timestamp: number } | null = null;
+// Keyed by apiBase so different tenants never share cached settings.
+const serverSettingsCache = new Map<string, { data: SettingsData; timestamp: number }>();
 
 // ===== LocalStorage Helpers =====
 export function getSettingsFromLocalStorage(): SettingsData | null {
@@ -99,9 +100,9 @@ async function fetchWithTimeout(
 }
 
 // ===== Base API Fetch =====
-async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
+async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<SettingsResponse> {
   console.log("[Settings] fetch settings api");
-  const url = new URL("v1/setting-profile", getApiBase()).toString();
+  const url = new URL("v1/setting-profile", baseUrl ?? getApiBase()).toString();
 
   try {
     const headers: HeadersInit = {
@@ -132,19 +133,28 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
 }
 
 // ===== Public Fetch Function (with caching and dedup) =====
-let ongoingFetch: Promise<SettingsResponse> | null = null;
+// Per-tenant dedup map so concurrent requests for the same tenant share one fetch.
+const ongoingFetches = new Map<string, Promise<SettingsResponse>>();
 
 export async function fetchSettings(
   token?: string,
-  forceRefresh: boolean = false
+  forceRefresh: boolean = false,
+  // SSR pages pass Astro.locals.apiBase so the correct tenant's API is used.
+  // Client-side calls omit this; getApiUrl() reads window.location instead.
+  baseUrl?: string,
 ): Promise<SettingsResponse> {
   const isServer = typeof window === "undefined";
+  // Cache key per tenant — prevents cross-tenant contamination in the server cache.
+  const cacheKey = baseUrl ?? (isServer ? getApiBase() : "client");
 
   // Check Server Cache
-  if (isServer && !forceRefresh && serverSettingsCache) {
-    const age = Date.now() - serverSettingsCache.timestamp;
-    if (age < SERVER_CACHE_DURATION) {
-      return { data: serverSettingsCache.data, ok: true, status: 200 };
+  if (isServer && !forceRefresh) {
+    const cached = serverSettingsCache.get(cacheKey);
+    if (cached) {
+      const age = Date.now() - cached.timestamp;
+      if (age < SERVER_CACHE_DURATION) {
+        return { data: cached.data, ok: true, status: 200 };
+      }
     }
   }
 
@@ -162,7 +172,7 @@ export async function fetchSettings(
 
       // Background refresh if expired
       console.log("[Settings] cache expired, refreshing in background");
-      fetchSettingsBase(token).then((res) => {
+      fetchSettingsBase(token, baseUrl).then((res) => {
         if (res.ok && res.data) {
           saveSettingsToLocalStorage(res.data);
         }
@@ -172,26 +182,28 @@ export async function fetchSettings(
     }
   }
 
-  // Deduplicate concurrent fetches
-  if (ongoingFetch) return ongoingFetch;
+  // Deduplicate concurrent fetches per tenant
+  const existing = ongoingFetches.get(cacheKey);
+  if (existing) return existing;
 
-  ongoingFetch = (async () => {
+  const promise = (async () => {
     try {
-      const result = await fetchSettingsBase(token);
+      const result = await fetchSettingsBase(token, baseUrl);
       if (result.ok && result.data) {
         if (isServer) {
-          serverSettingsCache = { data: result.data, timestamp: Date.now() };
+          serverSettingsCache.set(cacheKey, { data: result.data, timestamp: Date.now() });
         } else {
           saveSettingsToLocalStorage(result.data);
         }
       }
       return result;
     } finally {
-      ongoingFetch = null;
+      ongoingFetches.delete(cacheKey);
     }
   })();
 
-  return ongoingFetch;
+  ongoingFetches.set(cacheKey, promise);
+  return promise;
 }
 
 // ===== React Hook for Client-side Usage =====

@@ -29,8 +29,11 @@ const { id } = parsed;
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
 
+// Per-request admin API base URL set by middleware (tenant-aware).
+const apiBase = Astro.locals.apiBase;
+
 // Fetch settings for the page
-const settingsResponse = await fetchSettings(token);
+const settingsResponse = await fetchSettings(token, false, apiBase);
 
 // Extract data with defaults
 const settingsData = settingsResponse?.data ?? null;
@@ -56,6 +59,7 @@ try {
     const response = await fetchHook({
         url: `v1/product-details?product_id=${id}`,
         init: {},
+        baseUrl: apiBase,
     });
 
     if (response?.ok && response?.data?.data) {

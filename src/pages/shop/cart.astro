@@ -22,7 +22,7 @@ if (storeConfig.canAuthenticate && !token) {
 }
 
 // Fetch settings for the page
-const settingsResponse = await fetchSettings(token);
+const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase);
 
 // Extract data with defaults
 const settingsData = settingsResponse?.data ?? null;

@@ -39,16 +39,19 @@ const productsUrl = `v1/product${categoryId ? `?category_id=${categoryId}` : ""}
     subCategoryId ? `&sub_category_id=${subCategoryId}` : ""
 }${subCategoryId || categoryId ? `&` : "?"}page=${currentPage}&limit=${limit}`;
 
+// Per-request admin API base URL set by middleware (tenant-aware).
+const apiBase = Astro.locals.apiBase;
+
 // ============================================
 // PARALLEL API CALLS - settings + banner + categories + products in one round trip
 // Using allSettled to prevent one failure from breaking the entire page
 // ============================================
 const [settingsResult, bannerResult, categoriesResult, productsResult] =
     await Promise.allSettled([
-        fetchSettings(token),
-        fetchHook({ url: "v1/banner", init: {}, token }),
-        fetchHook({ url: "v1/categories", init: {}, token }),
-        fetchHook({ url: productsUrl, init: {} }),
+        fetchSettings(token, false, apiBase),
+        fetchHook({ url: "v1/banner", init: {}, token, baseUrl: apiBase }),
+        fetchHook({ url: "v1/categories", init: {}, token, baseUrl: apiBase }),
+        fetchHook({ url: productsUrl, init: {}, baseUrl: apiBase }),
     ]);
 
 // Extract settings data (handle rejected promises)

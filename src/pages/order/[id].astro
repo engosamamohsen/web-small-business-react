@@ -29,7 +29,7 @@ if (!token) {
 const id = Astro.params.id as string;
 
 // Fetch settings for the page
-const settingsResponse = await fetchSettings(token);
+const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase);
 
 // Extract data with defaults
 const settingsData = settingsResponse?.data ?? null;
