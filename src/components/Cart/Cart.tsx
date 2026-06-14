@@ -7,7 +7,7 @@ import { useRouter } from "@/lib/navigation";
 import { useEffect } from "react";
 
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
-import { useCart, useSettings } from "@/providers";
+import { useCart, useSettings, type SettingsData } from "@/providers";
 import { cn } from "@/utils/utils";
 import { buildProductPath } from "@/lib/product-url";
 import { storeConfig } from "@/lib/store-config";
@@ -238,12 +238,16 @@ const EmptyCart = () => (
 );
 
 // ===== Main Cart Component =====
-export default function Cart() {
+export default function Cart({ settings: propSettings }: { settings?: SettingsData | null }) {
   const router = useRouter();
   const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
   const { loading, removeFromCart, updateCount } = useCartHook();
   const { setCartCount } = useCart();
-  const { settings } = useSettings();
+  // SSR prop is authoritative; context is only a fallback. React context does
+  // NOT cross Astro island boundaries, so useSettings() is empty in this island
+  // — that's why the WhatsApp number used to always fall back to the constant.
+  const { settings: contextSettings } = useSettings();
+  const settings = propSettings ?? contextSettings;
 
   // BASIC plan checkout: cart → WhatsApp order.
   // The cart is cleared ONLY after WhatsApp actually opened — a popup
