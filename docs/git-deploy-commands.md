@@ -58,7 +58,7 @@ cd /path/to/web-small-business-react
 git pull origin astro-dev   # pull latest code
 npm install                 # only needed if package.json changed
 npm run build               # rebuild the site
-pm2 restart 0               # restart the running app
+pm2 reload ecosystem.config.cjs   # reload the running app
 ```
 
 > **Never run `git reset --hard` or `git clean -fd` on the server.**
@@ -86,15 +86,15 @@ nano .env
 npm install
 npm run build
 
-# 5. Start with pm2
-pm2 start npm --name "shop" -- run preview -- --port 3000
+# 5. Start the SSR server with pm2
+pm2 start ecosystem.config.cjs
 pm2 save
 ```
 
 ### `.env` values to fill in
 
 ```env
-PUBLIC_BASE_URL=https://YOURSHOP.cashierthru.com
+PUBLIC_BASE_URL=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_DEV_API_ORIGIN=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_LAST_ROUTE_API_URL=/api/
 ```
@@ -110,7 +110,7 @@ If someone ran `git reset --hard` + `git clean -fd` and the site stopped working
 ```bash
 # 1. Recreate the .env file
 cat > .env << 'EOF'
-PUBLIC_BASE_URL=https://YOURSHOP.cashierthru.com
+PUBLIC_BASE_URL=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_DEV_API_ORIGIN=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_LAST_ROUTE_API_URL=/api/
 EOF

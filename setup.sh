@@ -29,8 +29,9 @@ echo "==> Building..."
 npm install
 npm run build
 
-echo "==> Restarting pm2..."
-pm2 restart 0
+echo "==> Reloading pm2 (SSR server)..."
+pm2 reload ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
+pm2 save
 
 echo ""
 echo "==> Setup complete. SSR API origin: ${ADMIN_ORIGIN}"
