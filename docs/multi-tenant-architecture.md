@@ -144,6 +144,42 @@ const { shopName, apiUrl, adminOrigin, baseUrl, isDev } = useShopConfig();
 
 ---
 
+## Nginx (production proxy) — REQUIRED for dynamic tenancy
+
+The Node app derives the tenant from the request **`Host` header**. Nginx must
+(1) match every subdomain with one server block and (2) forward the real host:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name ~^(?!admin)(?!www)[\w-]+\.cashierthru\.com$;   # any tenant subdomain
+
+    # Wildcard cert REQUIRED so any *.cashierthru.com loads over HTTPS:
+    #   certbot certonly --manual --preferred-challenges dns \
+    #     -d cashierthru.com -d "*.cashierthru.com"
+    ssl_certificate     /etc/letsencrypt/live/cashierthru.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/cashierthru.com/privkey.pem;
+
+    location /_astro/ { root /var/www/cashierthuru-frontend/dist/client; expires 1y; }
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;              # ← makes the tenant dynamic
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+Without `proxy_set_header Host $host;` the app sees `localhost`, can't tell the
+tenant apart, and **every** subdomain falls back to `PUBLIC_BASE_URL` — the
+middleware logs a loud `[middleware] No tenant Host header …` warning when this
+happens. The cure is the Nginx line above, **not** editing `.env`.
+
+---
+
 ## `.env` File (per server)
 
 Each deployed server has its own `.env`. It is **not committed to git**.

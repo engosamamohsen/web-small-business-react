@@ -58,7 +58,16 @@ function deriveAdminOrigin(hostname: string, protocol: string): string {
         hostname.startsWith("192.168.") ||
         hostname.startsWith("10.")
     ) {
-        return import.meta.env.PUBLIC_BASE_URL || "http://localhost:3000";
+        const fallback =
+            import.meta.env.PUBLIC_BASE_URL || "http://localhost:3000";
+        // Loud warning: this means EVERY tenant gets the same fallback API.
+        // The cure is `proxy_set_header Host $host;` in Nginx, not editing .env.
+        console.warn(
+            `[middleware] No tenant Host header (saw "${hostname}") — serving ` +
+            `fallback PUBLIC_BASE_URL=${fallback} for ALL tenants. Add ` +
+            `'proxy_set_header Host $host;' to Nginx so each subdomain resolves dynamically.`,
+        );
+        return fallback;
     }
 
     // Unexpected shape — return as-is rather than silently using the wrong tenant
