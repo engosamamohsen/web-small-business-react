@@ -1,5 +1,4 @@
 // src/hooks/fetchSettings.ts
-import { useEffect, useState } from "react";
 import { getApiUrl } from "@/lib/config";
 
 export interface SettingsData {
@@ -42,7 +41,7 @@ const getApiBase = () => getApiUrl();
 const FETCH_TIMEOUT = 10000;
 const SETTINGS_CACHE_KEY = "app_settings";
 const SETTINGS_CACHE_TIMESTAMP_KEY = "app_settings_timestamp";
-const CACHE_DURATION = 1000 * 60 * 60; // 60 minutes
+const CACHE_DURATION = 1000 * 60 * 15; // 15 minutes — storefront settings (e.g. WhatsApp number) propagate within this window on the client
 const SERVER_CACHE_DURATION = 1000 * 60 * 5; // 5 minutes on server
 
 // ===== Server-side Cache =====
@@ -204,27 +203,4 @@ export async function fetchSettings(
 
   ongoingFetches.set(cacheKey, promise);
   return promise;
-}
-
-// ===== React Hook for Client-side Usage =====
-export function useSettings(token?: string) {
-  const [settings, setSettings] = useState<SettingsData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-
-    fetchSettings(token).then((res) => {
-      if (mounted) {
-        if (res.ok && res.data) setSettings(res.data);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      mounted = false;
-    };
-  }, [token]);
-
-  return { settings, loading };
 }
