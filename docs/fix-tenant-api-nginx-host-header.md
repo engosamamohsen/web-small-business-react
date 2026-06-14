@@ -15,15 +15,24 @@ The app already maps `subdomain → admin-subdomain` correctly:
 - **Browser** — `src/lib/config.ts` `getAdminOrigin()` reads
   `window.location.hostname`. Already correct.
 - **Server (SSR)** — `src/middleware.ts` builds the API origin from the request
-  **`Host` header**.
+  **`X-Forwarded-Host` header**.
+
+⚠️ **Key gotcha:** the `@astrojs/node` adapter does **not** derive the hostname
+from the plain `Host` header — `context.url.hostname` is always `localhost` in
+production. So forwarding `Host $host` alone does **nothing**; the middleware
+reads **`X-Forwarded-Host`** first (`src/middleware.ts` `extractHostname`). This
+was verified on the server: a request with only `Host: asly…` resolved to the
+roka fallback, while the same request with `X-Forwarded-Host: asly…` correctly
+resolved to `admin-asly`.
 
 When the page is rendered **on the server**, the only way the app learns which
-shop the visitor is on is the `Host` header that Nginx forwards. If Nginx
-proxies without forwarding it, the app receives `Host: 127.0.0.1`, can't tell
-the tenant apart, and falls back to `PUBLIC_BASE_URL` from `.env` (e.g.
-`admin-roka`) for **every** subdomain.
+shop the visitor is on is the `X-Forwarded-Host` header that Nginx forwards. If
+Nginx doesn't forward it, the app sees `localhost`, can't tell the tenant apart,
+and falls back to `PUBLIC_BASE_URL` from `.env` (e.g. `admin-roka`) for **every**
+subdomain.
 
-The fix is one line in Nginx: `proxy_set_header Host $host;`. No code change,
+The fix is one line in Nginx: `proxy_set_header X-Forwarded-Host $host;` (plus
+`X-Forwarded-Proto $scheme;` so the API origin uses `https`). No code change,
 no rebuild.
 
 ## Safety

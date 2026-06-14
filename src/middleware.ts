@@ -49,9 +49,12 @@ function deriveAdminOrigin(hostname: string, protocol: string): string {
     }
 
     // Production but hostname is localhost / IP — Nginx is not forwarding the
-    // Host header. Fall back to PUBLIC_BASE_URL so at least the configured
-    // default tenant works; operators should add proxy_set_header Host $host;
+    // tenant host. Fall back to PUBLIC_BASE_URL so at least the configured
+    // default tenant works; operators should add proxy_set_header X-Forwarded-Host $host;
     // to their Nginx config to support multiple tenants from one server.
+    // NOTE: the @astrojs/node adapter does NOT derive the hostname from the plain
+    // `Host` header (context.url.hostname stays "localhost"), so X-Forwarded-Host
+    // is the header that actually resolves the tenant — see extractHostname above.
     if (
         hostname === "localhost" ||
         hostname === "127.0.0.1" ||
@@ -61,11 +64,13 @@ function deriveAdminOrigin(hostname: string, protocol: string): string {
         const fallback =
             import.meta.env.PUBLIC_BASE_URL || "http://localhost:3000";
         // Loud warning: this means EVERY tenant gets the same fallback API.
-        // The cure is `proxy_set_header Host $host;` in Nginx, not editing .env.
+        // The cure is `proxy_set_header X-Forwarded-Host $host;` in Nginx
+        // (the Node adapter ignores the plain Host header), not editing .env.
         console.warn(
-            `[middleware] No tenant Host header (saw "${hostname}") — serving ` +
+            `[middleware] No tenant host header (saw "${hostname}") — serving ` +
             `fallback PUBLIC_BASE_URL=${fallback} for ALL tenants. Add ` +
-            `'proxy_set_header Host $host;' to Nginx so each subdomain resolves dynamically.`,
+            `'proxy_set_header X-Forwarded-Host $host;' to Nginx (the Node adapter ignores ` +
+            `the plain Host header) so each subdomain resolves dynamically.`,
         );
         return fallback;
     }

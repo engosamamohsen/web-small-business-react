@@ -146,7 +146,9 @@ const { shopName, apiUrl, adminOrigin, baseUrl, isDev } = useShopConfig();
 
 ## Nginx (production proxy) — REQUIRED for dynamic tenancy
 
-The Node app derives the tenant from the request **`Host` header**. Nginx must
+The Node app derives the tenant from the request **`X-Forwarded-Host` header**.
+(The `@astrojs/node` adapter does NOT read the plain `Host` header — it always
+sees `localhost` — so `X-Forwarded-Host` is the one that matters.) Nginx must
 (1) match every subdomain with one server block and (2) forward the real host:
 
 ```nginx
@@ -164,8 +166,8 @@ server {
 
     location / {
         proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;              # ← makes the tenant dynamic
-        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;  # ← makes the tenant dynamic (the app reads THIS)
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -173,10 +175,12 @@ server {
 }
 ```
 
-Without `proxy_set_header Host $host;` the app sees `localhost`, can't tell the
-tenant apart, and **every** subdomain falls back to `PUBLIC_BASE_URL` — the
-middleware logs a loud `[middleware] No tenant Host header …` warning when this
-happens. The cure is the Nginx line above, **not** editing `.env`.
+Without `proxy_set_header X-Forwarded-Host $host;` the app sees `localhost`,
+can't tell the tenant apart, and **every** subdomain falls back to
+`PUBLIC_BASE_URL` — the middleware logs a loud `[middleware] No tenant host
+header …` warning when this happens. The cure is the `X-Forwarded-Host` line
+above, **not** editing `.env`. (`Host $host` alone is not enough — the Node
+adapter ignores it.)
 
 ---
 
