@@ -52,8 +52,14 @@ const DEV_API_ORIGIN = import.meta.env.PUBLIC_DEV_API_ORIGIN || "https://admin-a
 
 | Constant | When used | Value |
 |---|---|---|
-| `SSR_FALLBACK` | Production SSR (no `window`) | `PUBLIC_BASE_URL` from `.env` — the shop URL |
+| `SSR_FALLBACK` | Production SSR (no `window`) | `PUBLIC_BASE_URL` from `.env` — the **admin API origin** (e.g. `https://admin-asly.cashierthru.com`) |
 | `DEV_API_ORIGIN` | Local dev (`npm run dev`) | `PUBLIC_DEV_API_ORIGIN` from `.env` — the test tenant admin API |
+
+> **Production SSR normally never reaches `SSR_FALLBACK`.** Each request is
+> resolved per-tenant by `src/middleware.ts`, which derives the admin origin from
+> the request `Host` / `X-Forwarded-Host` header and exposes it as
+> `Astro.locals.apiBase`. `PUBLIC_BASE_URL` is only the **single-tenant fallback**
+> used when the proxy doesn't forward the host (see middleware below).
 
 ---
 
@@ -63,11 +69,14 @@ Returns the **shop's own origin**.
 
 ```
 Browser  →  window.location.origin        e.g. https://asly.cashierthru.com
-SSR      →  PUBLIC_BASE_URL               e.g. https://asly.cashierthru.com
+SSR      →  PUBLIC_BASE_URL               e.g. https://admin-asly.cashierthru.com
 Dev      →  DEV_API_ORIGIN                e.g. https://admin-asly.cashierthru.com
 ```
 
-Used by `getShopName()` to extract the tenant slug.
+Used by `getShopName()` to extract the tenant slug. In the browser this is the
+real shop origin; the SSR value is only a fallback and `getShopName()` is a
+client-only concern (analytics, `useShopConfig`), so it always sees the real
+shop hostname.
 
 ---
 
@@ -87,12 +96,14 @@ asly.cashierthru.com  →  ["asly", "cashierthru", "com"]
 ```
 
 **SSR path** (no window, production build):
-1. Parse `PUBLIC_BASE_URL` (the shop URL from `.env`)
-2. Apply the same `admin-` transformation
+1. Parse `PUBLIC_BASE_URL` (the **admin API origin** from `.env`)
+2. **Idempotent guard** — if the first label already starts with `admin-`, return
+   it unchanged (never produce `admin-admin-asly`)
+3. Otherwise apply the `admin-` transformation (so an old-style shop URL still works)
 
 ```
-PUBLIC_BASE_URL = https://asly.cashierthru.com
-               →  https://admin-asly.cashierthru.com
+PUBLIC_BASE_URL = https://admin-asly.cashierthru.com   →  used as-is (guard)
+PUBLIC_BASE_URL = https://asly.cashierthru.com         →  https://admin-asly.cashierthru.com
 ```
 
 **Dev path** (`npm run dev`):
@@ -138,8 +149,10 @@ const { shopName, apiUrl, adminOrigin, baseUrl, isDev } = useShopConfig();
 Each deployed server has its own `.env`. It is **not committed to git**.
 
 ```env
-# The shop's public URL — what users type in the browser
-PUBLIC_BASE_URL=https://asly.cashierthru.com
+# The ADMIN API origin used for SINGLE-TENANT server-side rendering.
+# (Per-request SSR is resolved by middleware from the Host header; this is the
+#  fallback when the proxy doesn't forward the host.)
+PUBLIC_BASE_URL=https://admin-asly.cashierthru.com
 
 # Fallback API for local dev (npm run dev) — no effect on production
 PUBLIC_DEV_API_ORIGIN=https://admin-asly.cashierthru.com
@@ -148,8 +161,11 @@ PUBLIC_DEV_API_ORIGIN=https://admin-asly.cashierthru.com
 PUBLIC_LAST_ROUTE_API_URL=/api/
 ```
 
-> Set `PUBLIC_BASE_URL` to the **shop URL**, not the admin URL.
-> The admin URL is derived automatically from it.
+> Set `PUBLIC_BASE_URL` to the **admin API origin** (`https://admin-{shop}.cashierthru.com`),
+> **not** the shop URL. SSR fetches it directly as `PUBLIC_BASE_URL + /api/`, and the
+> middleware fallback uses it verbatim as the admin origin. The browser ignores it
+> entirely — `window.location` drives per-tenant client calls. `getAdminOrigin()` keeps
+> an idempotent guard so an old-style shop URL still resolves correctly.
 
 ---
 
@@ -158,20 +174,19 @@ PUBLIC_LAST_ROUTE_API_URL=/api/
 ```
 User visits https://asly.cashierthru.com
                 │
-                ▼
-        getAdminOrigin()
-                │
-     ┌──────────┴──────────┐
-     │ Browser             │ SSR
-     │ window.location     │ PUBLIC_BASE_URL (.env)
-     │ .hostname           │
-     └──────────┬──────────┘
-                │
-        prepend "admin-"
+     ┌──────────┴───────────────────────────────┐
+     │ Browser                                   │ Production SSR
+     │ getAdminOrigin()                          │ middleware.ts reads
+     │ window.location.hostname                  │ Host / X-Forwarded-Host
+     │   → prepend "admin-"                      │   → derive admin origin
+     │                                           │   (fallback: PUBLIC_BASE_URL,
+     │                                           │    already an admin origin)
+     └──────────┬───────────────────────────────┘
                 │
                 ▼
   https://admin-asly.cashierthru.com
                 │
                 ▼
-  getApiUrl() → /api/  →  all fetch calls
+  getApiUrl() → /api/   (client)
+  Astro.locals.apiBase  (SSR)   →  all fetch calls
 ```

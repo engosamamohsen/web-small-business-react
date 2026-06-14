@@ -47,10 +47,13 @@ export function getAdminOrigin(): string {
   // SSR / Astro build-time
   if (typeof window === "undefined") {
     if (import.meta.env.DEV) return DEV_API_ORIGIN;
-    // Transform https://shop.cashierthru.com → https://admin-shop.cashierthru.com
     try {
       const url = new URL(SSR_FALLBACK);
       const parts = url.hostname.split(".");
+      // Already an admin origin (e.g. PUBLIC_BASE_URL=https://admin-asly...) → use as-is.
+      // Idempotent guard: never produce admin-admin-asly.
+      if (parts[0].startsWith("admin-")) return `${url.protocol}//${url.hostname}`;
+      // Shop origin (https://roka.cashierthru.com) → https://admin-roka.cashierthru.com
       if (parts.length >= 3) {
         const adminHost = `admin-${parts[0]}.${parts.slice(1).join(".")}`;
         return `${url.protocol}//${adminHost}`;
