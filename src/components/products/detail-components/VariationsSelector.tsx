@@ -25,11 +25,14 @@ export const VariationsSelector = memo(({
                 <div key={variation.id} className="mt-6">
                     <div className="flex items-start justify-between gap-2">
                         <h3 className="mb-3 text-lg font-semibold">{variation.name}</h3>
-                        {variation.is_required && (
-                            <span className="ml-2 rounded bg-red-100 px-2 py-1 text-xs text-red-600">
-                                مطلوب
-                            </span>
-                        )}
+                        <span
+                            className={`rounded px-2 py-1 text-xs ${
+                                Number(variation.is_required) === 1
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-gray-100 text-gray-600"
+                            }`}>
+                            {Number(variation.is_required) === 1 ? "مطلوب" : "اختياري"}
+                        </span>
                     </div>
                     <div className="flex flex-col gap-3">
                         {variation.choices.map((choice) => (

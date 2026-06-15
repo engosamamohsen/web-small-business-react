@@ -84,6 +84,22 @@ export function buildWhatsAppOrderMessage(
 
     items.forEach((item, index) => {
         lines.push(`${index + 1}. ${item.product_name}`);
+        // Selected variations (size / color / extras / toppings …) — each listed
+        // by its variation name and chosen value(s), with any price add-on.
+        if (Array.isArray(item.variations)) {
+            item.variations.forEach((variation) => {
+                if (!variation?.choices?.length) return;
+                const label = variation.main_variation_name?.trim() || "اختيار";
+                const choiceText = variation.choices
+                    .map((choice) =>
+                        Number(choice.price) > 0
+                            ? `${choice.name} (+${formatPrice(Number(choice.price))})`
+                            : choice.name,
+                    )
+                    .join("، ");
+                lines.push(`   ${label}: ${choiceText}`);
+            });
+        }
         lines.push(`   الكمية: ${Number(item.qty) || 1}`);
         lines.push(`   السعر: ${formatPrice(Number(item.unit_price) || 0)}`);
         if (item.product_note) lines.push(`   ملاحظة: ${item.product_note}`);

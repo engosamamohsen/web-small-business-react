@@ -115,7 +115,9 @@ export function addLocalCartItem(product: any): CartResponseType {
             unit_price: unitPrice,
             item_total: Math.round(unitPrice * qty * 100) / 100,
             product_note: product?.product_note || null,
-            variations: [],
+            // Persist the selected variations (name + choices) so the cart UI and
+            // the WhatsApp order message can show what the customer picked.
+            variations: Array.isArray(product?.variations) ? product.variations : [],
             // internal — used to merge repeated adds of the same line
             line_key: key,
         } as CartItemType & { line_key: string });

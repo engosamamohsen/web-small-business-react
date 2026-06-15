@@ -219,7 +219,14 @@ function transformData(product: any) {
   }
 
   if (product?.variations?.length > 0) {
-    data.variations = product.variations;
+    // The selection now carries names/prices for the local cart + WhatsApp message;
+    // the basket API only wants {main_variation_id, choices:[id]}, so normalize here.
+    data.variations = product.variations.map((variation: any) => ({
+      main_variation_id: variation.main_variation_id,
+      choices: (variation.choices ?? []).map((choice: any) =>
+        choice && typeof choice === "object" ? choice.id : choice
+      ),
+    }));
   }
 
   return data;

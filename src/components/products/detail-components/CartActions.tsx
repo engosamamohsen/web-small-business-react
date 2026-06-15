@@ -16,7 +16,8 @@ const AuthDialog = lazy(() => import("@/components/auth/AuthDialog"));
 
 interface FormattedVariation {
     main_variation_id: string;
-    choices: string[];
+    main_variation_name: string;
+    choices: { id: string; name: string; price: number }[];
 }
 
 interface FormattedVariations {

@@ -48,12 +48,20 @@ export default function DetailPage({
     } = useProductOptions(product);
 
     const formattedVariations = useMemo(() => {
-        const variations = Object.entries(selectedVariations).map(([variationId, choice]) => ({
-            main_variation_id: variationId,
-            choices: [choice.id],
-        }));
+        // Carry the human-readable variation/choice names + prices so the local
+        // (BASIC-plan) cart and the WhatsApp order message can show the selection.
+        // The premium API path normalizes this back to {main_variation_id, choices:[id]}
+        // in cart.ts → transformData().
+        const variations = Object.entries(selectedVariations).map(([variationId, choice]) => {
+            const def = product.variations?.find((v) => v.id === variationId);
+            return {
+                main_variation_id: variationId,
+                main_variation_name: def?.name ?? "",
+                choices: [{ id: choice.id, name: choice.name, price: Number(choice.price) || 0 }],
+            };
+        });
         return { variations };
-    }, [selectedVariations]);
+    }, [selectedVariations, product.variations]);
 
     const parsedDescription = useMemo(() => {
         return parse(product?.description || "");
