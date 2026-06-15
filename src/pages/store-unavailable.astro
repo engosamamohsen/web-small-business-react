@@ -1,0 +1,108 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { fetchSettings } from "@/hooks/fetchSettings";
+
+// Rendered on-demand: middleware rewrites every storefront route here when the
+// tenant's subscription has expired (see src/middleware.ts). No Header/Footer
+// and no product/category data is loaded — there is intentionally nothing to
+// browse from this screen.
+export const prerender = false;
+
+const apiBase = Astro.locals.apiBase;
+const token = Astro.cookies.get("app_token")?.value;
+
+// Settings come from the same per-tenant cache middleware already warmed, so
+// this is a cache hit, not a second network round trip. Logo/name are optional.
+let shopName: string | undefined;
+let logo: string | undefined;
+try {
+    const res = await fetchSettings(token, false, apiBase);
+    shopName = res?.data?.name;
+    logo = res?.data?.logo;
+} catch {
+    // ignore — the screen works without branding
+}
+
+const pageTitle = shopName ? `${shopName} — غير متاح` : "المتجر غير متاح";
+const message = "هذا المتجر لم يعد متاحا";
+---
+
+<Layout title={pageTitle} description={message}>
+    <main
+        class="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 py-16 text-center"
+    >
+        {
+            logo && (
+                <img
+                    src={logo}
+                    alt={shopName ?? "شعار المتجر"}
+                    class="mb-8 h-20 w-20 rounded-2xl bg-white object-contain p-2 shadow-sm ring-1 ring-slate-200"
+                />
+            )
+        }
+
+        <!-- Illustration: a shuttered storefront -->
+        <svg
+            width="180"
+            height="180"
+            viewBox="0 0 200 200"
+            fill="none"
+            role="img"
+            aria-label={message}
+            class="mb-2"
+        >
+            <circle cx="100" cy="100" r="92" fill="#F1F5F9" />
+            <!-- awning -->
+            <path
+                d="M46 70 L154 70 L150 92 L50 92 Z"
+                fill="#E2E8F0"
+                stroke="#94A3B8"
+                stroke-width="3"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M46 70 L154 70 L150 56 L50 56 Z"
+                fill="#CBD5E1"
+                stroke="#94A3B8"
+                stroke-width="3"
+                stroke-linejoin="round"
+            />
+            <!-- shop body -->
+            <rect
+                x="52"
+                y="92"
+                width="96"
+                height="62"
+                rx="4"
+                fill="#FFFFFF"
+                stroke="#94A3B8"
+                stroke-width="3"
+            />
+            <!-- closed shutter slats -->
+            <g stroke="#CBD5E1" stroke-width="6" stroke-linecap="round">
+                <line x1="62" y1="104" x2="138" y2="104" />
+                <line x1="62" y1="116" x2="138" y2="116" />
+                <line x1="62" y1="128" x2="138" y2="128" />
+                <line x1="62" y1="140" x2="138" y2="140" />
+            </g>
+            <!-- lock badge -->
+            <circle cx="100" cy="122" r="22" fill="#475569" />
+            <path
+                d="M92 118 v-4 a8 8 0 0 1 16 0 v4"
+                fill="none"
+                stroke="#F8FAFC"
+                stroke-width="3.5"
+                stroke-linecap="round"
+            />
+            <rect x="89" y="118" width="22" height="16" rx="3" fill="#F8FAFC" />
+            <circle cx="100" cy="126" r="2.5" fill="#475569" />
+        </svg>
+
+        <h1 class="mt-6 text-2xl font-bold text-slate-800 md:text-3xl">
+            {message}
+        </h1>
+        <p class="mt-3 max-w-md text-sm leading-relaxed text-slate-500 md:text-base">
+            نعتذر، هذا المتجر غير متاح حاليًا. برجاء المحاولة في وقت لاحق.
+        </p>
+    </main>
+</Layout>

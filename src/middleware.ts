@@ -1,4 +1,9 @@
 import { defineMiddleware } from "astro:middleware";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { isStoreExpired } from "@/lib/subscription";
+
+// Lockout screen shown when the tenant's subscription has expired.
+const STORE_UNAVAILABLE_PATH = "/store-unavailable";
 
 // Derive the tenant's admin API origin from the incoming request.
 // Reading order for the hostname (highest priority first):
@@ -79,11 +84,37 @@ function deriveAdminOrigin(hostname: string, protocol: string): string {
     return `${protocol}://${hostname}`;
 }
 
-export const onRequest = defineMiddleware((context, next) => {
-    console.log("middleware running");
+export const onRequest = defineMiddleware(async (context, next) => {
     const hostname = extractHostname(context.request, context.url.hostname);
     const protocol = extractProtocol(context.request, context.url.protocol);
     const adminOrigin = deriveAdminOrigin(hostname, protocol);
-    context.locals.apiBase = `${adminOrigin}/api/`;
+    const apiBase = `${adminOrigin}/api/`;
+    context.locals.apiBase = apiBase;
+
+    // ── Expired-subscription store lockout ───────────────────────────────────
+    // Every storefront route is SSR, so this single check guards the whole site
+    // (homepage, product/category pages, cart, …). When the plan is expired we
+    // rewrite to the lockout screen — no redirect, the URL is preserved and the
+    // target page's own data fetches never run.
+    //
+    // Guards:
+    //   • only GET navigations (forms/asset requests are left alone)
+    //   • skip the lockout page itself — rewrite re-runs middleware, so checking
+    //     it again would loop
+    //   • fetchSettings fails OPEN (network/API error → store stays available)
+    const isGet = context.request.method === "GET";
+    const isLockoutPage = context.url.pathname === STORE_UNAVAILABLE_PATH;
+    if (isGet && !isLockoutPage) {
+        try {
+            const token = context.cookies.get("app_token")?.value;
+            const settings = await fetchSettings(token, false, apiBase);
+            if (isStoreExpired(settings.current_subscription_plan)) {
+                return context.rewrite(STORE_UNAVAILABLE_PATH);
+            }
+        } catch {
+            // fail open — never lock out a store because the settings call hiccuped
+        }
+    }
+
     return next();
 });

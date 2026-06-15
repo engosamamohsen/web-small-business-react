@@ -1,5 +1,6 @@
 // src/hooks/fetchSettings.ts
 import { getApiUrl } from "@/lib/config";
+import type { CurrentSubscriptionPlan } from "@/lib/subscription";
 
 export interface SettingsData {
   id: number;
@@ -28,6 +29,9 @@ export interface SettingsData {
 
 export type SettingsResponse = {
   data?: SettingsData;
+  // Top-level sibling of `data` in the setting-profile response. Drives the
+  // expired-store lockout (see src/lib/subscription.ts + src/middleware.ts).
+  current_subscription_plan?: CurrentSubscriptionPlan | null;
   is_login?: boolean;
   cart_count?: number;
   ok: boolean;
@@ -46,7 +50,10 @@ const SERVER_CACHE_DURATION = 1000 * 60 * 5; // 5 minutes on server
 
 // ===== Server-side Cache =====
 // Keyed by apiBase so different tenants never share cached settings.
-const serverSettingsCache = new Map<string, { data: SettingsData; timestamp: number }>();
+const serverSettingsCache = new Map<
+  string,
+  { data: SettingsData; current_subscription_plan: CurrentSubscriptionPlan | null; timestamp: number }
+>();
 
 // ===== LocalStorage Helpers =====
 export function getSettingsFromLocalStorage(): SettingsData | null {
@@ -119,6 +126,7 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
     const result = await response.json();
     return {
       data: result.data,
+      current_subscription_plan: result.current_subscription_plan ?? null,
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -152,7 +160,12 @@ export async function fetchSettings(
     if (cached) {
       const age = Date.now() - cached.timestamp;
       if (age < SERVER_CACHE_DURATION) {
-        return { data: cached.data, ok: true, status: 200 };
+        return {
+          data: cached.data,
+          current_subscription_plan: cached.current_subscription_plan,
+          ok: true,
+          status: 200,
+        };
       }
     }
   }
@@ -190,7 +203,11 @@ export async function fetchSettings(
       const result = await fetchSettingsBase(token, baseUrl);
       if (result.ok && result.data) {
         if (isServer) {
-          serverSettingsCache.set(cacheKey, { data: result.data, timestamp: Date.now() });
+          serverSettingsCache.set(cacheKey, {
+            data: result.data,
+            current_subscription_plan: result.current_subscription_plan ?? null,
+            timestamp: Date.now(),
+          });
         } else {
           saveSettingsToLocalStorage(result.data);
         }
