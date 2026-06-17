@@ -206,6 +206,7 @@ function CategoryBox({
               alt={`أيقونة قسم ${category.name}`}
               fill
               sizes="80px"
+              style={{ width: "100px", height: "100px" }}
               className="object-cover transition duration-200 group-hover:brightness-95"
               priority={category.id === 1}
             />

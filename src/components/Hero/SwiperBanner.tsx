@@ -32,6 +32,7 @@ export default function SwiperBanner({ response }: SwiperBannerProps) {
     >
       <Swiper
         modules={[Pagination, Autoplay, Navigation]}
+        autoHeight={true}
         pagination={
           hasMultipleSlides
             ? {

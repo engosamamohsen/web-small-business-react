@@ -64,27 +64,23 @@
 }
 
 /* ===== SLIDE LAYOUT ===== */
+/* Height is driven by the banner image's natural aspect ratio so the whole
+   image is shown — no cropping and no letterbox bars. */
 .slideContent {
   position: relative;
   width: 100%;
-  height: clamp(320px, 65vh, 520px);
-}
-
-@media (max-height: 600px) {
-  .slideContent {
-    height: 360px;
-  }
 }
 
 .imageContainer {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
   z-index: 0;
 }
 
 .image {
-  object-fit: cover;
-  object-position: center;
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .gradientOverlay {
@@ -102,10 +98,10 @@
 
 /* ===== TEXT BLOCK ===== */
 .textContainer {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 2;
   margin: 0 auto;
-  height: 100%;
   max-width: 640px;
   display: flex;
   flex-direction: column;

@@ -23,7 +23,7 @@ function HeroContent({ data }: { data: any }) {
       <Link
         href={linkLocation}
         aria-label={`Navigate to ${data.title}`}
-        className={`${styles.textContainer} relative z-[999] flex h-full w-full flex-col items-center justify-center gap-4 px-4 text-center`}
+        className={`${styles.textContainer} absolute inset-0 z-[999] flex flex-col items-center justify-center gap-4 px-4 text-center`}
       >
         <h1
           // style={{ color: globalData.mainBackground }}
