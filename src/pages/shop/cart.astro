@@ -9,6 +9,7 @@ import { ToastContainer } from "react-toastify";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
+import { buildWhatsAppLink } from "@/lib/whatsapp-order";
 import { storeConfig } from "@/lib/store-config";
 import packageJson from "../../../package.json";
 
@@ -32,14 +33,7 @@ const isLogin = settingsResponse?.ok
 const cartCount = settingsResponse?.cart_count ?? 0;
 const appVersion = packageJson.version;
 
-// Build WhatsApp link
-function buildWhatsAppLink(phone?: string | null): string | null {
-    if (!phone) return null;
-    const digitsOnly = phone.replace(/[^\d]/g, "");
-    if (!digitsOnly) return null;
-    return `https://wa.me/${encodeURIComponent(digitsOnly)}`;
-}
-
+// WhatsApp contact link — null for missing/placeholder numbers (shared helper).
 const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
 
 // SEO metadata

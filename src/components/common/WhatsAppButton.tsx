@@ -1,26 +1,11 @@
 import React from "react";
+import { buildWhatsAppLink } from "@/lib/whatsapp-order";
 
 export default function WhatsAppButton({ phone }: { phone?: string }) {
-    if (!phone) return null;
-    
-    // Clean phone number for WhatsApp
-    // Handle Egypt numbers: +201001234567 -> 201001234567
-    let digits = phone.replace(/^\+/, ""); // Remove + prefix
-    
-    // If starts with 0 (local Egypt number), convert to country code
-    if (digits.startsWith("0")) {
-        digits = "20" + digits.slice(1);
-    }
-    
-    // Remove any non-digit characters
-    digits = digits.replace(/\D/g, "");
-    
-    // Ensure it starts with country code
-    if (!digits.startsWith("20")) {
-        digits = "20" + digits;
-    }
-    
-    const link = `https://wa.me/${digits}`;
+    // null for missing OR placeholder/default numbers — hide the button rather
+    // than link to a fake line. Normalization (incl. country code) is shared.
+    const link = buildWhatsAppLink(phone);
+    if (!link) return null;
 
     return (
         <a

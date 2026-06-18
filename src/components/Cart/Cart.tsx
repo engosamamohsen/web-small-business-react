@@ -4,14 +4,15 @@ import Link from "@/components/common/Link";
 import Image from "@/components/common/Image";
 import { Minus, Plus, X } from "lucide-react";
 import { useRouter } from "@/lib/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
+import { fetchSettings } from "@/hooks/fetchSettings";
 import { useCart, useSettings, type SettingsData } from "@/providers";
 import { cn } from "@/utils/utils";
 import { buildProductPath } from "@/lib/product-url";
 import { storeConfig } from "@/lib/store-config";
-import { buildWhatsAppOrderUrl } from "@/lib/whatsapp-order";
+import { buildWhatsAppOrderUrl, isUsableWhatsappNumber } from "@/lib/whatsapp-order";
 import { clearLocalCart } from "@/lib/cart/local-cart";
 import { trackWhatsAppOrder } from "@/lib/firebase-tracker";
 import { toast } from "react-toastify";
@@ -168,11 +169,13 @@ const OrderSummary = ({
   shipping = 0,
   tax = 0,
   onWhatsAppOrder,
+  whatsappAvailable = false,
 }: {
   subtotal: number;
   shipping?: number;
   tax?: number;
   onWhatsAppOrder?: () => void;
+  whatsappAvailable?: boolean;
 }) => {
   const total = subtotal + shipping + tax;
 
@@ -198,14 +201,23 @@ const OrderSummary = ({
         </div>
       </div>
       {storeConfig.checkoutMode === "whatsapp" ? (
-        <button
-          type="button"
-          onClick={onWhatsAppOrder}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 py-3 text-center font-semibold text-white transition-colors hover:bg-green-600"
-        >
-          <i className="pi pi-whatsapp text-lg" aria-hidden="true" />
-          اطلب عبر واتساب
-        </button>
+        // WhatsApp number is sensitive: a fake/default would route the order to
+        // a stranger. Show the button ONLY when a real number is available;
+        // otherwise hide it entirely (fail closed) and tell the customer.
+        whatsappAvailable ? (
+          <button
+            type="button"
+            onClick={onWhatsAppOrder}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 py-3 text-center font-semibold text-white transition-colors hover:bg-green-600"
+          >
+            <i className="pi pi-whatsapp text-lg" aria-hidden="true" />
+            اطلب عبر واتساب
+          </button>
+        ) : (
+          <p className="rounded-lg bg-slate-100 py-3 text-center text-sm font-medium text-slate-500">
+            الطلب عبر واتساب غير متاح حالياً
+          </p>
+        )
       ) : (
         <Link
           href="/shop/checkout"
@@ -243,11 +255,36 @@ export default function Cart({ settings: propSettings }: { settings?: SettingsDa
   const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
   const { loading, removeFromCart, updateCount } = useCartHook();
   const { setCartCount } = useCart();
-  // SSR prop is authoritative; context is only a fallback. React context does
-  // NOT cross Astro island boundaries, so useSettings() is empty in this island
-  // — that's why the WhatsApp number used to always fall back to the constant.
+  // React context does NOT cross Astro island boundaries, so useSettings() is
+  // empty in this island. Seed from the SSR prop / context, then refresh from
+  // the settings API on the client so the WhatsApp number is always the shop's
+  // real, current one (and the order never falls back to the default number).
   const { settings: contextSettings } = useSettings();
-  const settings = propSettings ?? contextSettings;
+  const [settings, setSettings] = useState<SettingsData | null>(
+    propSettings ?? contextSettings ?? null,
+  );
+
+  // Call the settings API in the cart page itself — independent of the SSR
+  // prop, which can be null (e.g. an upstream settings hiccup) or stale.
+  useEffect(() => {
+    let cancelled = false;
+    fetchSettings()
+      .then((res) => {
+        if (!cancelled && res.ok && res.data) {
+          setSettings(res.data as SettingsData);
+        }
+      })
+      .catch(() => {
+        // keep the SSR-seeded settings on failure
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Only true for a real, non-placeholder number — drives whether the WhatsApp
+  // order button is shown at all (fail closed when absent/fake).
+  const whatsappAvailable = isUsableWhatsappNumber(settings?.whatsapp_phone);
 
   // BASIC plan checkout: cart → WhatsApp order.
   // The cart is cleared ONLY after WhatsApp actually opened — a popup
@@ -355,6 +392,7 @@ export default function Cart({ settings: propSettings }: { settings?: SettingsDa
           <OrderSummary
             subtotal={cartResponse.total_price}
             onWhatsAppOrder={handleWhatsAppOrder}
+            whatsappAvailable={whatsappAvailable}
           />
         </div>
       </div>

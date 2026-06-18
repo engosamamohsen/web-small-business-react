@@ -5,6 +5,7 @@ import { useProductOptions } from "./hooks/useProductOptions";
 import { useMemo, useState, lazy, Suspense } from "react";
 import { useSettingsData } from "@/providers/SettingsProvider";
 import type { SettingsData } from "@/providers/SettingsProvider";
+import { buildWhatsAppLink } from "@/lib/whatsapp-order";
 
 // Detail sub-components
 import {
@@ -33,6 +34,8 @@ export default function DetailPage({
     // Fall back to context (works when rendered inside a SettingsProvider)
     const contextSettings = useSettingsData();
     const settings = settingsProp ?? contextSettings;
+    // null for missing/placeholder numbers so we never link to the default line
+    const whatsappContactLink = buildWhatsAppLink(settings?.whatsapp_phone);
 
 
     const {
@@ -302,10 +305,10 @@ export default function DetailPage({
                                             <span>البريد الإلكتروني: <a href={`mailto:${settings.contact_email}`} className="text-[var(--main-color)] hover:underline">{settings.contact_email}</a></span>
                                         </li>
                                     )}
-                                    {settings?.whatsapp_phone && (
+                                    {whatsappContactLink && (
                                         <li className="flex gap-2">
                                             <span>•</span>
-                                            <span>واتساب: <a href={`https://wa.me/${settings.whatsapp_phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-[var(--main-color)] hover:underline">{settings.whatsapp_phone}</a></span>
+                                            <span>واتساب: <a href={whatsappContactLink} target="_blank" rel="noreferrer" className="text-[var(--main-color)] hover:underline">{settings?.whatsapp_phone}</a></span>
                                         </li>
                                     )}
                                     {settings?.phone && (

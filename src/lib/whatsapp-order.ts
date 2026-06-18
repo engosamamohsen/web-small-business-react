@@ -23,6 +23,48 @@ export function normalizeWhatsappNumber(
     return digits;
 }
 
+// Known placeholder / default numbers that must NEVER receive a real order.
+// Covers the frontend fallback constant AND common backend defaults (e.g. an
+// unconfigured shop returning "0123456789"), so a misconfigured store shows
+// "number unavailable" instead of silently messaging a fake line.
+const PLACEHOLDER_WHATSAPP_NUMBERS: ReadonlySet<string> = new Set(
+    [
+        storeConfig.fallbackWhatsappNumber, // "201234567890"
+        "0123456789",
+        "01234567890",
+        "1234567890",
+        "00000000000",
+    ]
+        .map((n) => normalizeWhatsappNumber(n))
+        .filter((n): n is string => Boolean(n)),
+);
+
+/**
+ * True only for a real, sendable WhatsApp number — rejects empty values and the
+ * known placeholder / default numbers (see PLACEHOLDER_WHATSAPP_NUMBERS).
+ */
+export function isUsableWhatsappNumber(phone?: string | null): boolean {
+    const normalized = normalizeWhatsappNumber(phone);
+    if (normalized === null) return false;
+    // Reject known placeholder / default numbers outright.
+    if (PLACEHOLDER_WHATSAPP_NUMBERS.has(normalized)) return false;
+    // Sanity bounds: a real international number is ~10–15 digits (E.164).
+    // Blocks malformed values that could otherwise resolve to a stranger's chat.
+    return normalized.length >= 10 && normalized.length <= 15;
+}
+
+/**
+ * Plain wa.me contact link (no prefilled message) for the floating "contact us"
+ * button. Returns null for missing OR placeholder/default numbers so the button
+ * hides instead of linking to a fake line. Uses the same normalization as orders
+ * (adds the country code), so "01093341796" → "https://wa.me/201093341796".
+ */
+export function buildWhatsAppLink(phone?: string | null): string | null {
+    if (!isUsableWhatsappNumber(phone)) return null;
+    const number = normalizeWhatsappNumber(phone);
+    return number ? `https://wa.me/${number}` : null;
+}
+
 /**
  * Greeting includes the shop name and adapts to shop_type.
  * - restaurant + name without "مطعم" → "مرحبا بك فى مطعم {name}"
@@ -126,9 +168,10 @@ export function buildWhatsAppOrderUrl(
         shop_type?: string | null;
     } | null,
 ): string | null {
-    const number =
-        normalizeWhatsappNumber(settings?.whatsapp_phone) ??
-        normalizeWhatsappNumber(storeConfig.fallbackWhatsappNumber);
+    // Only ever use the shop's REAL number from the settings API. Never fall
+    // back to the placeholder/default — orders must not go to a fake line.
+    if (!isUsableWhatsappNumber(settings?.whatsapp_phone)) return null;
+    const number = normalizeWhatsappNumber(settings?.whatsapp_phone);
     if (!number || !items.length) return null;
 
     const message = buildWhatsAppOrderMessage(
