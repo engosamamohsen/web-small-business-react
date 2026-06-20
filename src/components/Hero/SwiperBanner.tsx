@@ -65,6 +65,9 @@ export default function SwiperBanner({ response }: SwiperBannerProps) {
                   fill
                   sizes="100vw"
                   priority={index === 0}
+                  // First banner is the likely LCP element — hint the browser to
+                  // fetch it ahead of lazy/below-the-fold images.
+                  fetchPriority={index === 0 ? "high" : undefined}
                   className={styles.image}
                 />
                 <div className={styles.gradientOverlay} />

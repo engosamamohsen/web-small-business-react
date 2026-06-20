@@ -25,7 +25,6 @@ const DEV_API_ORIGIN =
  */
 export function getBaseUrl(): string {
   if (typeof window !== "undefined") {
-    // console.log("osama->> origin:"+window.location.origin)
     return window.location.origin;
   }
   // Dev-server SSR: server-side fetches (fetch-hook.ts) append "/api/" to this,
@@ -100,8 +99,6 @@ export function getAdminOrigin(): string {
  *   "https://admin-myrestaurant.cashierthru.com/api/v1/endpoint"
  */
 export function getApiUrl(): string {
-      // console.log("osama->> origin:"+getAdminOrigin())
-
   return `${getAdminOrigin()}/api/`;
 }
 
@@ -185,7 +182,6 @@ export interface TenantConfig {
  * const { shopName, apiUrl } = useShopConfig();
  */
 export function useShopConfig(): TenantConfig {
-  console.log("osama->> useShopConfig");
   return useMemo(
     () => ({
       baseUrl: getBaseUrl(),

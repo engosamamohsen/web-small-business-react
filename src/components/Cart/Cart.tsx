@@ -13,6 +13,7 @@ import { cn } from "@/utils/utils";
 import { buildProductPath } from "@/lib/product-url";
 import { storeConfig } from "@/lib/store-config";
 import { buildWhatsAppOrderUrl, isUsableWhatsappNumber } from "@/lib/whatsapp-order";
+import { isPlusPlan, type CurrentSubscriptionPlan } from "@/lib/subscription";
 import { clearLocalCart } from "@/lib/cart/local-cart";
 import { trackWhatsAppOrder } from "@/lib/firebase-tracker";
 import { toast } from "react-toastify";
@@ -230,6 +231,75 @@ const OrderSummary = ({
   );
 };
 
+// ===== Customer Info Fields (Plus plan only) =====
+// Shown on the cart for Plus-plan stores so the customer name + full address
+// can be appended to the WhatsApp order message. Both fields are required.
+const CustomerInfoFields = ({
+  name,
+  address,
+  errors,
+  onNameChange,
+  onAddressChange,
+}: {
+  name: string;
+  address: string;
+  errors: { name?: boolean; address?: boolean };
+  onNameChange: (value: string) => void;
+  onAddressChange: (value: string) => void;
+}) => (
+  <div className="mb-4 rounded-lg bg-white p-6 shadow-sm">
+    <h2 className="mb-4 text-xl font-bold">بيانات العميل</h2>
+    <div className="space-y-4">
+      <div>
+        <label
+          htmlFor="customer-name"
+          className="mb-1 block text-sm font-medium text-slate-700"
+        >
+          اسم العميل <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="customer-name"
+          type="text"
+          value={name}
+          onChange={(e) => onNameChange(e.target.value)}
+          placeholder="ادخل اسمك بالكامل"
+          aria-invalid={errors.name ? "true" : "false"}
+          className={cn(
+            "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30",
+            errors.name ? "border-red-400" : "border-slate-200",
+          )}
+        />
+        {errors.name && (
+          <p className="mt-1 text-xs text-red-500">برجاء إدخال اسم العميل</p>
+        )}
+      </div>
+      <div>
+        <label
+          htmlFor="customer-address"
+          className="mb-1 block text-sm font-medium text-slate-700"
+        >
+          العنوان بالتفصيل <span className="text-red-500">*</span>
+        </label>
+        <textarea
+          id="customer-address"
+          value={address}
+          onChange={(e) => onAddressChange(e.target.value)}
+          rows={3}
+          placeholder="رقم العقار، الشارع، الحي، المدينة"
+          aria-invalid={errors.address ? "true" : "false"}
+          className={cn(
+            "w-full resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30",
+            errors.address ? "border-red-400" : "border-slate-200",
+          )}
+        />
+        {errors.address && (
+          <p className="mt-1 text-xs text-red-500">برجاء إدخال العنوان بالتفصيل</p>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
 // ===== Empty Cart Component =====
 const EmptyCart = () => (
   <div className="mx-auto flex min-h-[600px] max-w-7xl flex-col items-center justify-center px-4 py-12 text-center">
@@ -250,7 +320,13 @@ const EmptyCart = () => (
 );
 
 // ===== Main Cart Component =====
-export default function Cart({ settings: propSettings }: { settings?: SettingsData | null }) {
+export default function Cart({
+  settings: propSettings,
+  subscriptionPlan: propSubscriptionPlan = null,
+}: {
+  settings?: SettingsData | null;
+  subscriptionPlan?: CurrentSubscriptionPlan | null;
+}) {
   const router = useRouter();
   const { loading: cartLoading, data: cartResponse, retry } = useCartServices();
   const { loading, removeFromCart, updateCount } = useCartHook();
@@ -263,6 +339,18 @@ export default function Cart({ settings: propSettings }: { settings?: SettingsDa
   const [settings, setSettings] = useState<SettingsData | null>(
     propSettings ?? contextSettings ?? null,
   );
+  // Subscription plan (current_subscription_plan) is a top-level sibling of
+  // `data` — the SSR prop is authoritative because a client cache hit drops it.
+  const [subscriptionPlan, setSubscriptionPlan] =
+    useState<CurrentSubscriptionPlan | null>(propSubscriptionPlan);
+
+  // Plus-plan customer details (only collected/used when isPlus is true).
+  const [customerName, setCustomerName] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [customerErrors, setCustomerErrors] = useState<{
+    name?: boolean;
+    address?: boolean;
+  }>({});
 
   // Call the settings API in the cart page itself — independent of the SSR
   // prop, which can be null (e.g. an upstream settings hiccup) or stale.
@@ -270,8 +358,13 @@ export default function Cart({ settings: propSettings }: { settings?: SettingsDa
     let cancelled = false;
     fetchSettings()
       .then((res) => {
-        if (!cancelled && res.ok && res.data) {
-          setSettings(res.data as SettingsData);
+        if (cancelled || !res.ok) return;
+        if (res.data) setSettings(res.data as SettingsData);
+        // Only overwrite the plan when the response actually carries it — a
+        // client localStorage cache hit omits current_subscription_plan, and we
+        // must not clobber the SSR-provided plan with undefined.
+        if (res.current_subscription_plan) {
+          setSubscriptionPlan(res.current_subscription_plan);
         }
       })
       .catch(() => {
@@ -286,15 +379,37 @@ export default function Cart({ settings: propSettings }: { settings?: SettingsDa
   // order button is shown at all (fail closed when absent/fake).
   const whatsappAvailable = isUsableWhatsappNumber(settings?.whatsapp_phone);
 
+  // Plus plan + WhatsApp checkout → collect customer name + full address and
+  // append them to the order message. Basic / unknown plan → hidden, no change.
+  const showCustomerInfo =
+    isPlusPlan(subscriptionPlan) && storeConfig.checkoutMode === "whatsapp";
+
   // BASIC plan checkout: cart → WhatsApp order.
   // The cart is cleared ONLY after WhatsApp actually opened — a popup
   // blocker must not wipe the customer's cart.
   const handleWhatsAppOrder = () => {
     const items = cartResponse?.cart_items ?? [];
+
+    // Plus plan: customer name + full address are required and go into the order.
+    let customer: { name: string; address: string } | undefined;
+    if (showCustomerInfo) {
+      const name = customerName.trim();
+      const address = customerAddress.trim();
+      const errors = { name: !name, address: !address };
+      if (errors.name || errors.address) {
+        setCustomerErrors(errors);
+        toast.error("برجاء إدخال اسم العميل والعنوان بالتفصيل", { rtl: true });
+        return;
+      }
+      setCustomerErrors({});
+      customer = { name, address };
+    }
+
     const url = buildWhatsAppOrderUrl(
       items,
       cartResponse?.total_price ?? 0,
       settings,
+      customer,
     );
     if (!url) {
       toast.error("رقم الواتساب غير متوفر حالياً", { rtl: true });
@@ -389,6 +504,25 @@ export default function Cart({ settings: propSettings }: { settings?: SettingsDa
           ))}
         </div>
         <div className="lg:self-start">
+          {showCustomerInfo && (
+            <CustomerInfoFields
+              name={customerName}
+              address={customerAddress}
+              errors={customerErrors}
+              onNameChange={(value) => {
+                setCustomerName(value);
+                if (customerErrors.name) {
+                  setCustomerErrors((prev) => ({ ...prev, name: false }));
+                }
+              }}
+              onAddressChange={(value) => {
+                setCustomerAddress(value);
+                if (customerErrors.address) {
+                  setCustomerErrors((prev) => ({ ...prev, address: false }));
+                }
+              }}
+            />
+          )}
           <OrderSummary
             subtotal={cartResponse.total_price}
             onWhatsAppOrder={handleWhatsAppOrder}

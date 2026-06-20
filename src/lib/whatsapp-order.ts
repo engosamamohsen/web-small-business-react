@@ -8,6 +8,15 @@ import { storeConfig } from "@/lib/store-config";
 import type { CartItemType } from "@/types/types";
 
 /**
+ * Customer details collected on the cart for **Plus**-plan stores and appended
+ * to the order message. Basic-plan stores pass nothing → the block is omitted.
+ */
+export interface WhatsAppCustomerInfo {
+    name?: string | null;
+    address?: string | null;
+}
+
+/**
  * "01093341796" → "201093341796" (wa.me needs international, digits only).
  * Already-international numbers pass through unchanged.
  */
@@ -93,45 +102,67 @@ function formatPrice(value: number): string {
  * - shop name  → settings.name
  * - shop type  → settings.shop_type  (drives greeting prefix)
  *
- * Example output for a restaurant named "ROKA'S KITCHEN":
+ * Friendly, sectioned layout (WhatsApp *bold* + light emoji cues). Example for a
+ * restaurant named "ROKA'S KITCHEN" with a Plus-plan customer:
  *
- *   مرحبا بك فى مطعم ROKA'S KITCHEN
+ *   مرحبا بك فى مطعم ROKA'S KITCHEN 👋
  *
- *   السلام عليكم
+ *   👤 *بيانات العميل*
+ *   الاسم: اسامة محسن
+ *   📍 العنوان: 8 على الليثى
  *
- *   أرغب في طلب المنتجات التالية:
+ *   🧾 *تفاصيل الطلب*
  *
- *   1. فتة شاورما فراخ
- *      الكمية: 2
- *      السعر: 100
+ *   1. *فتة شاورما فراخ*
+ *      ◾ الصوص: ثومية (+10)
+ *      🔢 الكمية: 2 × 100 = 200 ج.م
  *
- *   الإجمالي: 280 جنيه
+ *   💰 *الإجمالي: 200 ج.م*
  *
- *   شكراً
+ *   شكراً لطلبكم 🙏
  */
 export function buildWhatsAppOrderMessage(
     items: CartItemType[],
     totalPrice: number,
     shopName?: string | null,
     shopType?: string | null,
+    customer?: WhatsAppCustomerInfo | null,
 ): string {
-    const lines: string[] = [
-        buildGreeting(shopName, shopType),
-        "",
-        "السلام عليكم",
-        "",
-        "أرغب في طلب المنتجات التالية:",
-        "",
-    ];
+    const currency = "ج.م";
+    const lines: string[] = [];
+
+    // Friendly header — greeting adapts to the shop name / type.
+    lines.push(`${buildGreeting(shopName, shopType)} 👋`);
+    lines.push("");
+
+    // Plus-plan stores collect the customer name + full address on the cart and
+    // include them here. Basic-plan stores pass no customer → block is skipped.
+    const customerName = customer?.name?.trim();
+    const customerAddress = customer?.address?.trim();
+    if (customerName || customerAddress) {
+        lines.push("👤 *بيانات العميل*");
+        if (customerName) lines.push(`الاسم: ${customerName}`);
+        if (customerAddress) lines.push(`📍 العنوان: ${customerAddress}`);
+        lines.push("");
+    }
+
+    lines.push("🧾 *تفاصيل الطلب*");
+    lines.push("");
 
     items.forEach((item, index) => {
-        lines.push(`${index + 1}. ${item.product_name}`);
-        // Selected variations (size / color / extras / toppings …) — each listed
-        // by its variation name and chosen value(s), with any price add-on.
+        const qty = Number(item.qty) || 1;
+        const unitPrice = Number(item.unit_price) || 0;
+        const lineTotal = Math.round(unitPrice * qty * 100) / 100;
+
+        // Product name in bold (WhatsApp renders *text* as bold).
+        lines.push(`${index + 1}. *${item.product_name}*`);
+
+        // Selected variations (size / color / extras / toppings …) as bullets —
+        // prefix with the variation name only when the API actually provides one.
         if (Array.isArray(item.variations)) {
             item.variations.forEach((variation) => {
                 if (!variation?.choices?.length) return;
-                const label = variation.main_variation_name?.trim() || "اختيار";
+                const label = variation.main_variation_name?.trim();
                 const choiceText = variation.choices
                     .map((choice) =>
                         Number(choice.price) > 0
@@ -139,18 +170,21 @@ export function buildWhatsAppOrderMessage(
                             : choice.name,
                     )
                     .join("، ");
-                lines.push(`   ${label}: ${choiceText}`);
+                lines.push(`   ◾ ${label ? `${label}: ` : ""}${choiceText}`);
             });
         }
-        lines.push(`   الكمية: ${Number(item.qty) || 1}`);
-        lines.push(`   السعر: ${formatPrice(Number(item.unit_price) || 0)}`);
-        if (item.product_note) lines.push(`   ملاحظة: ${item.product_note}`);
+
+        // Quantity × unit price = line total, on one readable line.
+        lines.push(
+            `   🔢 الكمية: ${qty} × ${formatPrice(unitPrice)} = ${formatPrice(lineTotal)} ${currency}`,
+        );
+        if (item.product_note) lines.push(`   📝 ملاحظة: ${item.product_note}`);
         lines.push("");
     });
 
-    lines.push(`الإجمالي: ${formatPrice(totalPrice)} جنيه`);
+    lines.push(`💰 *الإجمالي: ${formatPrice(totalPrice)} ${currency}*`);
     lines.push("");
-    lines.push("شكراً");
+    lines.push("شكراً لطلبكم 🙏");
 
     return lines.join("\n");
 }
@@ -167,6 +201,7 @@ export function buildWhatsAppOrderUrl(
         whatsapp_phone?: string | null;
         shop_type?: string | null;
     } | null,
+    customer?: WhatsAppCustomerInfo | null,
 ): string | null {
     // Only ever use the shop's REAL number from the settings API. Never fall
     // back to the placeholder/default — orders must not go to a fake line.
@@ -179,6 +214,7 @@ export function buildWhatsAppOrderUrl(
         totalPrice,
         settings?.name,
         settings?.shop_type,
+        customer,
     );
     return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }

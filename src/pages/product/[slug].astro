@@ -71,6 +71,11 @@ if (!productData) {
 // Canonical URL handling: if the URL doesn't match the API's slug,
 // 301-redirect to the canonical /product/{slug}.
 const canonicalPath = buildProductPath(productData);
+// The canonical path can contain non-ASCII (Arabic) name characters. HTTP
+// headers (Location) and the <link rel="canonical"> href must be ASCII, so
+// percent-encode them — encodeURI keeps "/" and "-" intact and escapes Arabic.
+// Without this, Astro.redirect() throws a ByteString error → 500 on the page.
+const encodedCanonicalPath = encodeURI(canonicalPath);
 let currentPath = Astro.url.pathname;
 try {
     // pathname may be percent-encoded; compare decoded to avoid redirect loops
@@ -80,10 +85,10 @@ try {
 }
 if (currentPath !== canonicalPath) {
     // keep query params (utm etc.) across the redirect
-    return Astro.redirect(canonicalPath + Astro.url.search, 301);
+    return Astro.redirect(encodedCanonicalPath + Astro.url.search, 301);
 }
 
-const canonicalUrl = `${Astro.url.origin}${canonicalPath}`;
+const canonicalUrl = `${Astro.url.origin}${encodedCanonicalPath}`;
 
 // SEO metadata
 const pageTitle = productData?.name || "تفاصيل المنتج";

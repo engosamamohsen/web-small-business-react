@@ -18,8 +18,6 @@ const OrderDetail = ({
 }): React.ReactNode => {
   const { loading, data: order } = useOrderDetailServices(orderId);
 
-  console.log(order, "order detail data");
-
   const content = useMemo(() => {
     if (loading) {
       return <PageLoader text="جاري تحميل التفاصيل" />;

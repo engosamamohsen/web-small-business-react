@@ -16,6 +16,11 @@ export const ProductGallery = memo(({ product }: ProductGalleryProps) => {
     const imageCount = product?.gallery_images?.length || 0;
     const enableLoop = imageCount >= 2;
 
+    // Nothing to show — hide the slider entirely when the gallery is empty
+    if (imageCount === 0) {
+        return null;
+    }
+
     return (
         <Swiper
             modules={[Navigation]}

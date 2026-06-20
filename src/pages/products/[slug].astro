@@ -3,6 +3,10 @@ import { fetchHook } from "@/hooks/fetch-hook";
 import { buildProductPath } from "@/lib/product-url";
 import type { ProductType } from "@/lib/types";
 
+// Rendered on demand (declared up top so it isn't flagged as unreachable after
+// the early-return redirects below).
+export const prerender = false;
+
 // Legacy route — product pages now live at /product/{id}-{slug}.
 // Kept as a permanent redirect so old indexed/shared links keep working.
 const { slug } = Astro.params as { slug: string };
@@ -41,8 +45,8 @@ if (!productData) {
     return Astro.redirect("/404");
 }
 
-// API id + slug are authoritative; keep query params (utm etc.) across the redirect
-return Astro.redirect(buildProductPath(productData) + Astro.url.search, 301);
-
-export const prerender = false;
+// API id + slug are authoritative; keep query params (utm etc.) across the redirect.
+// encodeURI escapes any non-ASCII (Arabic) name chars so the Location header is
+// valid ASCII — raw Arabic would throw a ByteString error → 500.
+return Astro.redirect(encodeURI(buildProductPath(productData)) + Astro.url.search, 301);
 ---

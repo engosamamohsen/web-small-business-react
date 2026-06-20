@@ -20,8 +20,6 @@ export const addUserToDatabase = async (data: any, action: () => void) => {
       });
       throw new Error(response?.message);
     } else {
-      console.log("user is loggin");
-      console.log("user", response?.data);
       Cookies.set("app_token", response?.data?.api_token, {
         expires: 1,
         path: "/",

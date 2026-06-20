@@ -20,8 +20,6 @@ function OrderList() {
   const [activeTab] = useState<string>("All"); // ✅ logic unchanged
   const router = useRouter();
 
-  console.log(orders, "orders list");
-
   if (loading) {
     return <PageLoader text="جاري تحميل الطلبات" />;
   }

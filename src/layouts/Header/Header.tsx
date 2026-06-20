@@ -2,7 +2,7 @@
 
 import { ShoppingCart, ClipboardList } from "lucide-react";
 import Link from "@/components/common/Link";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { useRouter } from "@/lib/navigation";
 import Cookies from "js-cookie";
 
@@ -10,10 +10,14 @@ import { useSettings } from "@/providers";
 import { fetchSettings, SettingsData } from "@/hooks/fetchSettings";
 import LoginButton from "./LoginButton";
 import SearchBar from "./SearchBar";
-import AuthDialog from "@/components/auth/AuthDialog";
 import CircleLogo from "@/global/CircleLogo";
 import { storeConfig } from "@/lib/store-config";
 import { localCartCount, LOCAL_CART_EVENT } from "@/lib/cart/local-cart";
+
+// Lazy-loaded: AuthDialog pulls in the Firebase SDK (~287 KB). Loading it only
+// when the user actually opens the login dialog keeps it out of every page's
+// initial bundle (on the BASIC plan it never loads at all).
+const AuthDialog = lazy(() => import("@/components/auth/AuthDialog"));
 
 interface HeaderProps {
   currentPath?: string;
@@ -26,6 +30,9 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
 
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  // Stays true once the dialog is first opened so the Firebase chunk is fetched
+  // on demand (not at page load) and the dialog keeps its open/close animation.
+  const [authMounted, setAuthMounted] = useState(false);
   const [settings, setSettings] = useState<SettingsData | null>((settingsData as any) || (contextSettings as any) || null);
   // For BASIC plan: maintain badge count directly from localStorage so the
   // badge updates even when the Header is an isolated island (no SettingsProvider).
@@ -71,11 +78,15 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
     if (!storeConfig.canAuthenticate) return;
     if (!isLoggedIn) {
       e.preventDefault();
+      setAuthMounted(true);
       setShowAuthDialog(true);
     }
   };
 
-  const openAuthDialog = () => setShowAuthDialog(true);
+  const openAuthDialog = () => {
+    setAuthMounted(true);
+    setShowAuthDialog(true);
+  };
 
   return (
     <>
@@ -144,8 +155,10 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
         </div>
       </header>
 
-      {storeConfig.canAuthenticate && (
-        <AuthDialog visible={showAuthDialog} onHide={() => setShowAuthDialog(false)} initSettings={settings || {}} />
+      {storeConfig.canAuthenticate && authMounted && (
+        <Suspense fallback={null}>
+          <AuthDialog visible={showAuthDialog} onHide={() => setShowAuthDialog(false)} initSettings={settings || {}} />
+        </Suspense>
       )}
     </>
   );

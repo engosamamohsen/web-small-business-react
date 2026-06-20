@@ -53,13 +53,20 @@ export function Product({ product, defaultImage }: ProductProps) {
       : parseFloat(String(rawDiscount)) || 0;
   const hasDiscount = discountValue > 0;
 
-  // Build image list — main image first, then gallery
-  const allImages: string[] = [
+  // Build image list — main image first, then gallery.
+  // defaultImage is a FALLBACK ONLY: used just when the product has no image of
+  // its own. It is NEVER appended to a product that already has an image, so the
+  // shared settings image can't show up as an extra thumbnail on every card.
+  const productImages: string[] = [
     product?.product_image,
     ...(product?.gallery_images ?? []),
-    defaultImage,
   ].filter(Boolean) as string[];
-  const images = allImages.length > 0 ? allImages : [""];
+  const images =
+    productImages.length > 0
+      ? productImages
+      : defaultImage
+        ? [defaultImage]
+        : [""];
 
   const [activeIdx, setActiveIdx] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -82,9 +89,11 @@ export function Product({ product, defaultImage }: ProductProps) {
     const delta = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(delta) > 44) {
       // RTL: right = prev, left = next
-      delta > 0
-        ? setActiveIdx((i) => Math.max(i - 1, 0))
-        : setActiveIdx((i) => Math.min(i + 1, images.length - 1));
+      if (delta > 0) {
+        setActiveIdx((i) => Math.max(i - 1, 0));
+      } else {
+        setActiveIdx((i) => Math.min(i + 1, images.length - 1));
+      }
     }
     touchStartX.current = null;
   };
@@ -116,6 +125,11 @@ export function Product({ product, defaultImage }: ProductProps) {
             )}
 
             {currentImage ? (
+              // Absolutely fill the 4/3 box (the shared <Image> wrapper ignores
+              // `fill`, so the positioning is set here). The image stays visible
+              // by default — it is NOT hidden behind a JS-only opacity flip — so
+              // it shows as soon as the browser paints it; the skeleton simply
+              // sits behind it until then.
               <Image
                 ref={handleImgRef}
                 src={currentImage}
@@ -124,10 +138,7 @@ export function Product({ product, defaultImage }: ProductProps) {
                 quality={80}
                 loading="lazy"
                 sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                className={[
-                  "object-cover transition-opacity duration-300",
-                  imgLoaded ? "opacity-100" : "opacity-0",
-                ].join(" ")}
+                className="absolute inset-0 h-full w-full object-cover"
                 onLoad={() => setImgLoaded(true)}
                 onError={() => setImgLoaded(true)}
               />
@@ -206,7 +217,7 @@ export function Product({ product, defaultImage }: ProductProps) {
                   alt={`المنتج ${product?.name ?? ""} — الصورة ${i + 1}`}
                   fill
                   sizes="52px"
-                  className="object-cover"
+                  className="absolute inset-0 h-full w-full object-cover"
                   loading="lazy"
                 />
               )}

@@ -51,6 +51,11 @@ const MiniCartItem = ({ item }: { item: CartItemType }) => {
                         )}
                     </div>
                 )}
+                {item.product_note && (
+                    <p className="mt-0.5 line-clamp-2 rounded-md bg-amber-50 px-2 py-0.5 text-right text-[10px] text-amber-800">
+                        <span className="font-medium">ملاحظة:</span> {item.product_note}
+                    </p>
+                )}
             </div>
         </div>
     );

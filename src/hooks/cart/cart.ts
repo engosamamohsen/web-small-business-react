@@ -124,8 +124,6 @@ export const useCartHook = () => {
       });
 
       return data;
-    } catch (error: any) {
-      throw error;
     } finally {
       setLoading(false);
     }

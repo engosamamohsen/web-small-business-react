@@ -5,7 +5,6 @@ import Cookies from "js-cookie";
 import { useUpdateEffect } from "react-use";
 import { cn } from "@/utils/utils";
 import { InputTextarea } from "primereact/inputtextarea";
-import { getDiscountedPrice } from "@/lib/pricing-utils";
 import { toast } from "react-toastify";
 import { ShoppingCart, Zap, Plus, Minus } from "lucide-react";
 import { useSettings } from "@/providers";
@@ -73,7 +72,6 @@ export const CartActions = memo(({
     const doAddToCart = useCallback(async () => {
         try {
             const { variations } = selectedVariations;
-            console.log("variations", variations);
             await addToCart({
                 ...product,
                 count,

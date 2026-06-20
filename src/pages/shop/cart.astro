@@ -27,6 +27,8 @@ const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase)
 
 // Extract data with defaults
 const settingsData = settingsResponse?.data ?? null;
+// Top-level sibling of `data` — drives the Plus-plan customer-info fields.
+const currentSubscriptionPlan = settingsResponse?.current_subscription_plan ?? null;
 const isLogin = settingsResponse?.ok
     ? Boolean(settingsResponse?.is_login)
     : false;
@@ -66,7 +68,11 @@ export const prerender = false;
 
         <!-- Main Content -->
         <main class="min-h-screen">
-            <CartComponent settings={settingsData} client:load />
+            <CartComponent
+                settings={settingsData}
+                subscriptionPlan={currentSubscriptionPlan}
+                client:load
+            />
         </main>
 
         <!-- WhatsApp Floating Button -->

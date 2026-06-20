@@ -34,6 +34,25 @@ export interface CurrentSubscriptionPlan {
 }
 
 /**
+ * True when the store is on the **Plus** subscription plan.
+ *
+ * Matched by the plan name (the explicit `current_subscription_plan.name`
+ * field, e.g. `{ id: 4, name: "Plus" }`), case-insensitively and tolerant of
+ * the localized `name_en` label. Any other / missing plan (Basic, unknown,
+ * network error) → false, so customer-info features stay hidden by default and
+ * the existing flow is never regressed.
+ *
+ * Plan ids are not assumed to be stable across tenants, so we key off the name;
+ * swap to an id check here if/when ids become a fixed contract.
+ */
+export function isPlusPlan(plan?: CurrentSubscriptionPlan | null): boolean {
+  if (!plan) return false;
+  return [plan.name, plan.name_en]
+    .filter((n): n is string => typeof n === "string")
+    .some((n) => n.trim().toLowerCase().includes("plus"));
+}
+
+/**
  * True when the store should be locked out (expired subscription + grace, or
  * access explicitly revoked). Missing data → false (store stays available).
  */

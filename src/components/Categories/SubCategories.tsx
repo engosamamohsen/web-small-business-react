@@ -20,7 +20,6 @@ const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
   const searchParams = useSearchParams();
 
   const onSubCategoryClick = (category: CategoryType) => {
-    console.log("onSubCategoryClick", category.name);
     const sp = new URLSearchParams(window.location.search);
 
     const current = sp.get("sub_category");
