@@ -48,35 +48,15 @@ Running a 7-angle review over the subscription-modes diff produced 10 findings r
 
 ---
 
-## 3. Product URL Format Change
+## 3. Product URL Format Change — ⚠️ SUPERSEDED
 
-**Files changed:** `src/lib/product-url.ts`, `src/pages/product/[slug].astro`
+This step changed the URL to `/product/{slug}` (id embedded as the trailing
+number of the slug). That format was **later replaced** by the SEO format
+`/product/{slug}-{seo-name}` — the slugified product name (Arabic preserved,
+spaces → hyphens) is appended for search engines, while lookup still uses the id.
 
-### Before
-```
-/product/{id}-{slug}   e.g. /product/8-ft-shaorma-frakh-8
-```
-`parseProductParam` extracted the **leading** number as the id.
-
-### After
-```
-/product/{slug}        e.g. /product/ft-shaorma-frakh-8
-```
-The API slug already embeds the id as the **trailing** number (`ft-shaorma-frakh-8`), so no separate id prefix is needed.
-
-**`parseProductParam` regex:**
-
-```ts
-// Before
-const match = param.match(/^(\d+)(?:-(.*))?$/);
-return { id: match[1], slug: match[2] ?? "" };
-
-// After
-const match = param.match(/^(.*)-(\d+)$/);
-return { id: match[2], slug: param };
-```
-
-`buildProductPath` was already returning `/product/${slug}` and needed no change — only comments were updated.
+➡️ See the canonical doc:
+**[product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md) §1**.
 
 ---
 

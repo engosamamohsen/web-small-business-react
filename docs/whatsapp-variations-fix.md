@@ -42,6 +42,12 @@ normalize back to the API shape at the premium boundary:
 
 ## Resulting message
 
+> ⚠️ The plain layout below was the format **at the time of this fix**. The live
+> message format was later redesigned (bold headers, bullet choices, per-line
+> `qty × price = total`). Current format:
+> [product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md) §2.4.
+> What this fix delivered — variations carried through into the order — still holds.
+
 ```text
 1. برجر لحم
    الحجم: كبير (+20)

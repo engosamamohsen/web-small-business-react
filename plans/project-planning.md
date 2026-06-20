@@ -1,8 +1,14 @@
 # Project Planning Document: web-small-business-react
 
+> **Status (updated 2026-06-20):** original high-level plan, kept current. For
+> canonical, per-feature docs see **[../docs/README.md](../docs/README.md)**.
+> Major changes since the first draft: Astro 5, **per-tenant dynamic API URLs**
+> (no hardcoded domain), **subscription modes** (Premium / Basic-WhatsApp),
+> SEO product URLs, and a Vitest test suite.
+
 ## 1. Project Overview
 
-This is a **multi-tenant e-commerce platform** built with Astro and React, designed for small businesses. The application serves as a storefront for businesses to showcase products, manage shopping carts, process orders, and handle customer accounts. It integrates with an external admin API (`admin-osama.cashierthru.com`) for backend operations.
+This is a **multi-tenant e-commerce platform** built with Astro and React, designed for small businesses. The application serves as a storefront for businesses to showcase products, manage shopping carts, and place orders (standard checkout on Premium, WhatsApp ordering on Basic). The admin API base URL is resolved **per tenant at runtime** from `window.location.origin` (e.g. `admin-{tenant}.cashierthru.com`) via `getApiUrl()` — never a hardcoded domain (see `docs/multi-tenant-architecture.md`).
 
 **Project Name:** alelm-v2-website  
 **Version:** 0.2.0
@@ -12,7 +18,7 @@ This is a **multi-tenant e-commerce platform** built with Astro and React, desig
 ## 2. Technology Stack
 
 ### Core Framework
-- **Astro** v4.16.18 - Primary framework with hybrid SSR/SSG rendering
+- **Astro** v5.17.3 - Primary framework with hybrid SSR/SSG rendering
 - **React** v19.0.0 - UI components and interactivity
 - **TypeScript** v5.9.3 - Type safety
 
@@ -135,7 +141,7 @@ graph TD
   - Update quantities
   - Product variations display
   - Price calculations (subtotal, tax, shipping)
-- **Cart Persistence:** Server-side cart via API
+- **Cart Persistence:** plan-aware — server-side cart via API (Premium) or `localStorage` (Basic / WhatsApp)
 - **Empty State:** Friendly empty cart UI
 
 ### 4.4 Checkout (`/shop/checkout`)
@@ -160,7 +166,7 @@ graph TD
 
 ### 4.7 Settings & Configuration
 - **API Endpoint:** `GET /v1/setting-profile`
-- **Base URL:** `https://admin-osama.cashierthru.com/api/`
+- **Base URL:** per-tenant, resolved at runtime via `getApiUrl()` (e.g. `https://admin-{tenant}.cashierthru.com/api/`)
 - **Dynamic Theming:** Colors loaded from API (main_color, main_bg, main_font_color)
 - **Shop Settings:** Name, logo, about us, contact info, social links (Facebook, Instagram)
 - **Tax Configuration:** VAT, tax rate, service charge
@@ -173,10 +179,13 @@ graph TD
 ## 5. API Integration
 
 ### Base URLs
+Resolved **per tenant at runtime** — no hardcoded API domain:
 ```env
-PUBLIC_API_URL=https://admin-osama.cashierthru.com/api/
+PUBLIC_DEV_API_ORIGIN=https://admin-asly.cashierthru.com   # dev-only fallback
 PUBLIC_LAST_ROUTE_API_URL=/api/
 ```
+In production the admin origin is derived from the storefront host
+(`{tenant}.cashierthru.com` → `admin-{tenant}.cashierthru.com`) via `getApiUrl()`.
 
 ### Key API Endpoints
 | Endpoint | Method | Purpose |
@@ -211,7 +220,7 @@ PUBLIC_LAST_ROUTE_API_URL=/api/
 - **Hybrid Rendering:** Static by default, dynamic on demand
 
 ### External Image Domains
-- `admin-osama.cashierthru.com`
+- `admin-*.cashierthru.com` (per-tenant admin / image origin)
 - `cdn.pixabay.com`
 - `i.ibb.co`
 - `source.unsplash.com`
@@ -238,8 +247,9 @@ PUBLIC_LAST_ROUTE_API_URL=/api/
 - Good UX patterns (loading states, error handling)
 
 ### Areas for Improvement
-- No existing test suite
-- Some console.log debugging statements remain
+- ✅ ~~No existing test suite~~ — Vitest + unit tests added (slugify, product-url, whatsapp-order, subscription); ESLint flat config added
+- ✅ ~~Some console.log debugging statements remain~~ — debug logs removed
+- Remote images not yet optimized (plain `<img>`; image service/CDN pending)
 - Could benefit from caching strategies
 - No PWA capabilities
 - Limited internationalization (Arabic only currently)
@@ -249,10 +259,10 @@ PUBLIC_LAST_ROUTE_API_URL=/api/
 ## 9. Future Roadmap Suggestions
 
 ### Phase 1: Stability & Polish
-- [ ] Remove debug console.log statements
+- [x] Remove debug console.log statements
 - [ ] Add error boundaries globally
 - [ ] Implement proper loading skeletons
-- [ ] Add unit tests for critical hooks
+- [x] Add unit tests for critical hooks (Vitest)
 
 ### Phase 2: Performance
 - [ ] Implement service worker for offline support
@@ -291,4 +301,4 @@ npm run preview          # Preview production build on port 3000
 ---
 
 *Document generated based on codebase analysis*
-*Last updated: February 2026*
+*Last updated: 2026-06-20*

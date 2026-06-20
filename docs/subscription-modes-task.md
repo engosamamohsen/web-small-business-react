@@ -120,6 +120,12 @@ Example message for a restaurant named "ROKA'S KITCHEN"
 شكراً
 ```
 
+> **Note:** this is the *original spec* example. The live message format was later
+> refined into a friendlier, sectioned layout (bold headers, bullet choices,
+> per-line `qty × price = total`, and an optional customer block for Plus-plan
+> stores). Current format:
+> [product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md) §2.4.
+
 ### WhatsApp number & shop name source — setting-profile API
 
 Both values come from the **existing settings endpoint** — do not hardcode:
@@ -239,7 +245,10 @@ Where each requirement lands in `web-small-business-react`:
 
 - The tenant test environment is `https://admin-asly.cashierthru.com` (dev default
   via `PUBLIC_DEV_API_ORIGIN` in `.env`; `npm run dev` already points there).
-- Product URLs are canonical at `/product/{slug}` where the API slug already embeds the id at the end (e.g. `ft-shaorma-frakh-8`). See `src/lib/product-url.ts`.
+- Product URLs are canonical at `/product/{slug}-{seo-name}` — the slugified
+  product name is appended for SEO; the API slug still embeds the id at the end,
+  and lookup uses that id only. See `src/lib/product-url.ts` and
+  [product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md).
 - "Successful WhatsApp launch" on web: opening `wa.me` in a new tab — treat a
   non-blocked `window.open` as success before clearing the cart; popup blockers
   must not wipe the cart.
