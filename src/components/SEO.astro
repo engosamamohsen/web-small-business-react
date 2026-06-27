@@ -8,6 +8,16 @@ interface Props {
   imageHeight?: number;
   canonical?: string;
   type?: 'website' | 'article' | 'product';
+  // Public-facing origin of the CURRENT tenant (e.g. "https://roka.cashierthru.com").
+  // Passed down from Layout via getSiteOrigin(). Falls back to Astro.site only
+  // when absent. This is what makes canonical/OG URLs point at the tenant's own
+  // domain instead of the shared base domain — required for per-subdomain indexing.
+  origin?: string;
+  // When true, emit `noindex` so the page is kept out of search results
+  // (cart, checkout, auth, account, order pages).
+  noindex?: boolean;
+  // One or more JSON-LD structured-data objects (Product, Organization, …).
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
 const {
@@ -18,11 +28,29 @@ const {
   imageWidth = 1200,
   imageHeight = 630,
   canonical,
-  type = 'website'
+  type = 'website',
+  origin,
+  noindex = false,
+  jsonLd,
 } = Astro.props;
 
-const canonicalURL = canonical || new URL(Astro.url.pathname, Astro.site);
-const fullImageURL = image.startsWith('http') ? image : new URL(image, Astro.site).toString();
+// Prefer the live tenant origin; fall back to the configured site, then "/".
+const base = origin || (Astro.site ? Astro.site.toString() : Astro.url.origin);
+
+// Canonical uses the path only (no query string) so filtered views like
+// /?category=1 don't fragment indexing — they all canonicalise to the path.
+const canonicalURL = canonical || new URL(Astro.url.pathname, base).toString();
+const fullImageURL = image.startsWith('http') ? image : new URL(image, base).toString();
+
+const robotsContent = noindex ? 'noindex, follow' : 'index, follow';
+
+// Optional Google Search Console meta-tag verification. Only needed if you
+// verify via the HTML-tag method; DNS / domain-property verification needs nothing.
+const googleSiteVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+
+const structuredData = jsonLd
+  ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd])
+  : [];
 ---
 
 <!-- Primary Meta Tags -->
@@ -30,7 +58,13 @@ const fullImageURL = image.startsWith('http') ? image : new URL(image, Astro.sit
 <meta name="title" content={title} />
 <meta name="description" content={description} />
 {keywords.length > 0 && <meta name="keywords" content={keywords.join(', ')} />}
+<meta name="robots" content={robotsContent} />
+<meta name="googlebot" content={robotsContent} />
 <link rel="canonical" href={canonicalURL} />
+
+{googleSiteVerification && (
+  <meta name="google-site-verification" content={googleSiteVerification} />
+)}
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={type} />
@@ -48,3 +82,8 @@ const fullImageURL = image.startsWith('http') ? image : new URL(image, Astro.sit
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={fullImageURL} />
+
+<!-- Structured data (JSON-LD) -->
+{structuredData.map((data) => (
+  <script type="application/ld+json" set:html={JSON.stringify(data)} />
+))}

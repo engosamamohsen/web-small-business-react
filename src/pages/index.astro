@@ -16,6 +16,8 @@ import { ToastContainer } from "react-toastify";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { fetchHook } from "@/hooks/fetch-hook";
+import { getSiteOrigin } from "@/lib/site-origin";
+import { buildStoreOrganization, normalizeKeywords } from "@/lib/seo";
 import packageJson from "../../package.json";
 import { Product } from "@/lib/product/product";
 
@@ -117,13 +119,37 @@ if (productsResponse?.ok && productsResponse?.data?.data) {
     showProducts = true;
 }
 
-// SEO metadata
+// SEO metadata — all sourced from the tenant's settings API (per request).
 const pageTitle = settingsData?.name || "الرئيسية - منصة الأعمال";
-const pageDescription = settingsData?.about_us || "منصة إدارة الأعمال الصغيرة";
-const pageKeywords = settingsData?.keywords || [
+// about_us can carry CRLF line breaks; collapse to one clean line.
+const pageDescription =
+    settingsData?.about_us?.replace(/\s+/g, " ").trim() ||
+    "منصة إدارة الأعمال الصغيرة";
+const pageKeywords = normalizeKeywords(settingsData?.keywords, [
     "أعمال صغيرة",
     "متجر إلكتروني",
     "تجارة إلكترونية",
+]);
+
+// Organization (built from the tenant's settings — name/logo/about/contact +
+// facebook/instagram via sameAs) + WebSite structured data. Helps Google build
+// the store's knowledge panel and a sitelinks search box. Tenant origin is
+// resolved from the request inside Layout/SEO.
+const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
+const storeName = settingsData?.name || "المتجر";
+const homeJsonLd = [
+    buildStoreOrganization(settingsData, siteOrigin),
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: storeName,
+        url: siteOrigin,
+        potentialAction: {
+            "@type": "SearchAction",
+            target: `${siteOrigin}/?q={search_term_string}`,
+            "query-input": "required name=search_term_string",
+        },
+    },
 ];
 ---
 
@@ -133,6 +159,7 @@ const pageKeywords = settingsData?.keywords || [
     keywords={pageKeywords}
     image={settingsData?.logo}
     favicon={settingsData?.logo}
+    jsonLd={homeJsonLd}
 >
     <ColorHandler client:only="react" />
     <LoginHandler client:only="react" />

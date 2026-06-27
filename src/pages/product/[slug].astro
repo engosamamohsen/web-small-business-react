@@ -12,6 +12,8 @@ import { fetchSettings } from "@/hooks/fetchSettings";
 import { buildWhatsAppLink } from "@/lib/whatsapp-order";
 import { fetchHook } from "@/hooks/fetch-hook";
 import { buildProductPath, parseProductParam } from "@/lib/product-url";
+import { getSiteOrigin } from "@/lib/site-origin";
+import { buildStoreOrganization, storeOrganizationId } from "@/lib/seo";
 import packageJson from "../../../package.json";
 import type { ProductType } from "@/lib/types";
 
@@ -88,7 +90,11 @@ if (currentPath !== canonicalPath) {
     return Astro.redirect(encodedCanonicalPath + Astro.url.search, 301);
 }
 
-const canonicalUrl = `${Astro.url.origin}${encodedCanonicalPath}`;
+// Use the tenant's real origin (roka.cashierthru.com) from the proxy headers,
+// NOT Astro.url.origin — the Node adapter reports "localhost" behind Nginx,
+// which would emit a broken canonical + JSON-LD offer URL.
+const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
+const canonicalUrl = `${siteOrigin}${encodedCanonicalPath}`;
 
 // SEO metadata
 const pageTitle = productData?.name || "تفاصيل المنتج";
@@ -106,31 +112,32 @@ const productImage =
     productData?.gallery_images?.[0] ||
     productData?.image;
 
-// Schema.org JSON-LD
-const schema =
-    JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Product",
-        name: productData?.name,
-        description: productData?.description?.replace(/<[^>]*>/g, ""),
-        image: productImage,
-        brand: {
-            "@type": "Brand",
-            name: settingsData?.name || "Store",
-        },
-        offers: {
-            "@type": "Offer",
-            url: canonicalUrl,
-            priceCurrency: "EGP",
-            price: productData?.price,
-            availability: "https://schema.org/InStock",
-            seller: {
-                "@type": "Organization",
-                name: settingsData?.name || "Store",
-            },
-        },
-        category: productData?.category?.name,
-    }) || "";
+// Schema.org JSON-LD — the Product plus the store Organization (name / logo /
+// about / contact + facebook/instagram via sameAs), built from the tenant's
+// settings and linked as the offer's seller by @id, so the brand + social data
+// is present on product pages too.
+const storeOrg = buildStoreOrganization(settingsData, siteOrigin);
+const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: productData?.name,
+    description: productData?.description?.replace(/<[^>]*>/g, ""),
+    image: productImage,
+    brand: {
+        "@type": "Brand",
+        name: settingsData?.name || "Store",
+    },
+    offers: {
+        "@type": "Offer",
+        url: canonicalUrl,
+        priceCurrency: "EGP",
+        price: productData?.price,
+        availability: "https://schema.org/InStock",
+        seller: { "@id": storeOrganizationId(siteOrigin) },
+    },
+    category: productData?.category?.name,
+};
+const schema = JSON.stringify([productSchema, storeOrg]);
 
 // Rendered on demand — product ids/slugs are unknown at build time
 export const prerender = false;

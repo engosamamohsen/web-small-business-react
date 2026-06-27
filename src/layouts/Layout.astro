@@ -2,6 +2,7 @@
 import SEO from "../components/SEO.astro";
 import Analytics from "../components/Analytics.astro";
 import WebVitals from "../components/WebVitals.astro";
+import { getSiteOrigin } from "@/lib/site-origin";
 
 // CSS Imports
 import "../styles/globals.css";
@@ -19,6 +20,8 @@ interface Props {
     imageHeight?: number;
     favicon?: string;
     canonical?: string;
+    noindex?: boolean;
+    jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
 const {
@@ -30,10 +33,15 @@ const {
     imageHeight,
     favicon,
     canonical,
+    noindex = false,
+    jsonLd,
 } = Astro.props;
 
-// Get cookies for auth - currently unused
-// const token = Astro.cookies.get("app_token")?.value;
+// Resolve the requesting tenant's own origin (roka.cashierthru.com, …) from the
+// proxy headers — the Node adapter leaves Astro.url.host as "localhost" behind
+// Nginx, and Astro.site is the shared base domain, so neither can be trusted for
+// per-tenant canonical / Open Graph URLs.
+const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
 ---
 
 <!doctype html>
@@ -64,6 +72,9 @@ const {
             imageWidth={imageWidth}
             imageHeight={imageHeight}
             canonical={canonical}
+            origin={siteOrigin}
+            noindex={noindex}
+            jsonLd={jsonLd}
         />
 
         <!-- Analytics -->
