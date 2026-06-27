@@ -29,6 +29,7 @@
     "clsx": "^2.1.1",
     "firebase": "^11.2.0",
     "html-react-parser": "^5.2.2",
+    "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.446.0",
     "nprogress": "^0.2.0",

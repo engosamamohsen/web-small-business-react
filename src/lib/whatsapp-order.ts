@@ -6,6 +6,7 @@
 
 import { storeConfig } from "@/lib/store-config";
 import type { CartItemType } from "@/types/types";
+import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-totals";
 
 /**
  * Customer details collected on the cart for **Plus**-plan stores and appended
@@ -174,13 +175,30 @@ export function buildWhatsAppOrderMessage(
             });
         }
 
-        // Quantity × unit price = line total, on one readable line.
+        // Quantity × unit price = line total, on one readable line. When the
+        // item is discounted, show the pre-discount unit price struck (~..~ is
+        // WhatsApp strikethrough) before the final one.
+        const origUnit = originalUnitPrice(item);
+        const unitText =
+            origUnit > unitPrice
+                ? `~${formatPrice(origUnit)}~ ${formatPrice(unitPrice)}`
+                : formatPrice(unitPrice);
         lines.push(
-            `   🔢 الكمية: ${qty} × ${formatPrice(unitPrice)} = ${formatPrice(lineTotal)} ${currency}`,
+            `   🔢 الكمية: ${qty} × ${unitText} = ${formatPrice(lineTotal)} ${currency}`,
         );
         if (item.product_note) lines.push(`   📝 ملاحظة: ${item.product_note}`);
         lines.push("");
     });
+
+    // Before/after-discount summary — only when the order actually has savings.
+    const { originalSubtotal, discountAmount, hasDiscount } =
+        getCartDiscountSummary(items);
+    if (hasDiscount) {
+        lines.push(
+            `🏷️ الإجمالي قبل الخصم: ${formatPrice(originalSubtotal)} ${currency}`,
+        );
+        lines.push(`🎁 الخصم: -${formatPrice(discountAmount)} ${currency}`);
+    }
 
     lines.push(`💰 *الإجمالي: ${formatPrice(totalPrice)} ${currency}*`);
     lines.push("");
@@ -217,4 +235,15 @@ export function buildWhatsAppOrderUrl(
         customer,
     );
     return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+/**
+ * Public greeting ("مرحبا بك فى مطعم {name}") used as the caption that rides along
+ * with the order-receipt image shared into WhatsApp.
+ */
+export function buildWhatsAppGreeting(
+    shopName?: string | null,
+    shopType?: string | null,
+): string {
+    return buildGreeting(shopName, shopType);
 }

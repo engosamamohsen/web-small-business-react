@@ -25,6 +25,7 @@ export interface SettingsData {
     full_address?: string;
     contact_email?: string;
     website_url?: string;
+    shop_type?: string;
 }
 
 export interface SettingsContextType {

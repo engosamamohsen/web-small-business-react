@@ -4,7 +4,7 @@ import Link from "@/components/common/Link";
 import Image from "@/components/common/Image";
 import { Minus, Plus, X } from "lucide-react";
 import { useRouter } from "@/lib/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useCartHook, useCartServices } from "@/hooks/cart/cart";
 import { fetchSettings } from "@/hooks/fetchSettings";
@@ -12,12 +12,20 @@ import { useCart, useSettings, type SettingsData } from "@/providers";
 import { cn } from "@/utils/utils";
 import { buildProductPath } from "@/lib/product-url";
 import { storeConfig } from "@/lib/store-config";
-import { buildWhatsAppOrderUrl, isUsableWhatsappNumber } from "@/lib/whatsapp-order";
+import {
+  buildWhatsAppGreeting,
+  buildWhatsAppOrderUrl,
+  isUsableWhatsappNumber,
+} from "@/lib/whatsapp-order";
 import { isPlusPlan, type CurrentSubscriptionPlan } from "@/lib/subscription";
 import { clearLocalCart } from "@/lib/cart/local-cart";
+import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-totals";
+import { buildGuestOrderItems, submitGuestOrder } from "@/lib/guest-order";
+import { captureAndShareElement } from "@/lib/cart-screenshot";
 import { trackWhatsAppOrder } from "@/lib/firebase-tracker";
 import { toast } from "react-toastify";
 import PageLoader from "../PageLoader/PageLoader";
+import OrderReceipt from "./OrderReceipt";
 import { CartItemType } from "@/types/types";
 
 // ===== Cart Item Component =====
@@ -38,6 +46,9 @@ const CartItem = ({
 }: CartItemProps) => {
   const quantity = parseInt(item.qty);
   const itemTotal = item.item_total ?? Number(item.unit_price) * quantity;
+  const originalUnit = originalUnitPrice(item);
+  const hasDiscount = originalUnit > Number(item.unit_price);
+  const originalTotal = Math.round(originalUnit * quantity * 100) / 100;
 
   return (
     <div className="mb-4 flex w-full flex-col gap-4 rounded-xl bg-white p-4 text-start shadow-sm ring-1 ring-slate-100 transition-shadow max-md:flex-col-reverse md:flex-row md:items-center md:justify-between md:gap-6">
@@ -63,6 +74,11 @@ const CartItem = ({
 
           <div className="flex flex-wrap items-baseline gap-3 text-sm">
             <span className="font-medium text-orange-500">
+              {hasDiscount && (
+                <span className="ml-1 text-xs font-normal text-slate-400 line-through">
+                  {originalUnit} ج.م
+                </span>
+              )}
               {item.unit_price} ج.م
               <span className="text-xs text-slate-500"> (سعر الوحدة)</span>
             </span>
@@ -70,7 +86,13 @@ const CartItem = ({
               الكمية: <span className="font-semibold">{quantity}</span>
             </span>
             <span className="text-xs font-semibold text-slate-800">
-              الإجمالي: <span className="text-slate-900">{itemTotal} ج.م</span>
+              الإجمالي:{" "}
+              {hasDiscount && (
+                <span className="ml-1 font-normal text-slate-400 line-through">
+                  {originalTotal} ج.م
+                </span>
+              )}
+              <span className="text-slate-900">{itemTotal} ج.م</span>
             </span>
           </div>
 
@@ -167,31 +189,54 @@ const CartItem = ({
 // ===== Order Summary Component =====
 const OrderSummary = ({
   subtotal,
+  originalSubtotal = 0,
+  discountAmount = 0,
   shipping = 0,
   tax = 0,
+  taxRate = 0,
   onWhatsAppOrder,
+  processing = false,
   whatsappAvailable = false,
 }: {
   subtotal: number;
+  originalSubtotal?: number;
+  discountAmount?: number;
   shipping?: number;
   tax?: number;
+  taxRate?: number;
   onWhatsAppOrder?: () => void;
+  processing?: boolean;
   whatsappAvailable?: boolean;
 }) => {
   const total = subtotal + shipping + tax;
+  const hasDiscount = discountAmount > 0;
 
   return (
     <div className="h-fit rounded-lg bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-xl font-bold">ملخص الطلب</h2>
       <div className="mb-4 space-y-2">
+        {hasDiscount && (
+          <>
+            <div className="flex justify-between text-slate-500">
+              <span>الإجمالي قبل الخصم</span>
+              <span className="line-through">
+                {originalSubtotal.toFixed(2)} ج.م
+              </span>
+            </div>
+            <div className="flex justify-between font-medium text-green-600">
+              <span>الخصم</span>
+              <span>- {discountAmount.toFixed(2)} ج.م</span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between">
-          <span>إجمالي المنتجات</span>
+          <span>إجمالي المنتجات{hasDiscount ? " بعد الخصم" : ""}</span>
           <span>{subtotal?.toFixed(2)} ج.م</span>
         </div>
         {tax > 0 && (
           <div className="flex justify-between">
-            <span>الضريبة</span>
-            <span>{tax} ج.م</span>
+            <span>الضريبة{taxRate > 0 ? ` (${taxRate}%)` : ""}</span>
+            <span>{tax.toFixed(2)} ج.م</span>
           </div>
         )}
         <div className="mt-2 border-t pt-2">
@@ -202,17 +247,30 @@ const OrderSummary = ({
         </div>
       </div>
       {storeConfig.checkoutMode === "whatsapp" ? (
-        // WhatsApp number is sensitive: a fake/default would route the order to
-        // a stranger. Show the button ONLY when a real number is available;
-        // otherwise hide it entirely (fail closed) and tell the customer.
+        // Both tiers order via WhatsApp: the order image is shared straight into
+        // WhatsApp (native share sheet, no download), falling back to a wa.me
+        // text order. Plus ALSO places the guest-buy order first (handled in the
+        // parent). The number is sensitive — a fake/default would route the order
+        // to a stranger — so show the button ONLY when a real number is
+        // available; otherwise fail closed.
         whatsappAvailable ? (
           <button
             type="button"
             onClick={onWhatsAppOrder}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 py-3 text-center font-semibold text-white transition-colors hover:bg-green-600"
+            disabled={processing}
+            className={cn(
+              "flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 py-3 text-center font-semibold text-white transition-colors hover:bg-green-600",
+              processing && "cursor-not-allowed opacity-70 hover:bg-green-500",
+            )}
           >
-            <i className="pi pi-whatsapp text-lg" aria-hidden="true" />
-            اطلب عبر واتساب
+            {processing ? (
+              "جارٍ تجهيز الطلب..."
+            ) : (
+              <>
+                <i className="pi pi-whatsapp text-lg" aria-hidden="true" />
+                اطلب عبر واتساب
+              </>
+            )}
           </button>
         ) : (
           <p className="rounded-lg bg-slate-100 py-3 text-center text-sm font-medium text-slate-500">
@@ -232,23 +290,32 @@ const OrderSummary = ({
 };
 
 // ===== Customer Info Fields (Plus plan only) =====
-// Shown on the cart for Plus-plan stores so the customer name + full address
-// can be appended to the WhatsApp order message. Both fields are required.
+// Shown on the cart for Plus-plan stores. The name / phone / full address are
+// required and submitted to the basket/guest-buy order API together with an
+// optional order note. Payment is always cash on delivery (payment_method = 1).
 const CustomerInfoFields = ({
   name,
+  phone,
   address,
+  notes,
   errors,
   onNameChange,
+  onPhoneChange,
   onAddressChange,
+  onNotesChange,
 }: {
   name: string;
+  phone: string;
   address: string;
-  errors: { name?: boolean; address?: boolean };
+  notes: string;
+  errors: { name?: boolean; phone?: boolean; address?: boolean };
   onNameChange: (value: string) => void;
+  onPhoneChange: (value: string) => void;
   onAddressChange: (value: string) => void;
+  onNotesChange: (value: string) => void;
 }) => (
   <div className="mb-4 rounded-lg bg-white p-6 shadow-sm">
-    <h2 className="mb-4 text-xl font-bold">بيانات العميل</h2>
+    <h2 className="mb-4 text-xl font-bold">بيانات الطلب</h2>
     <div className="space-y-4">
       <div>
         <label
@@ -265,12 +332,37 @@ const CustomerInfoFields = ({
           placeholder="ادخل اسمك بالكامل"
           aria-invalid={errors.name ? "true" : "false"}
           className={cn(
-            "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30",
+            "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30",
             errors.name ? "border-red-400" : "border-slate-200",
           )}
         />
         {errors.name && (
           <p className="mt-1 text-xs text-red-500">برجاء إدخال اسم العميل</p>
+        )}
+      </div>
+      <div>
+        <label
+          htmlFor="customer-phone"
+          className="mb-1 block text-sm font-medium text-slate-700"
+        >
+          رقم الهاتف <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="customer-phone"
+          type="tel"
+          inputMode="tel"
+          dir="ltr"
+          value={phone}
+          onChange={(e) => onPhoneChange(e.target.value)}
+          placeholder="01XXXXXXXXX"
+          aria-invalid={errors.phone ? "true" : "false"}
+          className={cn(
+            "w-full rounded-lg border px-3 py-2 text-end text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30",
+            errors.phone ? "border-red-400" : "border-slate-200",
+          )}
+        />
+        {errors.phone && (
+          <p className="mt-1 text-xs text-red-500">برجاء إدخال رقم هاتف صحيح</p>
         )}
       </div>
       <div>
@@ -288,13 +380,29 @@ const CustomerInfoFields = ({
           placeholder="رقم العقار، الشارع، الحي، المدينة"
           aria-invalid={errors.address ? "true" : "false"}
           className={cn(
-            "w-full resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30",
+            "w-full resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30",
             errors.address ? "border-red-400" : "border-slate-200",
           )}
         />
         {errors.address && (
           <p className="mt-1 text-xs text-red-500">برجاء إدخال العنوان بالتفصيل</p>
         )}
+      </div>
+      <div>
+        <label
+          htmlFor="order-notes"
+          className="mb-1 block text-sm font-medium text-slate-700"
+        >
+          ملاحظات الطلب <span className="text-slate-400">(اختياري)</span>
+        </label>
+        <textarea
+          id="order-notes"
+          value={notes}
+          onChange={(e) => onNotesChange(e.target.value)}
+          rows={2}
+          placeholder="أي ملاحظات إضافية على الطلب"
+          className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+        />
       </div>
     </div>
   </div>
@@ -344,13 +452,23 @@ export default function Cart({
   const [subscriptionPlan, setSubscriptionPlan] =
     useState<CurrentSubscriptionPlan | null>(propSubscriptionPlan);
 
-  // Plus-plan customer details (only collected/used when isPlus is true).
+  // Plus-plan order details (only collected/used when isPlusOrder is true).
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
   const [customerErrors, setCustomerErrors] = useState<{
     name?: boolean;
+    phone?: boolean;
     address?: boolean;
   }>({});
+  // Guards the WhatsApp order flow (API call for Plus + image capture) against
+  // double submits.
+  const [processing, setProcessing] = useState(false);
+
+  // The off-screen <OrderReceipt> element captured into the order PNG that is
+  // shared into WhatsApp via the native share sheet (no download).
+  const receiptRef = useRef<HTMLDivElement>(null);
 
   // Call the settings API in the cart page itself — independent of the SSR
   // prop, which can be null (e.g. an upstream settings hiccup) or stale.
@@ -379,63 +497,161 @@ export default function Cart({
   // order button is shown at all (fail closed when absent/fake).
   const whatsappAvailable = isUsableWhatsappNumber(settings?.whatsapp_phone);
 
-  // Plus plan + WhatsApp checkout → collect customer name + full address and
-  // append them to the order message. Basic / unknown plan → hidden, no change.
-  const showCustomerInfo =
+  // Plus tier (in WhatsApp checkout mode) replaces the wa.me deep link with a
+  // real server order via basket/guest-buy — it collects name / phone / address.
+  // Basic / unknown tier keeps the WhatsApp button.
+  const isPlusOrder =
     isPlusPlan(subscriptionPlan) && storeConfig.checkoutMode === "whatsapp";
 
-  // BASIC plan checkout: cart → WhatsApp order.
-  // The cart is cleared ONLY after WhatsApp actually opened — a popup
-  // blocker must not wipe the customer's cart.
-  const handleWhatsAppOrder = () => {
-    const items = cartResponse?.cart_items ?? [];
+  // Order tax. The backend applies VAT (settings.vat — a percentage) to the
+  // subtotal; mirror it here so the cart total matches the order that gets
+  // placed. Verified against real orders: order.tax = sub_total × vat%,
+  // total = sub_total + tax (service/shipping are 0 for web orders). A missing
+  // / zero vat → no tax line, total = subtotal.
+  const taxRate = parseFloat(String(settings?.vat ?? 0)) || 0;
+  const subtotal = cartResponse?.total_price ?? 0;
+  const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100;
 
-    // Plus plan: customer name + full address are required and go into the order.
-    let customer: { name: string; address: string } | undefined;
-    if (showCustomerInfo) {
+  // Before/after-discount products totals (shown in the summary, receipt and
+  // WhatsApp message). Derived from the cart items' original_unit_price.
+  const discountSummary = getCartDiscountSummary(cartResponse?.cart_items ?? []);
+
+  // WhatsApp order — the two tiers deliberately differ:
+  //   • Plus: validate name/phone/address → POST basket/guest-buy
+  //     (payment_method = 1) → render the order to a PNG (off-screen
+  //     <OrderReceipt>) and push it into WhatsApp via the native share sheet
+  //     (NO download); if the device can't share a file, fall back to a wa.me
+  //     FULL-text order. The server order is placed regardless, so the cart is
+  //     cleared even if the customer dismisses the share sheet.
+  //   • Basic: NO API and NO screenshot — the order goes to WhatsApp as a
+  //     wa.me FULL-text message only.
+  const handleWhatsAppOrder = async () => {
+    const items = cartResponse?.cart_items ?? [];
+    if (!items.length) return;
+
+    // Plus tier: customer fields are required and go into the API order + the
+    // order image. Validate before doing anything irreversible.
+    if (isPlusOrder) {
       const name = customerName.trim();
+      const phoneDigits = customerPhone.replace(/[^\d]/g, "");
       const address = customerAddress.trim();
-      const errors = { name: !name, address: !address };
-      if (errors.name || errors.address) {
+      const errors = {
+        name: !name,
+        phone: phoneDigits.length < 7 || phoneDigits.length > 15,
+        address: !address,
+      };
+      if (errors.name || errors.phone || errors.address) {
         setCustomerErrors(errors);
-        toast.error("برجاء إدخال اسم العميل والعنوان بالتفصيل", { rtl: true });
+        toast.error("برجاء إدخال اسم العميل ورقم هاتف صحيح والعنوان", {
+          rtl: true,
+        });
         return;
       }
       setCustomerErrors({});
-      customer = { name, address };
     }
 
-    const url = buildWhatsAppOrderUrl(
-      items,
-      cartResponse?.total_price ?? 0,
-      settings,
-      customer,
-    );
-    if (!url) {
+    // Fail closed on a missing/placeholder number BEFORE placing a Plus order we
+    // couldn't deliver (the number is also the text-fallback target).
+    if (!isUsableWhatsappNumber(settings?.whatsapp_phone)) {
       toast.error("رقم الواتساب غير متوفر حالياً", { rtl: true });
       return;
     }
 
-    // Fire-and-forget — counter increments in the background; failure never
-    // blocks the redirect or clears the cart.
-    trackWhatsAppOrder().catch(() => {});
+    const greeting = buildWhatsAppGreeting(settings?.name, settings?.shop_type);
+    const customer = isPlusOrder
+      ? { name: customerName, address: customerAddress }
+      : null;
+    const orderTotal = subtotal + (isPlusOrder ? taxAmount : 0);
 
-    const win = window.open(url, "_blank");
-    if (win) {
-      try {
-        win.opener = null;
-      } catch {
-        // cross-origin — ignore
-      }
+    const finishOrder = (message: string) => {
       clearLocalCart();
       setCartCount(0);
       retry();
-      toast.success("تم تجهيز طلبك في واتساب", { rtl: true });
-    } else {
-      // popup blocked — keep the cart, tell the user
-      toast.error("تعذر فتح واتساب — يرجى السماح بالنوافذ المنبثقة", {
-        rtl: true,
+      toast.success(message, { rtl: true });
+    };
+
+    setProcessing(true);
+    try {
+      // ── Basic tier: TEXT-only WhatsApp order — NO screenshot, NO API ────────
+      // Send the full order straight to the shop number as a wa.me text message.
+      if (!isPlusOrder) {
+        trackWhatsAppOrder().catch(() => {});
+        const textUrl = buildWhatsAppOrderUrl(items, orderTotal, settings, customer);
+        const win = textUrl ? window.open(textUrl, "_blank") : null;
+        if (win) {
+          try {
+            win.opener = null;
+          } catch {
+            // cross-origin — ignore
+          }
+          finishOrder("تم تجهيز طلبك عبر واتساب");
+        } else {
+          // Nothing placed → keep the cart so the user can retry.
+          toast.error("تعذر فتح واتساب — يرجى السماح بالنوافذ المنبثقة", {
+            rtl: true,
+          });
+        }
+        return;
+      }
+
+      // ── Plus tier: place the real server order FIRST, then SHARE the image ──
+      // Abort on failure so we never send an image for an order that wasn't created.
+      await submitGuestOrder({
+        items: buildGuestOrderItems(items),
+        payment_method: 1, // cash on delivery (online not enabled yet)
+        full_name: customerName.trim(),
+        full_address: customerAddress.trim(),
+        phone: customerPhone.trim(),
+        notes: orderNotes.trim(),
       });
+
+      // Fire-and-forget order counter.
+      trackWhatsAppOrder().catch(() => {});
+
+      // Push the order image straight into WhatsApp (native share sheet). The
+      // greeting rides along as the caption. No download, ever.
+      const result = await captureAndShareElement(
+        receiptRef.current,
+        `order-${Date.now()}.png`,
+        greeting,
+      );
+
+      if (result === "shared") {
+        finishOrder("تم إرسال صورة طلبك عبر واتساب");
+        return;
+      }
+
+      if (result === "cancelled") {
+        // Customer dismissed the share sheet, but the Plus order is already
+        // placed server-side → clear and confirm.
+        finishOrder("تم استلام طلبك");
+        return;
+      }
+
+      // "unsupported" / "failed" → this device can't share a file. Fall back to
+      // a wa.me FULL-text order to the shop number (still no download). The order
+      // is placed server-side regardless of whether the popup opens.
+      const fallbackUrl = buildWhatsAppOrderUrl(
+        items,
+        orderTotal,
+        settings,
+        customer,
+      );
+      const win = fallbackUrl ? window.open(fallbackUrl, "_blank") : null;
+      if (win) {
+        try {
+          win.opener = null;
+        } catch {
+          // cross-origin — ignore
+        }
+      }
+      finishOrder("تم استلام طلبك");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "تعذر تأكيد الطلب، حاول مرة أخرى";
+      toast.error(message, { rtl: true });
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -485,6 +701,28 @@ export default function Cart({
 
   return (
     <div className="mx-auto my-10 min-h-[800px] max-w-7xl px-4 py-8">
+      {/* Off-screen order image captured to PNG for the WhatsApp attachment. */}
+      <OrderReceipt
+        ref={receiptRef}
+        greeting={buildWhatsAppGreeting(settings?.name, settings?.shop_type)}
+        items={cartResponse.cart_items}
+        customer={
+          isPlusOrder
+            ? {
+                name: customerName,
+                phone: customerPhone,
+                address: customerAddress,
+              }
+            : undefined
+        }
+        subtotal={subtotal}
+        originalSubtotal={discountSummary.originalSubtotal}
+        discountAmount={discountSummary.discountAmount}
+        vatRate={isPlusOrder ? taxRate : 0}
+        vatAmount={isPlusOrder ? taxAmount : 0}
+        total={subtotal + (isPlusOrder ? taxAmount : 0)}
+      />
+
       <h1 className="mb-2 text-3xl font-bold text-slate-900">عربة التسوق</h1>
       <p className="mb-6 text-sm text-slate-500">
         يمكنك تعديل الكمية أو إزالة المنتجات قبل إتمام الطلب.
@@ -504,15 +742,23 @@ export default function Cart({
           ))}
         </div>
         <div className="lg:self-start">
-          {showCustomerInfo && (
+          {isPlusOrder && (
             <CustomerInfoFields
               name={customerName}
+              phone={customerPhone}
               address={customerAddress}
+              notes={orderNotes}
               errors={customerErrors}
               onNameChange={(value) => {
                 setCustomerName(value);
                 if (customerErrors.name) {
                   setCustomerErrors((prev) => ({ ...prev, name: false }));
+                }
+              }}
+              onPhoneChange={(value) => {
+                setCustomerPhone(value);
+                if (customerErrors.phone) {
+                  setCustomerErrors((prev) => ({ ...prev, phone: false }));
                 }
               }}
               onAddressChange={(value) => {
@@ -521,11 +767,17 @@ export default function Cart({
                   setCustomerErrors((prev) => ({ ...prev, address: false }));
                 }
               }}
+              onNotesChange={setOrderNotes}
             />
           )}
           <OrderSummary
             subtotal={cartResponse.total_price}
+            originalSubtotal={discountSummary.originalSubtotal}
+            discountAmount={discountSummary.discountAmount}
+            tax={isPlusOrder ? taxAmount : 0}
+            taxRate={isPlusOrder ? taxRate : 0}
             onWhatsAppOrder={handleWhatsAppOrder}
+            processing={processing}
             whatsappAvailable={whatsappAvailable}
           />
         </div>

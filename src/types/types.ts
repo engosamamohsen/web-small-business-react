@@ -16,7 +16,14 @@ export interface CartItemType {
   product_name: string;
   product_image: string;
   qty: string;
+  /** Final per-unit price — already discounted, includes variation extras. */
   unit_price: number;
+  /**
+   * Pre-discount per-unit price (also variation-inclusive). Set by the local
+   * cart so the UI / receipt / WhatsApp message can show before-vs-after.
+   * Optional: absent for older entries or backends that don't expose it.
+   */
+  original_unit_price?: number;
   item_total: number;
   product_note: string | null;
   variations: Variation[];

@@ -74,6 +74,35 @@ function resolveUnitPrice(product: any): number {
         : base;
 }
 
+/**
+ * Resolve the PRE-discount per-unit price (variation-inclusive) so the cart can
+ * show before-vs-after discount. Prefers the value CartActions computed; falls
+ * back to base + selected variation extras; finally to the final unit price
+ * (→ no discount shown).
+ */
+function resolveOriginalUnitPrice(product: any, finalUnitPrice: number): number {
+    if (product?.local_original_unit_price != null)
+        return Number(product.local_original_unit_price) || finalUnitPrice;
+
+    const base = Number(product?.price);
+    if (Number.isFinite(base) && base > 0) {
+        const extras = Array.isArray(product?.variations)
+            ? product.variations.reduce(
+                  (sum: number, v: any) =>
+                      sum +
+                      (v?.choices ?? []).reduce(
+                          (s: number, c: any) => s + (Number(c?.price) || 0),
+                          0,
+                      ),
+                  0,
+              )
+            : 0;
+        return Math.round((base + extras) * 100) / 100;
+    }
+
+    return finalUnitPrice;
+}
+
 /** Two payloads are the same cart line if product + options + note match. */
 function lineKey(product: any): string {
     return JSON.stringify([
@@ -93,6 +122,7 @@ export function addLocalCartItem(product: any): CartResponseType {
     const items = readItems();
     const qty = Number(product?.count) || 1;
     const unitPrice = resolveUnitPrice(product);
+    const originalUnitPrice = resolveOriginalUnitPrice(product, unitPrice);
     const key = lineKey(product);
 
     const existing = items.find((item) => (item as any).line_key === key);
@@ -113,6 +143,7 @@ export function addLocalCartItem(product: any): CartResponseType {
                 "",
             qty: String(qty),
             unit_price: unitPrice,
+            original_unit_price: originalUnitPrice,
             item_total: Math.round(unitPrice * qty * 100) / 100,
             product_note: product?.product_note || null,
             // Persist the selected variations (name + choices) so the cart UI and
