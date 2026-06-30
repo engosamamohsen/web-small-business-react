@@ -102,7 +102,38 @@ us** are set in its admin — that's what shows in the title and search snippet.
 
 ---
 
-## 6. Ongoing (for non-brand / generic terms)
+## 6. Verify structured data (Rich Results)
+
+The JSON-LD ships from the app — Organization + WebSite on the homepage
+(`src/components/StructuredData.astro`), and a Product + store Organization on
+each product page (built inline in `src/pages/product/[slug].astro`), fed live
+from the settings/product APIs. A malformed or empty schema ships **silently**,
+so confirm it's in the live HTML and valid.
+
+```bash
+# JSON-LD is present (homepage + a product page):
+curl -s https://<store>.cashierthru.com/                    | grep -o 'application/ld+json'
+curl -s https://<store>.cashierthru.com/product/<id>-<name> | grep -o 'application/ld+json'
+```
+
+Then validate the markup (catches fields Google needs for rich results):
+
+- **Rich Results Test** — https://search.google.com/test/rich-results → paste the
+  homepage and a product URL. The product page should report a valid **Product**
+  result; the homepage an **Organization** / **WebSite**.
+- **Schema Markup Validator** — https://validator.schema.org for full schema.org
+  validation (not just Google's rich-result subset).
+- Later, Search Console → **Enhancements** reports Product issues across the site.
+
+> The product page's `priceCurrency` is **EGP** — correct for these stores.
+>
+> Known gotcha: the `WebSite` schema advertises a `SearchAction` at `/search?q=…`,
+> but **that route doesn't exist** in this app — either build it or drop the
+> `SearchAction` so the markup doesn't point at a dead path.
+
+---
+
+## 7. Ongoing (for non-brand / generic terms)
 
 - Add inbound links (Facebook/Instagram bios already in settings, partners, directories).
 - Keep product names/descriptions descriptive and unique.
