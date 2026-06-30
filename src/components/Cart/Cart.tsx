@@ -21,7 +21,7 @@ import { isPlusPlan, type CurrentSubscriptionPlan } from "@/lib/subscription";
 import { clearLocalCart } from "@/lib/cart/local-cart";
 import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-totals";
 import { buildGuestOrderItems, submitGuestOrder } from "@/lib/guest-order";
-import { captureAndShareElement } from "@/lib/cart-screenshot";
+import { captureElementToFile, shareImageFile } from "@/lib/cart-screenshot";
 import { trackWhatsAppOrder } from "@/lib/firebase-tracker";
 import { toast } from "react-toastify";
 import PageLoader from "../PageLoader/PageLoader";
@@ -594,27 +594,52 @@ export default function Cart({
         return;
       }
 
-      // ── Plus tier: place the real server order FIRST, then SHARE the image ──
-      // Abort on failure so we never send an image for an order that wasn't created.
-      await submitGuestOrder({
+      // ── Plus tier: SHARE the image FIRST (keep the click "fresh"), place the
+      // server order alongside it ────────────────────────────────────────────
+      // navigator.share() needs transient user activation. Awaiting the
+      // guest-buy POST *before* the share spends that activation, so the share
+      // throws (NotAllowedError) and the image silently degrades to a text
+      // order — the reported "no screenshot" bug. So: capture the PNG, fire the
+      // order request (don't await it yet, so it can't block the share), share
+      // while the gesture is still valid, then confirm the order landed.
+      const file = await captureElementToFile(
+        receiptRef.current,
+        `order-${Date.now()}.png`,
+      );
+
+      // Place the real server order. Kept in flight (mapped so it never rejects)
+      // until after the share so the network round-trip can't cost us the share
+      // activation.
+      const orderResult = submitGuestOrder({
         items: buildGuestOrderItems(items),
         payment_method: 1, // cash on delivery (online not enabled yet)
         full_name: customerName.trim(),
         full_address: customerAddress.trim(),
         phone: customerPhone.trim(),
         notes: orderNotes.trim(),
-      });
+      }).then(
+        () => ({ ok: true as const }),
+        (error: any) => ({ ok: false as const, error }),
+      );
+
+      // Push the order image straight into WhatsApp (native share sheet) with
+      // the greeting as the caption. No download, ever.
+      const result = file ? await shareImageFile(file, greeting) : "failed";
+
+      // Now confirm the order actually landed. On failure surface the message and
+      // keep the cart so the customer can retry (the image may already be shared,
+      // which the shop still receives in WhatsApp).
+      const order = await orderResult;
+      if (!order.ok) {
+        const message =
+          order.error?.response?.data?.message ||
+          "تعذر تأكيد الطلب، حاول مرة أخرى";
+        toast.error(message, { rtl: true });
+        return;
+      }
 
       // Fire-and-forget order counter.
       trackWhatsAppOrder().catch(() => {});
-
-      // Push the order image straight into WhatsApp (native share sheet). The
-      // greeting rides along as the caption. No download, ever.
-      const result = await captureAndShareElement(
-        receiptRef.current,
-        `order-${Date.now()}.png`,
-        greeting,
-      );
 
       if (result === "shared") {
         finishOrder("تم إرسال صورة طلبك عبر واتساب");

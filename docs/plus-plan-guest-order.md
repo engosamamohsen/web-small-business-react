@@ -187,11 +187,15 @@ Plus tier only: validate name + phone (7–15 digits) + address
 isUsableWhatsappNumber(settings)   → false → toast + return  (fail BEFORE ordering)
         ▼
 setProcessing(true)
-        ├─ Plus tier only: await submitGuestOrder({ items, payment_method: 1, full_name,
+        ├─ Plus tier only: file = await captureElementToFile(receiptRef, order-<ts>.png)
+        ├─ Plus tier only: orderResult = submitGuestOrder({ items, payment_method: 1, full_name,
         │                     full_address, phone, notes })   POST v1/basket/guest-buy
-        │                     (throws → toast error, cart kept, STOP — no image)
+        │                     (kept IN FLIGHT — NOT awaited before the share, so the
+        │                      network round-trip can't spend the share activation)
+        ├─ result = file ? await shareImageFile(file, greeting) : "failed"   ← share while the click is still "fresh"
+        ├─ order = await orderResult → rejected? toast error, cart KEPT, STOP
         ├─ trackWhatsAppOrder()        → Firebase counter (fire-and-forget)
-        └─ result = await captureAndShareElement(receiptRef, order-<ts>.png, greeting)
+        └─ branch on result:
               ├─ "shared"      → finishOrder (clear cart + success toast)
               ├─ "cancelled"   → Plus: finishOrder (order already placed); Basic: KEEP cart + info toast
               └─ "unsupported"/"failed" → buildWhatsAppOrderUrl(items, total, settings, customer) → window.open
@@ -202,9 +206,15 @@ setProcessing(true)
 
 - **No download anywhere.** Supported devices share the image; unsupported devices
   get a wa.me **text** order — neither path writes a file.
-- **Order placed BEFORE the share** (Plus), so we never share an image for an order
-  that wasn't created. The customer dismissing the share sheet (`"cancelled"`)
-  doesn't undo a placed Plus order.
+- **Share BEFORE awaiting the order** (Plus). `navigator.share()` needs transient
+  user activation; awaiting the `guest-buy` POST *before* the share spent that
+  activation, so the share threw and the image silently fell back to text (the
+  "no screenshot" bug). The order request is now **fired before the share but
+  kept in flight** (not awaited) so the network round-trip can't cost us the
+  activation, then **confirmed after** the share. If the POST rejects, the cart
+  is **kept** and an error toast is shown — the image may already be in WhatsApp,
+  which the shop still receives. The customer dismissing the share sheet
+  (`"cancelled"`) doesn't undo the placed Plus order.
 - **Fail fast:** an unusable/placeholder WhatsApp number is rejected *before* a
   Plus order is placed, so we never create an order we can't deliver.
 - **Double-submit guard:** `processing` disables the button ("جارٍ تجهيز الطلب...").
@@ -221,7 +231,7 @@ setProcessing(true)
 | `src/lib/cart-screenshot.ts` | **New.** `captureAndShareElement()` / `captureElementToFile()` / `shareImageFile()` / `canShareImageFile()` — html2canvas DOM→PNG → `navigator.share` (Web Share). No download path. |
 | `src/components/Cart/OrderReceipt.tsx` | **New.** Off-screen `forwardRef` receipt element (inline styles) captured into the order PNG. |
 | `src/lib/whatsapp-order.ts` | **+`buildWhatsAppGreeting()`** (share caption). `buildWhatsAppOrderUrl()` (full text) is the no-share fallback. The old `buildWhatsAppGreetingUrl()` was removed. |
-| `src/components/Cart/Cart.tsx` | Both tiers → green WhatsApp button (`handleWhatsAppOrder`): render `<OrderReceipt>` off-screen → `captureAndShareElement(receiptRef)` → share image (fallback: `buildWhatsAppOrderUrl` wa.me text). Plus also POSTs `guest-buy` + shows the name/phone/address/notes form + VAT line. |
+| `src/components/Cart/Cart.tsx` | Both tiers → green WhatsApp button (`handleWhatsAppOrder`): render `<OrderReceipt>` off-screen → `captureElementToFile(receiptRef)` then `shareImageFile(file, greeting)` → share image (fallback: `buildWhatsAppOrderUrl` wa.me text). Plus fires `guest-buy` in flight and shares **before** awaiting it (keeps the `navigator.share` activation), then confirms the order; also shows the name/phone/address/notes form + VAT line. |
 | `src/providers/SettingsProvider.tsx` | `SettingsData` gains `shop_type?` (used by the greeting). |
 | `package.json` | **+`html2canvas`** dependency. |
 
