@@ -8,6 +8,15 @@
 > **Created:** 2026-06-12
 > **Note:** The original spec was written with Kotlin/mobile examples; this document
 > adapts it to this project (Astro 5 + React 19 + TypeScript, multi-tenant SaaS).
+>
+> ⚠️ **Tier update — WhatsApp ordering is now Basic-tier only.** This whole doc
+> describes the WhatsApp ordering flow, which still applies to the **Basic**
+> subscription tier. A **Plus**-tier store no longer uses the WhatsApp button on
+> the cart — it places a real order via `POST v1/basket/guest-buy` (name + phone
+> + address + payment method). See
+> [plus-plan-guest-order.md](plus-plan-guest-order.md). "Plus vs Basic" here is the
+> subscription **tier**, independent of the `basic`/`premium` store **mode** —
+> see [README.md](README.md).
 
 ---
 

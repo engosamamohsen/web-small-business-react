@@ -141,11 +141,21 @@ canonical, so previously‑indexed/shared links keep working.
 
 ## 2. WhatsApp Order — APIs used
 
-> **Plan context:** the active plan is **BASIC** (`CURRENT_PLAN = "basic"` in
+> **Plan context:** the active store **mode** is **BASIC** (`CURRENT_PLAN = "basic"` in
 > `src/lib/store-config.ts`), where `checkoutMode = "whatsapp"` and the cart lives in
 > `localStorage`. The "order" is **not** POSTed to a backend order endpoint — it is delivered to the
 > shop as a **`wa.me` deep link** with a pre‑filled message. The APIs below are everything the flow
 > reads from or writes to.
+>
+> ⚠️ **Superseded — the cart no longer sends this text message as the primary path.** Both tiers now
+> send the order as a **PNG image shared into WhatsApp via `navigator.share`** (a clean `<OrderReceipt>`
+> with products+variations, qty, customer name/phone/address, subtotal/VAT/total); the greeting is the
+> caption. **It never downloads.** Plus also POSTs `v1/basket/guest-buy` first; Basic sends no API. The
+> sectioned text format documented in §2.3–§2.4 below (`buildWhatsAppOrderMessage`/`buildWhatsAppOrderUrl`)
+> is now the **fallback** used only when the device can't share a file (e.g. desktop Firefox).
+> Current flow: [plus-plan-guest-order.md](plus-plan-guest-order.md). Tier (`Plus`/`Basic`) is
+> independent of store mode (`basic`/`premium`) — see [README.md](README.md). The API inventory below
+> still applies (settings, product-details, local cart, firebase counter).
 
 ### 2.1 API / endpoint inventory
 
@@ -205,8 +215,17 @@ GET v1/setting-profile ──▶  whatsapp_phone / name / shop_type
 
 ### 2.4 Example order message (friendly, sectioned format)
 
-WhatsApp renders `*text*` as **bold**. The customer block appears only for Plus-plan
-stores (name + full address collected on the cart); Basic-plan stores omit it.
+WhatsApp renders `*text*` as **bold**.
+
+> **Note:** the `👤 بيانات العميل` customer block appears for **Plus**-tier orders
+> (the cart passes the name + address via the `customer` param). **Basic**-tier
+> messages omit it and start at the `🧾 تفاصيل الطلب` section. Both tiers also
+> download a cart screenshot to attach — see
+> [plus-plan-guest-order.md](plus-plan-guest-order.md).
+>
+> ⚠️ Emoji caveat: under the Vite **dev** server these emojis were observed
+> encoding as `%EF%BF%BD` (U+FFFD) in the wa.me URL even though the source is
+> correct — verify in a production build.
 
 ```text
 مرحبا بك فى مطعم ROKA'S KITCHEN 👋

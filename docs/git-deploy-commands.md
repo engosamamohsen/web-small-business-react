@@ -30,6 +30,11 @@ git status          # show modified / untracked files
 git diff            # show exact line changes
 ```
 
+> ⚠️ **Push and pull the SAME branch.** Whatever branch you `git push origin <branch>`
+> from your machine, the server must `git pull origin <branch>` the same one, or it
+> gets nothing. (Examples here say `astro-dev` — replace with your live branch,
+> e.g. `astro-dev-order`.)
+
 ---
 
 ## On the Server (SSH)
@@ -66,6 +71,49 @@ pm2 reload ecosystem.config.cjs   # reload the running app
 
 ---
 
+## Environment variables are NOT in git — set them on the server
+
+`.env` is gitignored, so **`PUBLIC_*` values never deploy via push/pull.**
+`deploy.sh` backs up and restores the server's existing `.env`, so a deploy keeps
+whatever is already on the server. And because Astro **inlines `PUBLIC_*` at build
+time**, the value must be in the server's `.env` **before** `npm run build` runs.
+
+➡️ To add or change one (e.g. Google Analytics), SSH in **once**, append it to
+`.env`, then deploy:
+
+```bash
+cd /path/to/web-small-business-react
+echo "PUBLIC_GA_ID=G-C5EM0V4EH6" >> .env   # one-time; future deploys keep it
+./deploy.sh                                # pulls + npm install + npm run build (bakes it in) + pm2 restart
+```
+
+Optional `PUBLIC_*` vars (omit/empty to disable the feature):
+
+| Variable | Purpose |
+| --- | --- |
+| `PUBLIC_GA_ID` | Google Analytics 4 Measurement ID (`G-…`). One shared property for all stores; segment by Hostname. |
+| `PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console **HTML-tag** token ONLY. The **DNS / Domain** method (recommended) needs nothing here. |
+
+Full value reference: [web-instructions.md](web-instructions.md).
+
+### Verify after deploying
+
+```bash
+# GA tag is live (replace the host with a real store):
+curl -s https://asly.cashierthru.com/ | grep -o "gtag/js?id=G-[A-Z0-9]*"
+# Sitemap + robots are live:
+curl -sI https://asly.cashierthru.com/sitemap.xml | head -1
+curl -s  https://asly.cashierthru.com/robots.txt
+```
+Then check **GA → Reports → Realtime** for your own visit.
+
+> **Google Search Console is NOT a deploy step.** Domain verification is a
+> **Cloudflare DNS TXT record** (`google-site-verification=…`) + clicking *Verify* —
+> push/pull does nothing for it. Deploying only makes `/sitemap.xml` reachable so
+> you can submit it in GSC afterward.
+
+---
+
 ## First-Time Server Setup
 
 Run these once when setting up a new server:
@@ -97,6 +145,10 @@ pm2 save
 PUBLIC_BASE_URL=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_DEV_API_ORIGIN=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_LAST_ROUTE_API_URL=/api/
+
+# Optional — leave empty to disable:
+PUBLIC_GA_ID=G-C5EM0V4EH6           # Google Analytics 4 (shared across all stores)
+PUBLIC_GOOGLE_SITE_VERIFICATION=    # only for the Search Console HTML-tag method
 ```
 
 Replace `YOURSHOP` with the shop subdomain (e.g. `asly`, `burger`, `fashion`).
@@ -113,6 +165,7 @@ cat > .env << 'EOF'
 PUBLIC_BASE_URL=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_DEV_API_ORIGIN=https://admin-YOURSHOP.cashierthru.com
 PUBLIC_LAST_ROUTE_API_URL=/api/
+PUBLIC_GA_ID=G-C5EM0V4EH6
 EOF
 
 # 2. Rebuild and restart

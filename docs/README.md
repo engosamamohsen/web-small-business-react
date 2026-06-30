@@ -13,11 +13,14 @@ superseded parts marked inline.
 
 | Doc | What it covers |
 | --- | --- |
-| [product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md) | **Source of truth** for the SEO product URL (`/product/{slug}-{seo-name}`, Arabic-safe, spaces→hyphens, id-only lookup, 301 canonical + `encodeURI` redirect) **and** the WhatsApp order message format (friendly/sectioned) + the APIs the order flow uses. |
+| [product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md) | **Source of truth** for the SEO product URL (`/product/{slug}-{seo-name}`, Arabic-safe, spaces→hyphens, id-only lookup, 301 canonical + `encodeURI` redirect) **and** the WhatsApp order message format (friendly/sectioned) + the APIs the order flow uses. WhatsApp order is now **Basic-tier only**. |
+| [plus-plan-guest-order.md](plus-plan-guest-order.md) | **Plus-tier** cart: the WhatsApp button is replaced by a **Confirm Order** button that places a real order via `POST v1/basket/guest-buy` (adds a required **phone** field + payment method + order notes). |
 | [product-list-image-fixes.md](product-list-image-fixes.md) | Product-list image rendering: default image is fallback-only, main image fills its box and shows without a JS opacity flip. |
 | [multi-tenant-architecture.md](multi-tenant-architecture.md) | Per-tenant dynamic API URL resolution (`getApiUrl()` from `window.location.origin`). The base URL is **never** hardcoded. |
 | [expired-subscription-lockout.md](expired-subscription-lockout.md) | Storefront lockout when a tenant's subscription + grace period are exhausted. |
 | [fix-tenant-api-nginx-host-header.md](fix-tenant-api-nginx-host-header.md) | Nginx Host-header fix for per-tenant API routing. |
+| [web-instructions.md](web-instructions.md) | **Config values & where to change them** — `.env` vars (incl. `PUBLIC_GA_ID` for Google Analytics, `PUBLIC_GOOGLE_SITE_VERIFICATION`), `store-config.ts`, base domain, and which values live in the backend instead. Includes the rebuild rule. |
+| [seo-go-live-checklist.md](seo-go-live-checklist.md) | **Get a store indexed & ranking** — Search Console DNS verification, submit the (dynamic, per-tenant) sitemap, request indexing, Google Business Profile. Notes the sitemap + SEO metadata are sourced live from the per-tenant catalogue + settings APIs (no rebuild). |
 | [git-deploy-commands.md](git-deploy-commands.md) | Git + server deploy steps (pm2). Note: deploy the branch you actually pushed. |
 | [API-Failures-Backend-Stories.md](API-Failures-Backend-Stories.md) | Backend stories / API failure handling reference. |
 
@@ -53,27 +56,38 @@ both — don't conflate them.
 ### 2. Subscription tier — `Plus` vs `Basic`
 
 - **File:** `src/lib/subscription.ts` (`isPlusPlan`, `isStoreExpired`) — **dynamic**, from `GET v1/setting-profile` → `current_subscription_plan` (per tenant, at runtime).
-- **Plus = Basic + customer info on the cart.** The only implemented frontend difference:
+- **Both tiers order via a WhatsApp button that screenshots the cart; Plus ALSO places a `guest-buy` API order.** Within WhatsApp checkout mode:
 
 | Feature | `Basic` | `Plus` |
 | --- | --- | --- |
-| Customer **Name** field on cart | ❌ hidden | ✅ shown (required) |
-| Customer **Full Address** field on cart | ❌ hidden | ✅ shown (required) |
-| Customer info in the WhatsApp order message | ❌ excluded | ✅ included (`👤 بيانات العميل` block) |
-| Catalog / cart / ordering / prices | same | same |
+| Cart order button | **اطلب عبر واتساب** | **اطلب عبر واتساب** (same button) |
+| On click | download **order image** → open wa.me (greeting) — **no API** | validate form → **`POST v1/basket/guest-buy`** → download order image → open wa.me (greeting) |
+| WhatsApp **text** | greeting only (no order details) | greeting only (no order details) |
+| **Order image (PNG)** carries | products+variations, qty, subtotal, total | + name/phone/address + VAT |
+| Customer **Name / Phone / Full Address** fields | ❌ hidden | ✅ shown (required) → `full_name`/`phone`/`full_address` |
+| **Order notes** box | ❌ n/a | ✅ optional → `notes` |
+| **Payment method** | n/a | always cash (`payment_method = 1`, static — **no selector**) |
+| **Tax (VAT) line + recalculated total** | ❌ subtotal only | ✅ `subtotal + subtotal×vat%` (from `settings.vat`) |
+| Catalog / cart / prices | same | same |
 
-- Decided by `isPlusPlan()` — matches `name` / `name_en` containing **"plus"** (case-insensitive); anything else (incl. `"Basic"`, unknown, missing) → not Plus, fields stay hidden (safe default).
+- Decided by `isPlusPlan()` — matches `name` / `name_en` containing **"plus"** (case-insensitive); anything else (incl. `"Basic"`, unknown, missing) → not Plus, so the click just shares the order image with no API (safe default).
+- The WhatsApp order is an **image, shared — never downloaded**: a clean `<OrderReceipt>` element is rendered to PNG via **html2canvas** (`src/lib/cart-screenshot.ts`) and pushed into WhatsApp with `navigator.share` (the greeting is the caption). Devices that can't share a file fall back to a `wa.me` **full-text** order (`buildWhatsAppOrderUrl`) — still no download. Full spec: [plus-plan-guest-order.md](plus-plan-guest-order.md).
 - **Subscription *expiry* is tier-independent** — `isStoreExpired()` uses `subscription_status` (remaining / grace days, `can_access`) and applies to both tiers. Doc: [expired-subscription-lockout.md](expired-subscription-lockout.md).
+- Full spec for the Plus order flow: [plus-plan-guest-order.md](plus-plan-guest-order.md).
 
 ### How the two systems interact
 
-The customer-info feature is gated on **both** systems:
+The Plus extras (the form + `guest-buy` API call + VAT line) are gated on **both** systems:
 
 ```ts
-showCustomerInfo = isPlusPlan(subscriptionPlan) && storeConfig.checkoutMode === "whatsapp"
+isPlusOrder = isPlusPlan(subscriptionPlan) && storeConfig.checkoutMode === "whatsapp"
 ```
 
-i.e. a **Plus**-tier store that is also in **WhatsApp** checkout mode.
+i.e. a **Plus**-tier store that is also in **WhatsApp** checkout mode. Both tiers
+show the same green WhatsApp button and both screenshot the cart on click; when
+`isPlusOrder` is true the click additionally shows the customer form, places the
+`guest-buy` order, and adds the VAT line. In `premium` store mode neither
+applies — the cart links to `/shop/checkout`.
 
 > ⚠️ `storeConfig.plan === "basic"` (WhatsApp app **mode**) is NOT the same as
 > `current_subscription_plan.name === "Basic"` (subscription **tier** without the
@@ -84,7 +98,8 @@ i.e. a **Plus**-tier store that is also in **WhatsApp** checkout mode.
 ## Quick map: where a feature lives
 
 - **Product URL / slug** → `src/lib/product-url.ts`, `src/utils/utils.ts` (`slugify`), `src/pages/product/[slug].astro`
-- **WhatsApp order** → `src/lib/whatsapp-order.ts`, `src/components/Cart/Cart.tsx`
+- **WhatsApp order (Basic tier)** → `src/lib/whatsapp-order.ts`, `src/components/Cart/Cart.tsx`
+- **Plus-tier cart order (guest-buy API)** → `src/lib/guest-order.ts`, `src/components/Cart/Cart.tsx`
 - **Plan / capability flags** → `src/lib/store-config.ts`; subscription status → `src/lib/subscription.ts`
 - **Tenant API URL** → `src/lib/config.ts` (`getApiUrl()`)
 - **Settings** → `src/hooks/fetchSettings.tsx` (`GET v1/setting-profile`)
