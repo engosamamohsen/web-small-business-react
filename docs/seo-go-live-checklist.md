@@ -125,7 +125,9 @@ Then validate the markup (catches fields Google needs for rich results):
   validation (not just Google's rich-result subset).
 - Later, Search Console → **Enhancements** reports Product issues across the site.
 
-> The product page's `priceCurrency` is **EGP** — correct for these stores.
+> The product page's `priceCurrency` is **EGP** and the Open Graph `og:locale`
+> is **`ar_EG`** (Arabic — Egypt) — correct for these stores, which serve Egypt
+> only. (Was previously `ar_SA` / Saudi Arabia; removed.)
 >
 > Known gotcha: the `WebSite` schema advertises a `SearchAction` at `/search?q=…`,
 > but **that route doesn't exist** in this app — either build it or drop the
