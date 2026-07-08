@@ -52,9 +52,15 @@ export function useProductOptions(product: ProductType) {
         return selectedVariations[variationId]?.id === choiceId;
     };
 
-    // Calculate dynamic price based on selections
+    // Dynamic PRE-discount subtotal based on selections.
+    // Start from the original `price` (NOT `price_after`) and add the selected
+    // additions/variations. The discount is applied once, downstream
+    // (PriceDisplay / CartActions), to this full total — so an addition is
+    // discounted too: e.g. price 100, +10 addition, 10% off → (110)*0.9 = 99,
+    // not 90 + 10 = 100. Using `price_after` here would discount only the base
+    // and leave the addition at full price.
     const currentPrice = useMemo(() => {
-        let price = product.price_after || product.price;
+        let price = product.price;
 
         // Add variations price
         Object.values(selectedVariations).forEach(choice => {

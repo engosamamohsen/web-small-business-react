@@ -150,7 +150,7 @@ canonical, so previously‑indexed/shared links keep working.
 > ⚠️ **Superseded — the cart no longer sends this text message as the primary path.** Both tiers now
 > send the order as a **PNG image shared into WhatsApp via `navigator.share`** (a clean `<OrderReceipt>`
 > with products+variations, qty, customer name/phone/address, subtotal/VAT/total); the greeting is the
-> caption. **It never downloads.** Plus also POSTs `v1/basket/guest-buy` first; Basic sends no API. The
+> caption. **It never downloads.** Both tiers POST `v1/basket/guest-buy` — Plus with the form's real customer data, Basic in the background with empty customer fields. The
 > sectioned text format documented in §2.3–§2.4 below (`buildWhatsAppOrderMessage`/`buildWhatsAppOrderUrl`)
 > is now the **fallback** used only when the device can't share a file (e.g. desktop Firefox).
 > Current flow: [plus-plan-guest-order.md](plus-plan-guest-order.md). Tier (`Plus`/`Basic`) is

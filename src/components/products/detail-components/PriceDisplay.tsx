@@ -1,7 +1,7 @@
 import { currency } from "@/constants/constansts";
 import { ProductType } from "@/lib/types";
 import { memo, useMemo } from "react";
-import { getDiscountedPrice } from "@/lib/pricing-utils";
+import { getDiscountedPrice, getEffectiveDiscount } from "@/lib/pricing-utils";
 
 interface PriceDisplayProps {
     product: ProductType;
@@ -9,9 +9,16 @@ interface PriceDisplayProps {
 }
 
 export const PriceDisplay = memo(({ product, currentPrice }: PriceDisplayProps) => {
-    const discount = product.discount ? parseInt(String(product.discount), 10) : 0;
+    // Discount derived from `discount` OR from price→price_after, so it still
+    // shows when the API only sent a reduced price_after.
+    const discount = getEffectiveDiscount(
+        product.price,
+        product.discount,
+        product.price_after,
+    );
 
-    // Memoize the discounted price calculation
+    // currentPrice is the full PRE-discount total (base + additions); the
+    // discount applies to all of it.
     const priceDiscount = useMemo(() => {
         return discount > 0 ? getDiscountedPrice(currentPrice, discount) : 0;
     }, [currentPrice, discount]);
@@ -23,7 +30,7 @@ export const PriceDisplay = memo(({ product, currentPrice }: PriceDisplayProps) 
                     <bdi>
                         <span>السعر قبل الخصم</span> <span> : </span>
                         <span className="line-through">
-                            {product.price} {currency}
+                            {currentPrice} {currency}
                         </span>
                     </bdi>
                 </div>

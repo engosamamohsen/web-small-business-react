@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { ShoppingCart, Zap, Plus, Minus } from "lucide-react";
 import { useSettings } from "@/providers";
 import { storeConfig } from "@/lib/store-config";
+import { getDiscountedPrice, getEffectiveDiscount } from "@/lib/pricing-utils";
 
 // Lazy-load AuthDialog — only needed when user is not logged in
 const AuthDialog = lazy(() => import("@/components/auth/AuthDialog"));
@@ -56,17 +57,20 @@ export const CartActions = memo(({
     // Fall back to context (works when rendered inside a shared SettingsProvider)
     const { settings: contextSettings } = useSettings();
     const settings = settingsProp ?? contextSettings;
-    const discount = product.discount ? parseInt(String(product.discount), 10) : 0;
+    // Discount derived from `discount` OR from price→price_after (mirrors
+    // PriceDisplay). totalPrice is the full PRE-discount total (base + additions),
+    // so the discount applies to the additions too — price 100, +10 addition,
+    // 10% off → 99, not 90 + 10 = 100.
+    const discount = getEffectiveDiscount(
+        product.price,
+        product.discount,
+        product.price_after,
+    );
 
-    const basePrice = totalPrice * count;
-    const finalPrice = discount > 0
-        ? Math.round(basePrice * (1 - discount / 100) * 100) / 100
-        : basePrice;
+    const finalPrice = getDiscountedPrice(totalPrice * count, discount);
     // Final per-unit price (variations + discount included) — the local cart
     // stores this so BASIC-plan prices match what the user saw.
-    const finalUnitPrice = discount > 0
-        ? Math.round(totalPrice * (1 - discount / 100) * 100) / 100
-        : totalPrice;
+    const finalUnitPrice = getDiscountedPrice(totalPrice, discount);
 
     // ── Core cart add (called directly or after login) ──────────────────────
     const doAddToCart = useCallback(async () => {
@@ -80,6 +84,9 @@ export const CartActions = memo(({
                 product_note: productNote,
                 variations,
                 local_unit_price: finalUnitPrice,
+                // Pre-discount per-unit price (variation-inclusive) so the cart
+                // can show before-vs-after discount.
+                local_original_unit_price: totalPrice,
             });
             setProductNote("");
             onAddedToCart?.();
@@ -88,7 +95,7 @@ export const CartActions = memo(({
                 error instanceof Error ? error.message : "فشل إضافة المنتج إلى السلة"
             );
         }
-    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, finalUnitPrice, onAddedToCart]);
+    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, finalUnitPrice, totalPrice, onAddedToCart]);
 
     // ── Core buy now (called directly or after login) ────────────────────────
     const doBuyNow = useCallback(async () => {
@@ -102,6 +109,9 @@ export const CartActions = memo(({
                 product_note: productNote,
                 variations,
                 local_unit_price: finalUnitPrice,
+                // Pre-discount per-unit price (variation-inclusive) so the cart
+                // can show before-vs-after discount.
+                local_original_unit_price: totalPrice,
             });
             window.location.href = "/shop/cart";
         } catch (error) {
@@ -109,7 +119,7 @@ export const CartActions = memo(({
                 error instanceof Error ? error.message : "فشل إضافة المنتج إلى السلة"
             );
         }
-    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, finalUnitPrice]);
+    }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, finalUnitPrice, totalPrice]);
 
     // ── Auth guard ────────────────────────────────────────────────────────────
     const requireAuth = useCallback((action: "cart" | "buynow") => {
