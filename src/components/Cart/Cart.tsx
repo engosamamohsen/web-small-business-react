@@ -523,8 +523,10 @@ export default function Cart({
   //     (NO download); if the device can't share a file, fall back to a wa.me
   //     FULL-text order. The server order is placed regardless, so the cart is
   //     cleared even if the customer dismisses the share sheet.
-  //   • Basic: NO API and NO screenshot — the order goes to WhatsApp as a
-  //     wa.me FULL-text message only.
+  //   • Basic: NO screenshot and NO form — the order goes to WhatsApp as a
+  //     wa.me FULL-text message (primary), and is ALSO recorded server-side via
+  //     basket/guest-buy (best-effort; empty customer fields — the details reach
+  //     the shop through the WhatsApp text).
   const handleWhatsAppOrder = async () => {
     const items = cartResponse?.cart_items ?? [];
     if (!items.length) return;
@@ -572,8 +574,11 @@ export default function Cart({
 
     setProcessing(true);
     try {
-      // ── Basic tier: TEXT-only WhatsApp order — NO screenshot, NO API ────────
-      // Send the full order straight to the shop number as a wa.me text message.
+      // ── Basic tier: TEXT WhatsApp order + background guest-buy record ───────
+      // The wa.me text message is still the primary order channel (it carries the
+      // product details to the shop). We ALSO record the order server-side via
+      // basket/guest-buy — Basic has no customer form, so name / phone / address /
+      // notes are sent empty; the details reach the shop through the WhatsApp text.
       if (!isPlusOrder) {
         trackWhatsAppOrder().catch(() => {});
         const textUrl = buildWhatsAppOrderUrl(items, orderTotal, settings, customer);
@@ -584,9 +589,21 @@ export default function Cart({
           } catch {
             // cross-origin — ignore
           }
+          // Record the order server-side, best-effort (fire-and-forget so an API
+          // failure never blocks the WhatsApp flow). Fired only AFTER the wa.me
+          // window opened, so a blocked-popup retry can't double-record.
+          submitGuestOrder({
+            items: buildGuestOrderItems(items),
+            payment_method: 1, // cash on delivery (online not enabled yet)
+            order_type: "takeaway", // Basic has no address → takeaway
+            full_name: "",
+            full_address: "",
+            phone: "",
+            notes: "",
+          }).catch(() => {});
           finishOrder("تم تجهيز طلبك عبر واتساب");
         } else {
-          // Nothing placed → keep the cart so the user can retry.
+          // Nothing opened / recorded → keep the cart so the user can retry.
           toast.error("تعذر فتح واتساب — يرجى السماح بالنوافذ المنبثقة", {
             rtl: true,
           });
@@ -613,6 +630,7 @@ export default function Cart({
       const orderResult = submitGuestOrder({
         items: buildGuestOrderItems(items),
         payment_method: 1, // cash on delivery (online not enabled yet)
+        order_type: "delivery", // Plus collects an address → delivery
         full_name: customerName.trim(),
         full_address: customerAddress.trim(),
         phone: customerPhone.trim(),

@@ -1,4 +1,4 @@
-# Plus & Basic Cart Order — WhatsApp button + shared order image (Plus also calls `basket/guest-buy`)
+# Plus & Basic Cart Order — WhatsApp button + shared order image (both tiers call `basket/guest-buy`)
 
 > **Status:** ✅ Implemented & verified live.
 > Order lib in `src/lib/guest-order.ts`; screenshot helper in
@@ -34,12 +34,13 @@ the **native share sheet** and the greeting becomes the caption.
   (`navigator.canShare({files})` is false — e.g. desktop Firefox), open a `wa.me`
   **FULL-text order** to the shop number via `buildWhatsAppOrderUrl`.
 
-The tiers differ only in whether a server order is also placed:
+Both tiers now place a server order via `guest-buy`; they differ in the customer
+data sent and how the order reaches WhatsApp:
 
-| Tier (`current_subscription_plan.name`) | On click |
+| Tier (`current_subscription_plan.type`) | On click |
 | --- | --- |
 | **Plus** | validate form → **`POST v1/basket/guest-buy`** (real order) → capture + share image (fallback: wa.me text) |
-| **Basic** / unknown / missing | capture + share image (fallback: wa.me text) — **NO API call** |
+| **Basic** / unknown / missing | open wa.me text order → **`POST v1/basket/guest-buy`** in background (empty customer fields; best-effort, fire-and-forget) |
 
 > 📌 History: the order used to be a long **text** message → a *cart screenshot* +
 > text → a receipt **image downloaded** + greeting-only wa.me text → now the
@@ -160,6 +161,7 @@ total     = subtotal + tax                    // service / shipping are 0 for we
     }
   ],
   "payment_method": 1,           // ALWAYS 1 (cash on delivery) — sent statically
+  "order_type": "delivery",      // "delivery" for Plus (has address); "takeaway" for Basic
   "full_name": "test",
   "full_address": "...",
   "phone": "01152517142",
@@ -203,6 +205,13 @@ setProcessing(true)
                      ├─ blocked & Plus → order IS placed → finishOrder anyway
                      └─ blocked & Basic → no order placed → KEEP cart + "allow popups" error
 ```
+
+> **The diagram above is the Plus branch.** Basic takes a separate, simpler
+> early-return path: open the wa.me **text** order and, once the window opens, fire
+> **`POST v1/basket/guest-buy`** in the background with **empty**
+> `full_name`/`full_address`/`phone`/`notes` (best-effort, fire-and-forget — an API
+> failure never blocks the WhatsApp flow; the item details reach the shop through
+> the wa.me text). No form, no image, no VAT line.
 
 - **No download anywhere.** Supported devices share the image; unsupported devices
   get a wa.me **text** order — neither path writes a file.

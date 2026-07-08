@@ -9,6 +9,7 @@
 //   {
 //     items: [{ note, product_id, quantity, variations?: [{ main_variation_id, choices:[id] }] }],
 //     payment_method: 1 | 2,   // 1 = cash on delivery, 2 = online
+//     order_type: "delivery" | "takeaway",
 //     full_name, full_address, phone, notes
 //   }
 
@@ -17,6 +18,12 @@ import type { CartItemType } from "@/types/types";
 
 /** 1 = cash on delivery, 2 = online payment. */
 export type GuestPaymentMethod = 1 | 2;
+
+/**
+ * How the order is fulfilled. Plus stores collect a delivery address →
+ * `"delivery"`; Basic stores have no address form → `"takeaway"`.
+ */
+export type GuestOrderType = "delivery" | "takeaway";
 
 export interface GuestOrderVariation {
     main_variation_id: number;
@@ -33,6 +40,7 @@ export interface GuestOrderItem {
 export interface GuestOrderPayload {
     items: GuestOrderItem[];
     payment_method: GuestPaymentMethod;
+    order_type: GuestOrderType;
     full_name: string;
     full_address: string;
     phone: string;
