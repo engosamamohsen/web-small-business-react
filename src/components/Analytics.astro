@@ -1,18 +1,20 @@
 ---
-// Analytics loaded asynchronously to not block rendering
+// Google tag (gtag.js) — standard main-thread install (NOT Partytown).
+// Partytown runs gtag in a web worker, which is unreliable for GA4 Realtime /
+// DebugView, so we load it on the main thread exactly as Google specifies.
+// The id stays env-driven (PUBLIC_GA_ID) — empty disables the tag entirely.
 const GA_MEASUREMENT_ID = import.meta.env.PUBLIC_GA_ID || '';
 ---
 
 {GA_MEASUREMENT_ID && (
   <>
-    <script type="text/partytown" async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
-    <script type="text/partytown" is:inline define:vars={{ GA_MEASUREMENT_ID }}>
+    {/* Google tag (gtag.js) */}
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
+    <script is:inline define:vars={{ GA_MEASUREMENT_ID }}>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', GA_MEASUREMENT_ID, {
-        page_path: window.location.pathname,
-      });
+      gtag('config', GA_MEASUREMENT_ID);
     </script>
   </>
 )}

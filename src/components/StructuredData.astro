@@ -37,7 +37,7 @@ function generateSchema(type: string, data: any) {
                 offers: {
                     "@type": "Offer",
                     price: data.price,
-                    priceCurrency: data.currency || "SAR",
+                    priceCurrency: data.currency || "EGP",
                     availability: `https://schema.org/${data.availability || "InStock"}`,
                 },
             };

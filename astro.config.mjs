@@ -1,8 +1,6 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
-import sitemap from '@astrojs/sitemap';
-import partytown from '@astrojs/partytown';
 import node from '@astrojs/node';
 
 // https://astro.build/config
@@ -17,17 +15,17 @@ export default defineConfig({
       applyBaseStyles: false,
       config: { path: './tailwind.config.js' }
     }),
-    sitemap({
-      changefreq: 'weekly',
-      priority: 0.7,
-      lastmod: new Date(),
-      serialize: (item) => item
-    }),
-    partytown({
-      config: {
-        forward: ["dataLayer.push"],
-      },
-    }),
+    // NOTE: the build-time @astrojs/sitemap integration was removed — it
+    // hardcoded `site` (cashierthru.com) and only knew static routes, so it
+    // could not produce a correct per-tenant sitemap. The storefront is
+    // multi-tenant SSR, so the sitemap is generated on demand instead at
+    // src/pages/sitemap.xml.ts (and robots.txt at src/pages/robots.txt.ts),
+    // resolving each tenant's host + catalogue per request.
+    //
+    // NOTE: @astrojs/partytown was removed too — it only existed to run
+    // Google Analytics in a web worker, but Partytown is unreliable for GA4
+    // Realtime/DebugView. gtag now loads on the main thread directly
+    // (src/components/Analytics.astro).
   ],
 
   image: {
