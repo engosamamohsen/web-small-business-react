@@ -36,17 +36,26 @@ export interface CurrentSubscriptionPlan {
 /**
  * True when the store is on the **Plus** subscription plan.
  *
- * Matched by the plan name (the explicit `current_subscription_plan.name`
- * field, e.g. `{ id: 4, name: "Plus" }`), case-insensitively and tolerant of
- * the localized `name_en` label. Any other / missing plan (Basic, unknown,
- * network error) → false, so customer-info features stay hidden by default and
- * the existing flow is never regressed.
+ * Keyed off the explicit **`current_subscription_plan.type`** field, which the
+ * backend now sets to `"plus"` or `"basic"` on every tenant. `type` is
+ * authoritative: a plan typed `"basic"` is Basic even if its display name
+ * happens to contain the word "plus", and vice-versa.
  *
- * Plan ids are not assumed to be stable across tenants, so we key off the name;
- * swap to an id check here if/when ids become a fixed contract.
+ * A plan whose `type` is missing or an unrecognized legacy value (e.g. the old
+ * `"normal"`) falls back to the previous name heuristic (`name` / `name_en`
+ * containing "plus"), so a tenant on an un-migrated API response still resolves
+ * correctly. Any other / missing plan → false, so customer-info features stay
+ * hidden by default and the existing flow is never regressed.
  */
 export function isPlusPlan(plan?: CurrentSubscriptionPlan | null): boolean {
   if (!plan) return false;
+
+  // Primary, authoritative signal: the plan tier `type` ("plus" | "basic").
+  const type = typeof plan.type === "string" ? plan.type.trim().toLowerCase() : "";
+  if (type === "plus") return true;
+  if (type === "basic") return false;
+
+  // Fallback for responses without a recognized tier `type`: match the name.
   return [plan.name, plan.name_en]
     .filter((n): n is string => typeof n === "string")
     .some((n) => n.trim().toLowerCase().includes("plus"));
