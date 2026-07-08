@@ -15,6 +15,7 @@ superseded parts marked inline.
 | --- | --- |
 | [product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md) | **Source of truth** for the SEO product URL (`/product/{slug}-{seo-name}`, Arabic-safe, spaces→hyphens, id-only lookup, 301 canonical + `encodeURI` redirect) **and** the WhatsApp order message format (friendly/sectioned) + the APIs the order flow uses. WhatsApp order is now **Basic-tier only**. |
 | [plus-plan-guest-order.md](plus-plan-guest-order.md) | **Plus-tier** cart: the WhatsApp button is replaced by a **Confirm Order** button that places a real order via `POST v1/basket/guest-buy` (adds a required **phone** field + payment method + order notes). |
+| [subscription-tier-detection.md](subscription-tier-detection.md) | **How `Plus` vs `Basic` is detected** — now keyed off `current_subscription_plan.type` (`"plus"`/`"basic"`), authoritative over the plan name; name kept only as a legacy fallback. `isPlusPlan()` in `src/lib/subscription.ts`. |
 | [product-list-image-fixes.md](product-list-image-fixes.md) | Product-list image rendering: default image is fallback-only, main image fills its box and shows without a JS opacity flip. |
 | [multi-tenant-architecture.md](multi-tenant-architecture.md) | Per-tenant dynamic API URL resolution (`getApiUrl()` from `window.location.origin`). The base URL is **never** hardcoded. |
 | [expired-subscription-lockout.md](expired-subscription-lockout.md) | Storefront lockout when a tenant's subscription + grace period are exhausted. |
@@ -56,22 +57,22 @@ both — don't conflate them.
 ### 2. Subscription tier — `Plus` vs `Basic`
 
 - **File:** `src/lib/subscription.ts` (`isPlusPlan`, `isStoreExpired`) — **dynamic**, from `GET v1/setting-profile` → `current_subscription_plan` (per tenant, at runtime).
-- **Both tiers order via a WhatsApp button that screenshots the cart; Plus ALSO places a `guest-buy` API order.** Within WhatsApp checkout mode:
+- **Both tiers order via a WhatsApp button, and both now place a `guest-buy` API order** — Plus with the customer's real name/phone/address (and a shared order image), Basic in the background with empty customer fields (and a wa.me text order). Within WhatsApp checkout mode:
 
 | Feature | `Basic` | `Plus` |
 | --- | --- | --- |
 | Cart order button | **اطلب عبر واتساب** | **اطلب عبر واتساب** (same button) |
-| On click | download **order image** → open wa.me (greeting) — **no API** | validate form → **`POST v1/basket/guest-buy`** → download order image → open wa.me (greeting) |
-| WhatsApp **text** | greeting only (no order details) | greeting only (no order details) |
-| **Order image (PNG)** carries | products+variations, qty, subtotal, total | + name/phone/address + VAT |
-| Customer **Name / Phone / Full Address** fields | ❌ hidden | ✅ shown (required) → `full_name`/`phone`/`full_address` |
-| **Order notes** box | ❌ n/a | ✅ optional → `notes` |
-| **Payment method** | n/a | always cash (`payment_method = 1`, static — **no selector**) |
+| On click | open wa.me **text order** (full details) → **`POST v1/basket/guest-buy`** in background (empty customer fields, best-effort) | validate form → **`POST v1/basket/guest-buy`** (real customer data) → **share** order image via `navigator.share` (fallback: wa.me text) |
+| WhatsApp **text** | full order details — the wa.me text IS the order | share caption = greeting only; wa.me text fallback carries full details |
+| **Order image (PNG)** | ❌ none (text order) | products+variations, qty, name/phone/address, subtotal, VAT, total |
+| Customer **Name / Phone / Full Address** fields | ❌ hidden (sent empty) | ✅ shown (required) → `full_name`/`phone`/`full_address` |
+| **Order notes** box | ❌ hidden (sent empty) | ✅ optional → `notes` |
+| **Payment method** | always cash (`payment_method = 1`) | always cash (`payment_method = 1`, static — **no selector**) |
 | **Tax (VAT) line + recalculated total** | ❌ subtotal only | ✅ `subtotal + subtotal×vat%` (from `settings.vat`) |
 | Catalog / cart / prices | same | same |
 
-- Decided by `isPlusPlan()` — matches `name` / `name_en` containing **"plus"** (case-insensitive); anything else (incl. `"Basic"`, unknown, missing) → not Plus, so the click just shares the order image with no API (safe default).
-- The WhatsApp order is an **image, shared — never downloaded**: a clean `<OrderReceipt>` element is rendered to PNG via **html2canvas** (`src/lib/cart-screenshot.ts`) and pushed into WhatsApp with `navigator.share` (the greeting is the caption). Devices that can't share a file fall back to a `wa.me` **full-text** order (`buildWhatsAppOrderUrl`) — still no download. Full spec: [plus-plan-guest-order.md](plus-plan-guest-order.md).
+- Decided by `isPlusPlan()` — keyed off **`current_subscription_plan.type`** (`"plus"` → Plus, `"basic"` → Basic; the backend now sets this on every tenant). `type` is authoritative and wins over the display name. A response with a missing/legacy `type` (e.g. the old `"normal"`) falls back to the previous name heuristic (`name` / `name_en` containing "plus"); anything else (unknown, missing) → not Plus, so the click takes the Basic path — a wa.me text order plus a background `guest-buy` with empty customer fields, and no customer form (safe default).
+- The **Plus** WhatsApp order is an **image, shared — never downloaded**: a clean `<OrderReceipt>` element is rendered to PNG via **html2canvas** (`src/lib/cart-screenshot.ts`) and pushed into WhatsApp with `navigator.share` (the greeting is the caption). Devices that can't share a file fall back to a `wa.me` **full-text** order (`buildWhatsAppOrderUrl`) — still no download. Full spec: [plus-plan-guest-order.md](plus-plan-guest-order.md).
 - **Subscription *expiry* is tier-independent** — `isStoreExpired()` uses `subscription_status` (remaining / grace days, `can_access`) and applies to both tiers. Doc: [expired-subscription-lockout.md](expired-subscription-lockout.md).
 - Full spec for the Plus order flow: [plus-plan-guest-order.md](plus-plan-guest-order.md).
 
@@ -84,13 +85,15 @@ isPlusOrder = isPlusPlan(subscriptionPlan) && storeConfig.checkoutMode === "what
 ```
 
 i.e. a **Plus**-tier store that is also in **WhatsApp** checkout mode. Both tiers
-show the same green WhatsApp button and both screenshot the cart on click; when
-`isPlusOrder` is true the click additionally shows the customer form, places the
-`guest-buy` order, and adds the VAT line. In `premium` store mode neither
-applies — the cart links to `/shop/checkout`.
+show the same green WhatsApp button and both place a `guest-buy` order on click;
+when `isPlusOrder` is true the click additionally shows the customer form (real
+name/phone/address on the order), shares an order image, and adds the VAT line.
+Basic sends the `guest-buy` with empty customer fields (best-effort, in the
+background) and delivers the item details to the shop as a wa.me text order. In
+`premium` store mode neither applies — the cart links to `/shop/checkout`.
 
 > ⚠️ `storeConfig.plan === "basic"` (WhatsApp app **mode**) is NOT the same as
-> `current_subscription_plan.name === "Basic"` (subscription **tier** without the
+> `current_subscription_plan.type === "basic"` (subscription **tier** without the
 > customer-info fields). They are independent axes.
 
 ---

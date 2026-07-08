@@ -144,14 +144,17 @@ graph TD
 - **Cart Persistence:** plan-aware — server-side cart via API (Premium) or `localStorage` (Basic / WhatsApp)
 - **Empty State:** Friendly empty cart UI
 
-### 4.4 Checkout (`/shop/checkout`)
-- **Address Management:**
-  - Saved addresses list
-  - Add/edit address dialog
-  - Shipping fee calculation
-- **Order Summary:** Real-time total calculation
-- **Order Creation:** Submit order to API
-- **Notes:** Additional order notes
+### 4.4 Checkout — plan/tier-aware
+
+- **Premium store mode** (`/shop/checkout`):
+  - **Address Management:** saved addresses list, add/edit dialog, shipping fee calculation
+  - **Order Summary:** Real-time total calculation
+  - **Order Creation:** Submit order to API (`POST v1/basket/buy`)
+  - **Notes:** Additional order notes
+- **Basic store mode (WhatsApp checkout)** — order placed from the cart, no `/shop/checkout`. Both tiers use one green "اطلب عبر واتساب" button. On click the order is rendered to a clean **PNG image and shared straight into WhatsApp via `navigator.share`** (the greeting is the caption) — **never downloaded**; the customer picks WhatsApp + the shop contact in the native share sheet. Devices that can't share a file fall back to a `wa.me` full-text order. The image holds products+variations, qty, subtotal, total (+ name/phone/address + VAT for Plus). Tiers differ only in the API:
+  - **Basic subscription tier:** share order image — **no API call**.
+  - **Plus subscription tier:** validate name + **phone** + address + notes → **`POST v1/basket/guest-buy`** (cash, `payment_method=1`) → share order image; cart summary also shows a VAT line + recalculated total. See [Plus/Basic cart-order doc](../docs/plus-plan-guest-order.md).
+  - Order image: `src/components/Cart/OrderReceipt.tsx` + `src/lib/cart-screenshot.ts` (html2canvas → `navigator.share`). Caption + text fallback: `buildWhatsAppGreeting` / `buildWhatsAppOrderUrl` in `src/lib/whatsapp-order.ts`.
 
 ### 4.5 User Authentication
 - **Login:** Email/password authentication via Firebase
