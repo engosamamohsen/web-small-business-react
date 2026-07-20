@@ -16,6 +16,8 @@ superseded parts marked inline.
 | [product-details-url-and-whatsapp-order.md](product-details-url-and-whatsapp-order.md) | **Source of truth** for the SEO product URL (`/product/{slug}-{seo-name}`, Arabic-safe, spaces→hyphens, id-only lookup, 301 canonical + `encodeURI` redirect) **and** the WhatsApp order message format (friendly/sectioned) + the APIs the order flow uses. WhatsApp order is now **Basic-tier only**. |
 | [plus-plan-guest-order.md](plus-plan-guest-order.md) | **Plus-tier** cart: the WhatsApp button is replaced by a **Confirm Order** button that places a real order via `POST v1/basket/guest-buy` (adds a required **phone** field + payment method + order notes). |
 | [subscription-tier-detection.md](subscription-tier-detection.md) | **How `Plus` vs `Basic` is detected** — now keyed off `current_subscription_plan.type` (`"plus"`/`"basic"`), authoritative over the plan name; name kept only as a legacy fallback. `isPlusPlan()` in `src/lib/subscription.ts`. |
+| [free-trial-plan.md](free-trial-plan.md) | **Free trial** (`type: "trial"`) — a normal browsable store with **two caps**: `remaining_days` (→ full lockout, same rule as a paid plan) and an **order quota** (`remaining_orders` / `orders_limit` → order button blocked, browsing untouched). Trial is **not** Plus. `isTrialPlan()` / `isOrderQuotaExhausted()`. |
+| [whatsapp-number-resolution.md](whatsapp-number-resolution.md) | **Which number every wa.me link uses** — `whatsapp_phone`, else `phone`, else **nothing** (fail closed: never a default/placeholder/truncated number). One helper, `resolveWhatsappNumber()`. Explains why a store with a 10-digit `phone` shows no WhatsApp button. |
 | [product-list-image-fixes.md](product-list-image-fixes.md) | Product-list image rendering: default image is fallback-only, main image fills its box and shows without a JS opacity flip. |
 | [multi-tenant-architecture.md](multi-tenant-architecture.md) | Per-tenant dynamic API URL resolution (`getApiUrl()` from `window.location.origin`). The base URL is **never** hardcoded. |
 | [expired-subscription-lockout.md](expired-subscription-lockout.md) | Storefront lockout when a tenant's subscription + grace period are exhausted. |
@@ -54,9 +56,10 @@ both — don't conflate them.
 
 - Doc: [subscription-modes-task.md](subscription-modes-task.md).
 
-### 2. Subscription tier — `Plus` vs `Basic`
+### 2. Subscription tier — `Plus` vs `Basic` (vs `trial`)
 
-- **File:** `src/lib/subscription.ts` (`isPlusPlan`, `isStoreExpired`) — **dynamic**, from `GET v1/setting-profile` → `current_subscription_plan` (per tenant, at runtime).
+- **File:** `src/lib/subscription.ts` (`isPlusPlan`, `isStoreExpired`, `isTrialPlan`, `isOrderQuotaExhausted`) — **dynamic**, from `GET v1/setting-profile` → `current_subscription_plan` (per tenant, at runtime).
+- **`type: "trial"`** is a third value: the free trial behaves as **Basic** in the cart, plus two caps of its own (days → lockout, order quota → order button blocked). See [free-trial-plan.md](free-trial-plan.md).
 - **Both tiers order via a WhatsApp button, and both now place a `guest-buy` API order** — Plus with the customer's real name/phone/address (and a shared order image), Basic in the background with empty customer fields (and a wa.me text order). Within WhatsApp checkout mode:
 
 | Feature | `Basic` | `Plus` |
@@ -73,7 +76,8 @@ both — don't conflate them.
 
 - Decided by `isPlusPlan()` — keyed off **`current_subscription_plan.type`** (`"plus"` → Plus, `"basic"` → Basic; the backend now sets this on every tenant). `type` is authoritative and wins over the display name. A response with a missing/legacy `type` (e.g. the old `"normal"`) falls back to the previous name heuristic (`name` / `name_en` containing "plus"); anything else (unknown, missing) → not Plus, so the click takes the Basic path — a wa.me text order plus a background `guest-buy` with empty customer fields, and no customer form (safe default).
 - The **Plus** WhatsApp order is an **image, shared — never downloaded**: a clean `<OrderReceipt>` element is rendered to PNG via **html2canvas** (`src/lib/cart-screenshot.ts`) and pushed into WhatsApp with `navigator.share` (the greeting is the caption). Devices that can't share a file fall back to a `wa.me` **full-text** order (`buildWhatsAppOrderUrl`) — still no download. Full spec: [plus-plan-guest-order.md](plus-plan-guest-order.md).
-- **Subscription *expiry* is tier-independent** — `isStoreExpired()` uses `subscription_status` (remaining / grace days, `can_access`) and applies to both tiers. Doc: [expired-subscription-lockout.md](expired-subscription-lockout.md).
+- **Subscription *expiry* is tier-independent** — `isStoreExpired()` uses `subscription_status` (remaining / grace days, `can_access`) and applies to every tier including `trial`. Doc: [expired-subscription-lockout.md](expired-subscription-lockout.md).
+- **The *order quota* is trial-only** — `isOrderQuotaExhausted()` blocks the cart's order button (browsing untouched) when a trial spends its `orders_limit`. It never blocks a paid tier, and fails open on missing/unknown quota data. Doc: [free-trial-plan.md](free-trial-plan.md).
 - Full spec for the Plus order flow: [plus-plan-guest-order.md](plus-plan-guest-order.md).
 
 ### How the two systems interact
@@ -102,6 +106,7 @@ background) and delivers the item details to the shop as a wa.me text order. In
 
 - **Product URL / slug** → `src/lib/product-url.ts`, `src/utils/utils.ts` (`slugify`), `src/pages/product/[slug].astro`
 - **WhatsApp order (Basic tier)** → `src/lib/whatsapp-order.ts`, `src/components/Cart/Cart.tsx`
+- **Which WhatsApp *number* is used** → `resolveWhatsappNumber()` in `src/lib/whatsapp-order.ts` (`whatsapp_phone` → `phone` → hide). Never read `settings.whatsapp_phone` directly.
 - **Plus-tier cart order (guest-buy API)** → `src/lib/guest-order.ts`, `src/components/Cart/Cart.tsx`
 - **Plan / capability flags** → `src/lib/store-config.ts`; subscription status → `src/lib/subscription.ts`
 - **Tenant API URL** → `src/lib/config.ts` (`getApiUrl()`)

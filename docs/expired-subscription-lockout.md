@@ -6,7 +6,9 @@
 > `src/pages/store-unavailable.astro`; enforcement in `src/middleware.ts`.
 > **Created:** 2026-06-15
 > **Related:** [subscription-modes-task.md](subscription-modes-task.md) (Basic/Premium plans),
-> [multi-tenant-architecture.md](multi-tenant-architecture.md) (per-tenant API resolution).
+> [multi-tenant-architecture.md](multi-tenant-architecture.md) (per-tenant API resolution),
+> [free-trial-plan.md](free-trial-plan.md) (the trial's *orders* cap — browsable
+> but can't order; the *days* cap is this doc's rule).
 
 ---
 
@@ -63,6 +65,19 @@ can_access === false
 
 Implemented as `isStoreExpired(plan)` in `src/lib/subscription.ts`.
 
+### Free trials use this same rule
+
+A trial tenant (`current_subscription_plan.type: "trial"`) has **no grace
+concept** — `remaining_grace_days` is always `0` — so the rule above reduces to
+`remaining_days`: a running trial is open, a finished trial (`remaining_days: 0`)
+locks out exactly like an expired paid plan. No trial-specific code is involved
+here.
+
+A trial *also* has an **order quota** (`orders_limit`). Running out of **orders**
+does **not** lock the store — it only blocks placing new ones, while browsing
+stays fully available. That cap lives in `isOrderQuotaExhausted()` and is
+documented separately: **[free-trial-plan.md](free-trial-plan.md)**.
+
 ## Enforcement — middleware (single point)
 
 Every storefront page is SSR (`export const prerender = false`), so middleware
@@ -92,7 +107,8 @@ fetched for an expired store. Any error in the settings fetch fails open.
 
 | File | Change |
 |---|---|
-| `src/lib/subscription.ts` | **New.** `SubscriptionStatus` / `CurrentSubscriptionPlan` types + `isStoreExpired()` |
+| `src/lib/subscription.ts` | **New.** `SubscriptionStatus` / `CurrentSubscriptionPlan` types + `isStoreExpired()`; later `isTrialPlan()` + `isOrderQuotaExhausted()` and the order-quota fields |
+| `src/components/Cart/Cart.tsx` | Replaces the order button with a neutral notice when the trial order quota is exhausted; same guard inside `handleWhatsAppOrder` |
 | `src/hooks/fetchSettings.tsx` | Parse `current_subscription_plan`; add to `SettingsResponse`; persist in the per-tenant server cache |
 | `src/pages/store-unavailable.astro` | **New.** Full-screen lockout screen |
 | `src/middleware.ts` | Fetch settings + `isStoreExpired` check → rewrite expired GET routes to `/store-unavailable` |
@@ -107,4 +123,12 @@ fetched for an expired store. Any error in the settings fetch fails open.
   safe whether or not `context.rewrite()` re-runs middleware.
 - **How to verify locally:** there is no expired tenant in dev. Temporarily force
   `isStoreExpired` to return `true`, run `npm run dev`, confirm every route lands
-  on the lockout screen, then revert. Dev tenant: `https://admin-asly.cashierthru.com`.
+  on the lockout screen, then revert. Dev tenant comes from
+  `PUBLIC_DEV_API_ORIGIN` in `.env` — `https://admin-darsh.cashierthru.com` is
+  the trial tenant, `admin-asly` a paid one.
+- **How to verify the trial order block:** darsh has its full quota, so spoof it
+  — in `src/pages/shop/cart.astro` set `remaining_orders = 0` on
+  `currentSubscriptionPlan.subscription_status` before passing it to the cart,
+  reload `/shop/cart`, confirm the order button is replaced by the notice while
+  items/quantities still work, then revert. **Do not** place 10 real orders to
+  drain the quota — dev hits the live backend.

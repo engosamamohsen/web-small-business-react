@@ -28,6 +28,7 @@ name string no longer needs to be pattern-matched.
 ```
 plan.type === "plus"   → Plus   (true)
 plan.type === "basic"  → Basic  (false)
+plan.type === "trial"  → Basic  (false)  ← free trial, see free-trial-plan.md
 otherwise              → fall back to the legacy name heuristic
                           (name / name_en contains "plus")
 missing / null plan    → false  (default: hide customer-info features)
@@ -35,6 +36,11 @@ missing / null plan    → false  (default: hide customer-info features)
 
 - **`type` wins over the name.** A plan typed `"basic"` is Basic even if its
   display name contains "plus", and vice-versa.
+- **`"trial"` (the free trial) is explicitly not Plus** — its feature list
+  excludes customer data (name / phone / address), so it takes the Basic cart
+  flow. Checked *before* the name fallback, so a trial named "Plus Trial" can't
+  slip through. The trial's own caps (days + order quota) are separate:
+  [free-trial-plan.md](free-trial-plan.md).
 - The `type` comparison is **case-insensitive** and trimmed (`" PLUS "` → Plus).
 - The **fallback** covers responses where `type` is missing or an unrecognized
   legacy value (e.g. the old `"normal"`): it matches the plan `name` / `name_en`
