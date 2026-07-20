@@ -18,6 +18,7 @@ import { fetchSettings } from "@/hooks/fetchSettings";
 import { fetchHook } from "@/hooks/fetch-hook";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { buildStoreOrganization, normalizeKeywords } from "@/lib/seo";
+import { resolveWhatsappNumber } from "@/lib/whatsapp-order";
 import packageJson from "../../package.json";
 import { Product } from "@/lib/product/product";
 
@@ -202,7 +203,7 @@ const homeJsonLd = [
         </section>
     </main>
 
-    <WhatsAppButton phone={settingsData?.whatsapp_phone} client:idle />
+    <WhatsAppButton phone={resolveWhatsappNumber(settingsData)} client:idle />
     <SettingsCookieSync settings={settingsData} client:load />
 
     <Footer

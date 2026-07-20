@@ -5,7 +5,7 @@ import { useProductOptions } from "./hooks/useProductOptions";
 import { useMemo, useState, lazy, Suspense } from "react";
 import { useSettingsData } from "@/providers/SettingsProvider";
 import type { SettingsData } from "@/providers/SettingsProvider";
-import { buildWhatsAppLink } from "@/lib/whatsapp-order";
+import { buildWhatsAppLink, resolveWhatsappNumber } from "@/lib/whatsapp-order";
 
 // Detail sub-components
 import {
@@ -35,7 +35,8 @@ export default function DetailPage({
     const contextSettings = useSettingsData();
     const settings = settingsProp ?? contextSettings;
     // null for missing/placeholder numbers so we never link to the default line
-    const whatsappContactLink = buildWhatsAppLink(settings?.whatsapp_phone);
+    const whatsappNumber = resolveWhatsappNumber(settings);
+    const whatsappContactLink = buildWhatsAppLink(whatsappNumber);
 
 
     const {
@@ -308,7 +309,7 @@ export default function DetailPage({
                                     {whatsappContactLink && (
                                         <li className="flex gap-2">
                                             <span>•</span>
-                                            <span>واتساب: <a href={whatsappContactLink} target="_blank" rel="noreferrer" className="text-[var(--main-color)] hover:underline">{settings?.whatsapp_phone}</a></span>
+                                            <span>واتساب: <a href={whatsappContactLink} target="_blank" rel="noreferrer" className="text-[var(--main-color)] hover:underline">{whatsappNumber}</a></span>
                                         </li>
                                     )}
                                     {settings?.phone && (

@@ -1,7 +1,7 @@
 import React from "react";
 import { buildWhatsAppLink } from "@/lib/whatsapp-order";
 
-export default function WhatsAppButton({ phone }: { phone?: string }) {
+export default function WhatsAppButton({ phone }: { phone?: string | null }) {
     // null for missing OR placeholder/default numbers — hide the button rather
     // than link to a fake line. Normalization (incl. country code) is shared.
     const link = buildWhatsAppLink(phone);

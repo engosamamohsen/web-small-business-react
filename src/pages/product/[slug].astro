@@ -9,7 +9,7 @@ import { ToastContainer } from "react-toastify";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
-import { buildWhatsAppLink } from "@/lib/whatsapp-order";
+import { buildWhatsAppLink, resolveWhatsappNumber } from "@/lib/whatsapp-order";
 import { fetchHook } from "@/hooks/fetch-hook";
 import { buildProductPath, parseProductParam } from "@/lib/product-url";
 import { getSiteOrigin } from "@/lib/site-origin";
@@ -47,7 +47,7 @@ const cartCount = settingsResponse?.cart_count ?? 0;
 const appVersion = (packageJson as any).version;
 
 // WhatsApp contact link — null for missing/placeholder numbers (shared helper).
-const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
+const whatsappLink = buildWhatsAppLink(resolveWhatsappNumber(settingsData));
 
 // Fetch product details — same API contract as before, id-only
 let productData: ProductType | null = null;

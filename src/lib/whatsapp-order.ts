@@ -1,8 +1,9 @@
 // ─── WhatsApp ordering (BASIC plan checkout) ─────────────────────────────────
 //
 // Builds the order message + wa.me link per docs/subscription-modes-task.md.
-// Number and shop name come from the setting-profile API (settings.whatsapp_phone
-// / settings.name / settings.shop_type); storeConfig only provides fallbacks.
+// Number and shop name come from the setting-profile API (settings.whatsapp_phone,
+// else settings.phone — see resolveWhatsappNumber — / settings.name /
+// settings.shop_type); storeConfig only provides fallbacks.
 
 import { storeConfig } from "@/lib/store-config";
 import type { CartItemType } from "@/types/types";
@@ -17,6 +18,16 @@ export interface WhatsAppCustomerInfo {
     address?: string | null;
 }
 
+/** Digits only, with an international "00" prefix stripped. A leading "0" that
+ *  survives this marks a local (not yet country-coded) number. */
+function toDigits(phone: string): string {
+    const digits = phone.replace(/[^\d]/g, "");
+    return digits.startsWith("00") ? digits.slice(2) : digits;
+}
+
+/** Full length of a local number, e.g. the mobile "01093341796" (01X + 8). */
+const LOCAL_NUMBER_LENGTH = 11;
+
 /**
  * "01093341796" → "201093341796" (wa.me needs international, digits only).
  * Already-international numbers pass through unchanged.
@@ -26,11 +37,9 @@ export function normalizeWhatsappNumber(
     countryCode: string = storeConfig.whatsappCountryCode,
 ): string | null {
     if (!phone) return null;
-    let digits = String(phone).replace(/[^\d]/g, "");
+    const digits = toDigits(String(phone));
     if (!digits) return null;
-    if (digits.startsWith("00")) digits = digits.slice(2);
-    if (digits.startsWith("0")) digits = countryCode + digits.slice(1);
-    return digits;
+    return digits.startsWith("0") ? countryCode + digits.slice(1) : digits;
 }
 
 // Known placeholder / default numbers that must NEVER receive a real order.
@@ -58,9 +67,37 @@ export function isUsableWhatsappNumber(phone?: string | null): boolean {
     if (normalized === null) return false;
     // Reject known placeholder / default numbers outright.
     if (PLACEHOLDER_WHATSAPP_NUMBERS.has(normalized)) return false;
+    // A local number gains the country code, which pads a truncated one back
+    // inside the E.164 bounds below — so hold it to its full national length
+    // here. A shop that saved a short line (the 10-digit "0123653214") must fail
+    // closed rather than message whoever owns the number it resolves to.
+    const digits = toDigits(String(phone));
+    if (digits.startsWith("0") && digits.length !== LOCAL_NUMBER_LENGTH) return false;
     // Sanity bounds: a real international number is ~10–15 digits (E.164).
     // Blocks malformed values that could otherwise resolve to a stranger's chat.
     return normalized.length >= 10 && normalized.length <= 15;
+}
+
+/** The settings fields that can carry the shop's WhatsApp number. */
+export interface WhatsAppNumberSource {
+    whatsapp_phone?: string | null;
+    /** General contact number — plenty of shops fill only this one. */
+    phone?: string | null;
+}
+
+/**
+ * The shop's WhatsApp number, raw as the API returned it: `whatsapp_phone` when
+ * it's usable, otherwise `phone`, which many shops fill instead of the dedicated
+ * WhatsApp field. Both candidates go through isUsableWhatsappNumber(), so a
+ * missing/placeholder pair still yields null and callers keep failing closed.
+ */
+export function resolveWhatsappNumber(
+    settings?: WhatsAppNumberSource | null,
+): string | null {
+    const number = [settings?.whatsapp_phone, settings?.phone].find((candidate) =>
+        isUsableWhatsappNumber(candidate),
+    );
+    return number ?? null;
 }
 
 /**
@@ -214,17 +251,15 @@ export function buildWhatsAppOrderMessage(
 export function buildWhatsAppOrderUrl(
     items: CartItemType[],
     totalPrice: number,
-    settings?: {
+    settings?: (WhatsAppNumberSource & {
         name?: string | null;
-        whatsapp_phone?: string | null;
         shop_type?: string | null;
-    } | null,
+    }) | null,
     customer?: WhatsAppCustomerInfo | null,
 ): string | null {
     // Only ever use the shop's REAL number from the settings API. Never fall
     // back to the placeholder/default — orders must not go to a fake line.
-    if (!isUsableWhatsappNumber(settings?.whatsapp_phone)) return null;
-    const number = normalizeWhatsappNumber(settings?.whatsapp_phone);
+    const number = normalizeWhatsappNumber(resolveWhatsappNumber(settings));
     if (!number || !items.length) return null;
 
     const message = buildWhatsAppOrderMessage(

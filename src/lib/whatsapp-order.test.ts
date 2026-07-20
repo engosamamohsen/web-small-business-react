@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   normalizeWhatsappNumber,
   isUsableWhatsappNumber,
+  resolveWhatsappNumber,
   buildWhatsAppLink,
   buildWhatsAppOrderMessage,
   buildWhatsAppOrderUrl,
@@ -9,11 +10,11 @@ import {
 import type { CartItemType } from "@/types/types";
 
 // SECURITY-SENSITIVE: the WhatsApp number must ALWAYS come from the settings API
-// (settings.whatsapp_phone) and NEVER fall back to a default/placeholder. The
-// placeholder strings below (e.g. "201234567890") are present ONLY to assert that
-// such numbers are REJECTED (the helpers return null / false) — they are never a
-// source for a real link. These tests are the guardrail for that rule
-// (see docs + project_whatsapp_failclosed memory).
+// (settings.whatsapp_phone, else settings.phone) and NEVER fall back to a
+// default/placeholder. The placeholder strings below (e.g. "201234567890") are
+// present ONLY to assert that such numbers are REJECTED (the helpers return
+// null / false) — they are never a source for a real link. These tests are the
+// guardrail for that rule (see docs + project_whatsapp_failclosed memory).
 
 const item = (over: Partial<CartItemType> = {}): CartItemType =>
   ({
@@ -59,6 +60,64 @@ describe("isUsableWhatsappNumber (fail closed)", () => {
   it("rejects empty / nullish", () => {
     expect(isUsableWhatsappNumber(null)).toBe(false);
     expect(isUsableWhatsappNumber("")).toBe(false);
+  });
+
+  // A local number gets "20" prepended, which pads a truncated one back into the
+  // 10–15 E.164 bounds — so it must be checked at its national length instead.
+  it("REJECTS a local number that isn't the full national length", () => {
+    // admin-asly's saved contact number: 10 digits, one short of a mobile.
+    // Normalizes to the 11-digit "20123653214", which would otherwise pass.
+    expect(isUsableWhatsappNumber("0123653214")).toBe(false);
+    expect(isUsableWhatsappNumber("010933417960")).toBe(false); // one too many
+  });
+
+  it("still accepts full-length local and already-international numbers", () => {
+    expect(isUsableWhatsappNumber("01093341796")).toBe(true);
+    expect(isUsableWhatsappNumber("00201093341796")).toBe(true);
+    expect(isUsableWhatsappNumber("201093341796")).toBe(true);
+    // non-Egyptian, already international — keeps the generic E.164 bounds
+    expect(isUsableWhatsappNumber("441234567891")).toBe(true);
+  });
+});
+
+describe("resolveWhatsappNumber (whatsapp_phone → phone fallback)", () => {
+  it("prefers whatsapp_phone when it is usable", () => {
+    expect(
+      resolveWhatsappNumber({ whatsapp_phone: "01093341796", phone: "01112124464" }),
+    ).toBe("01093341796");
+  });
+
+  it("falls back to phone when whatsapp_phone is missing / empty", () => {
+    expect(resolveWhatsappNumber({ phone: "01112124464" })).toBe("01112124464");
+    expect(resolveWhatsappNumber({ whatsapp_phone: "", phone: "01112124464" })).toBe(
+      "01112124464",
+    );
+    expect(
+      resolveWhatsappNumber({ whatsapp_phone: null, phone: "01112124464" }),
+    ).toBe("01112124464");
+  });
+
+  it("falls back to phone when whatsapp_phone is a placeholder", () => {
+    expect(
+      resolveWhatsappNumber({ whatsapp_phone: "201234567890", phone: "01112124464" }),
+    ).toBe("01112124464");
+  });
+
+  it("stays fail-closed when NEITHER number is real", () => {
+    expect(resolveWhatsappNumber({})).toBeNull();
+    expect(resolveWhatsappNumber(null)).toBeNull();
+    // a placeholder phone is not a usable fallback
+    expect(
+      resolveWhatsappNumber({ whatsapp_phone: "201234567890", phone: "0123456789" }),
+    ).toBeNull();
+  });
+
+  // Real admin-asly settings: no WhatsApp number, and a contact phone that is
+  // one digit short of a mobile → the storefront must keep hiding the button.
+  it("does NOT fall back to a truncated local phone (admin-asly)", () => {
+    expect(
+      resolveWhatsappNumber({ whatsapp_phone: null, phone: "0123653214" }),
+    ).toBeNull();
   });
 });
 
@@ -137,5 +196,29 @@ describe("buildWhatsAppOrderUrl (number only from settings API)", () => {
   it("returns null when settings has no number at all", () => {
     expect(buildWhatsAppOrderUrl([item()], 200, {})).toBeNull();
     expect(buildWhatsAppOrderUrl([item()], 200, null)).toBeNull();
+  });
+
+  it("orders to settings.phone when whatsapp_phone is missing / a placeholder", () => {
+    const noWhatsapp = buildWhatsAppOrderUrl([item()], 200, {
+      phone: "01112124464",
+      name: "عيدو",
+      shop_type: "restaurant",
+    });
+    expect(noWhatsapp!.startsWith("https://wa.me/201112124464?text=")).toBe(true);
+
+    const placeholderWhatsapp = buildWhatsAppOrderUrl([item()], 200, {
+      whatsapp_phone: "201234567890",
+      phone: "01112124464",
+    });
+    expect(placeholderWhatsapp!.startsWith("https://wa.me/201112124464?text=")).toBe(true);
+  });
+
+  it("still returns null when BOTH numbers are placeholders / missing", () => {
+    expect(
+      buildWhatsAppOrderUrl([item()], 200, {
+        whatsapp_phone: "201234567890",
+        phone: "0123456789",
+      }),
+    ).toBeNull();
   });
 });

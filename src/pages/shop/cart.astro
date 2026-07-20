@@ -9,7 +9,7 @@ import { ToastContainer } from "react-toastify";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
-import { buildWhatsAppLink } from "@/lib/whatsapp-order";
+import { buildWhatsAppLink, resolveWhatsappNumber } from "@/lib/whatsapp-order";
 import { storeConfig } from "@/lib/store-config";
 import packageJson from "../../../package.json";
 
@@ -36,7 +36,7 @@ const cartCount = settingsResponse?.cart_count ?? 0;
 const appVersion = packageJson.version;
 
 // WhatsApp contact link — null for missing/placeholder numbers (shared helper).
-const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
+const whatsappLink = buildWhatsAppLink(resolveWhatsappNumber(settingsData));
 
 // SEO metadata
 const pageTitle = "سلة المشتريات - " + (settingsData?.name || "المتجر");

@@ -7,6 +7,7 @@
 // facebook_link / instagram_link) stay consistent and dynamic across the site.
 
 import type { SettingsData } from "@/hooks/fetchSettings";
+import { resolveWhatsappNumber } from "@/lib/whatsapp-order";
 
 /** Keep only real http(s) URLs (store social / profile links). */
 function httpUrls(...values: Array<string | null | undefined>): string[] {
@@ -31,6 +32,10 @@ export function buildStoreOrganization(
 ): Record<string, unknown> {
     const about = settings?.about_us?.replace(/\s+/g, " ").trim();
     const sameAs = httpUrls(settings?.facebook_link, settings?.instagram_link);
+    // Same resolution as every wa.me link on the site: whatsapp_phone, else the
+    // general phone, and null for a missing/placeholder number — publishing a
+    // fake contact point in structured data would be as wrong as linking to it.
+    const whatsapp = resolveWhatsappNumber(settings);
 
     return {
         "@context": "https://schema.org",
@@ -51,11 +56,11 @@ export function buildStoreOrganization(
             : {}),
         ...(settings?.phone ? { telephone: settings.phone } : {}),
         ...(sameAs.length ? { sameAs } : {}),
-        ...(settings?.whatsapp_phone
+        ...(whatsapp
             ? {
                   contactPoint: {
                       "@type": "ContactPoint",
-                      telephone: settings.whatsapp_phone,
+                      telephone: whatsapp,
                       contactType: "customer service",
                   },
               }

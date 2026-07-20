@@ -15,9 +15,13 @@ import { storeConfig } from "@/lib/store-config";
 import {
   buildWhatsAppGreeting,
   buildWhatsAppOrderUrl,
-  isUsableWhatsappNumber,
+  resolveWhatsappNumber,
 } from "@/lib/whatsapp-order";
-import { isPlusPlan, type CurrentSubscriptionPlan } from "@/lib/subscription";
+import {
+  isPlusPlan,
+  isOrderQuotaExhausted,
+  type CurrentSubscriptionPlan,
+} from "@/lib/subscription";
 import { clearLocalCart } from "@/lib/cart/local-cart";
 import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-totals";
 import { buildGuestOrderItems, submitGuestOrder } from "@/lib/guest-order";
@@ -197,6 +201,7 @@ const OrderSummary = ({
   onWhatsAppOrder,
   processing = false,
   whatsappAvailable = false,
+  orderingBlocked = false,
 }: {
   subtotal: number;
   originalSubtotal?: number;
@@ -207,6 +212,7 @@ const OrderSummary = ({
   onWhatsAppOrder?: () => void;
   processing?: boolean;
   whatsappAvailable?: boolean;
+  orderingBlocked?: boolean;
 }) => {
   const total = subtotal + shipping + tax;
   const hasDiscount = discountAmount > 0;
@@ -246,7 +252,15 @@ const OrderSummary = ({
           </div>
         </div>
       </div>
-      {storeConfig.checkoutMode === "whatsapp" ? (
+      {orderingBlocked ? (
+        // The store used up its plan's order quota (free trial capped at
+        // orders_limit). Browsing and the cart stay untouched — only placing a
+        // new order is off. Deliberately says nothing about plans or trials:
+        // the shopper has no business seeing the store's billing state.
+        <p className="rounded-lg bg-slate-100 py-3 text-center text-sm font-medium text-slate-500">
+          المتجر لا يستقبل طلبات جديدة حالياً
+        </p>
+      ) : storeConfig.checkoutMode === "whatsapp" ? (
         // Both tiers order via WhatsApp: the order image is shared straight into
         // WhatsApp (native share sheet, no download), falling back to a wa.me
         // text order. Plus ALSO places the guest-buy order first (handled in the
@@ -495,13 +509,20 @@ export default function Cart({
 
   // Only true for a real, non-placeholder number — drives whether the WhatsApp
   // order button is shown at all (fail closed when absent/fake).
-  const whatsappAvailable = isUsableWhatsappNumber(settings?.whatsapp_phone);
+  const whatsappAvailable = Boolean(resolveWhatsappNumber(settings));
 
   // Plus tier (in WhatsApp checkout mode) replaces the wa.me deep link with a
   // real server order via basket/guest-buy — it collects name / phone / address.
   // Basic / unknown tier keeps the WhatsApp button.
   const isPlusOrder =
     isPlusPlan(subscriptionPlan) && storeConfig.checkoutMode === "whatsapp";
+
+  // Free-trial stores are capped at subscription_status.orders_limit orders.
+  // Once the quota is gone the store stays fully browsable (products, cart,
+  // contact) but can no longer take an order — see isOrderQuotaExhausted, which
+  // fails open on missing/unknown quota data. Trial-only: paid tiers are never
+  // blocked here.
+  const orderingBlocked = isOrderQuotaExhausted(subscriptionPlan);
 
   // Order tax. The backend applies VAT (settings.vat — a percentage) to the
   // subtotal; mirror it here so the cart total matches the order that gets
@@ -531,6 +552,14 @@ export default function Cart({
     const items = cartResponse?.cart_items ?? [];
     if (!items.length) return;
 
+    // Order quota gone (free trial) — the button is already replaced by a
+    // notice, this guards the plan arriving late from the client settings
+    // refresh, mid-flow.
+    if (orderingBlocked) {
+      toast.error("المتجر لا يستقبل طلبات جديدة حالياً", { rtl: true });
+      return;
+    }
+
     // Plus tier: customer fields are required and go into the API order + the
     // order image. Validate before doing anything irreversible.
     if (isPlusOrder) {
@@ -554,7 +583,7 @@ export default function Cart({
 
     // Fail closed on a missing/placeholder number BEFORE placing a Plus order we
     // couldn't deliver (the number is also the text-fallback target).
-    if (!isUsableWhatsappNumber(settings?.whatsapp_phone)) {
+    if (!resolveWhatsappNumber(settings)) {
       toast.error("رقم الواتساب غير متوفر حالياً", { rtl: true });
       return;
     }
@@ -820,6 +849,7 @@ export default function Cart({
             tax={isPlusOrder ? taxAmount : 0}
             taxRate={isPlusOrder ? taxRate : 0}
             onWhatsAppOrder={handleWhatsAppOrder}
+            orderingBlocked={orderingBlocked}
             processing={processing}
             whatsappAvailable={whatsappAvailable}
           />
