@@ -1,5 +1,51 @@
 # Git & Server Deploy Commands
 
+## ⚡ Deploy the current work (branch `astro-dev-order`)
+
+```bash
+ssh <user>@<server>
+cd /path/to/web-small-business-react
+
+./deploy.sh astro-dev-order
+```
+
+> **The branch argument is required.** `deploy.sh` defaults to `astro-dev`
+> (`BRANCH="${1:-astro-dev}"`), so a bare `./deploy.sh` deploys a *different*
+> branch and your changes silently never appear.
+
+That one command fetches, hard-resets to `origin/astro-dev-order`, `npm install`,
+`npm run build`, and `pm2 restart 0`. It backs up and restores `.env` around the
+reset, so the server keeps its own tenant/GA values.
+
+**No `.env` change is needed for this deploy** — no new `PUBLIC_*` variables were
+introduced.
+
+### Verify after it finishes
+
+```bash
+pm2 logs 0 --lines 30            # no boot errors
+
+# a trial tenant still serves its storefront (not the lockout screen)
+curl -s https://darsh.cashierthru.com/ | grep -c "هذا المتجر لم يعد متاحا"   # → 0
+```
+
+Then in a browser on a real store: open a product, add to cart, and check
+`/shop/cart` shows the order button (or «الطلب عبر واتساب غير متاح حالياً» if
+that shop has no valid 11-digit WhatsApp/phone number — that is expected, see
+[whatsapp-number-resolution.md](whatsapp-number-resolution.md)).
+
+### If something looks wrong
+
+```bash
+git -C /path/to/web-small-business-react log --oneline -3   # confirm the expected commits landed
+pm2 restart 0
+```
+
+To roll back, deploy the previous branch/commit — **never** `git reset --hard` by
+hand on the server without the `.env` backup that `deploy.sh` does for you.
+
+---
+
 ## On Your Local Machine (Windows)
 
 ### Normal daily push
