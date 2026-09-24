@@ -1,6 +1,7 @@
 // src/hooks/fetchSettings.ts
 import { getApiUrl } from "@/lib/config";
 import type { CurrentSubscriptionPlan } from "@/lib/subscription";
+import type { TrackingItem } from "@/lib/tracking/providers";
 
 export interface SettingsData {
   id: number;
@@ -32,6 +33,8 @@ export type SettingsResponse = {
   // Top-level sibling of `data` in the setting-profile response. Drives the
   // expired-store lockout (see src/lib/subscription.ts + src/middleware.ts).
   current_subscription_plan?: CurrentSubscriptionPlan | null;
+  // Tracking & pixels from the dashboard, rendered by src/components/Tracking.
+  tracking?: TrackingItem[];
   is_login?: boolean;
   cart_count?: number;
   ok: boolean;
@@ -52,7 +55,12 @@ const SERVER_CACHE_DURATION = 1000 * 60 * 5; // 5 minutes on server
 // Keyed by apiBase so different tenants never share cached settings.
 const serverSettingsCache = new Map<
   string,
-  { data: SettingsData; current_subscription_plan: CurrentSubscriptionPlan | null; timestamp: number }
+  {
+    data: SettingsData;
+    current_subscription_plan: CurrentSubscriptionPlan | null;
+    tracking: TrackingItem[];
+    timestamp: number;
+  }
 >();
 
 // ===== LocalStorage Helpers =====
@@ -127,6 +135,7 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
     return {
       data: result.data,
       current_subscription_plan: result.current_subscription_plan ?? null,
+      tracking: Array.isArray(result.tracking) ? result.tracking : [],
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -163,6 +172,7 @@ export async function fetchSettings(
         return {
           data: cached.data,
           current_subscription_plan: cached.current_subscription_plan,
+          tracking: cached.tracking,
           ok: true,
           status: 200,
         };
@@ -206,6 +216,7 @@ export async function fetchSettings(
           serverSettingsCache.set(cacheKey, {
             data: result.data,
             current_subscription_plan: result.current_subscription_plan ?? null,
+            tracking: result.tracking ?? [],
             timestamp: Date.now(),
           });
         } else {

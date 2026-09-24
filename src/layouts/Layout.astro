@@ -2,6 +2,7 @@
 import SEO from "../components/SEO.astro";
 import Analytics from "../components/Analytics.astro";
 import WebVitals from "../components/WebVitals.astro";
+import Tracking from "../components/Tracking/Tracking.astro";
 import { getSiteOrigin } from "@/lib/site-origin";
 
 // CSS Imports
@@ -93,9 +94,14 @@ const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
                 console.error("Unhandled rejection:", event.reason);
             });
         </script>
+
+        <!-- Tracking & pixels from the dashboard; last, so pasted header code can't displace the tags above -->
+        <Tracking part="head" />
     </head>
     <body class="relative font-cairo">
+        <Tracking part="bodyStart" />
         <slot />
+        <Tracking part="bodyEnd" />
     </body>
 </html>
 

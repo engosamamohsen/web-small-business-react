@@ -105,9 +105,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const isGet = context.request.method === "GET";
     const isLockoutPage = context.url.pathname === STORE_UNAVAILABLE_PATH;
     if (isGet && !isLockoutPage) {
+        // Tracking test view (?ct_debug=1, the dashboard's "Test in my browser"):
+        // load fresh settings so it shows what was saved a second ago, plus the test panel.
+        const trackingDebug = context.url.searchParams.get("ct_debug") === "1";
+        context.locals.trackingDebug = trackingDebug;
         try {
             const token = context.cookies.get("app_token")?.value;
-            const settings = await fetchSettings(token, false, apiBase);
+            const settings = await fetchSettings(token, trackingDebug, apiBase);
+            context.locals.tracking = settings.tracking ?? [];
             if (isStoreExpired(settings.current_subscription_plan)) {
                 return context.rewrite(STORE_UNAVAILABLE_PATH);
             }

@@ -1,0 +1,34 @@
+---
+// Tracking & pixels the merchant added in the dashboard (Meta, TikTok, GA4, GTM,
+// Clarity, Search Console, custom code). Middleware puts them on Astro.locals.
+// Rendered three times by Layout.astro:
+//   part="head"      end of <head>: verification tags, custom header code
+//   part="bodyStart" first in <body>: <noscript> fallbacks
+//   part="bodyEnd"   last in <body>: loaders, custom footer code, the manifest
+//                    the dashboard's "Check my store" reads, and the test panel
+import {
+    knownItems,
+    headHtml,
+    bodyStartHtml,
+    bodyEndHtml,
+    debugItems,
+} from "@/lib/tracking/providers";
+import TrackingDebugPanel from "./TrackingDebugPanel";
+
+interface Props {
+    part: "head" | "bodyStart" | "bodyEnd";
+}
+
+const { part } = Astro.props;
+// Prerendered pages (404/500) are built once for every tenant: no per-store tracking there.
+const items = Astro.isPrerendered
+    ? []
+    : knownItems(Astro.locals.tracking, import.meta.env.PUBLIC_GA_ID || undefined);
+const debug = part === "bodyEnd" && Astro.locals.trackingDebug === true;
+
+const html =
+    part === "head" ? headHtml(items) : part === "bodyStart" ? bodyStartHtml(items) : bodyEndHtml(items);
+---
+
+{!Astro.isPrerendered && html && <Fragment set:html={html} />}
+{debug && <TrackingDebugPanel items={debugItems(items)} client:only="react" />}
