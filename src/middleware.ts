@@ -35,22 +35,24 @@ function extractProtocol(request: Request, urlProtocol: string): string {
     return urlProtocol.replace(":", "");
 }
 
-function deriveAdminOrigin(hostname: string, protocol: string): string {
+// `fallback` is true when the tenant couldn't be resolved and PUBLIC_BASE_URL's
+// (the default tenant's) API is used instead.
+function deriveAdminOrigin(hostname: string, protocol: string): { origin: string; fallback: boolean } {
     const parts = hostname.split(".");
 
     // Production tenant: roka.cashierthru.com  →  admin-roka.cashierthru.com
     if (parts.length >= 3 && !parts[0].startsWith("admin-")) {
         const adminParts = [...parts];
         adminParts[0] = `admin-${parts[0]}`;
-        return `${protocol}://${adminParts.join(".")}`;
+        return { origin: `${protocol}://${adminParts.join(".")}`, fallback: false };
     }
 
     // Local dev server (npm run dev)
     if (import.meta.env.DEV) {
-        return (
-            import.meta.env.PUBLIC_DEV_API_ORIGIN ||
-            "https://admin-asly.cashierthru.com"
-        );
+        return {
+            origin: import.meta.env.PUBLIC_DEV_API_ORIGIN || "https://admin-asly.cashierthru.com",
+            fallback: false,
+        };
     }
 
     // Production but hostname is localhost / IP — Nginx is not forwarding the
@@ -77,17 +79,17 @@ function deriveAdminOrigin(hostname: string, protocol: string): string {
             `'proxy_set_header X-Forwarded-Host $host;' to Nginx (the Node adapter ignores ` +
             `the plain Host header) so each subdomain resolves dynamically.`,
         );
-        return fallback;
+        return { origin: fallback, fallback: true };
     }
 
     // Unexpected shape — return as-is rather than silently using the wrong tenant
-    return `${protocol}://${hostname}`;
+    return { origin: `${protocol}://${hostname}`, fallback: false };
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
     const hostname = extractHostname(context.request, context.url.hostname);
     const protocol = extractProtocol(context.request, context.url.protocol);
-    const adminOrigin = deriveAdminOrigin(hostname, protocol);
+    const { origin: adminOrigin, fallback: tenantUnknown } = deriveAdminOrigin(hostname, protocol);
     const apiBase = `${adminOrigin}/api/`;
     context.locals.apiBase = apiBase;
 
@@ -112,7 +114,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
         try {
             const token = context.cookies.get("app_token")?.value;
             const settings = await fetchSettings(token, trackingDebug, apiBase);
-            context.locals.tracking = settings.tracking ?? [];
+            // Only when the tenant is known: on the PUBLIC_BASE_URL fallback every store
+            // would get the default tenant's pixels and send its visitors to that account.
+            context.locals.tracking = tenantUnknown ? [] : settings.tracking ?? [];
             if (isStoreExpired(settings.current_subscription_plan)) {
                 return context.rewrite(STORE_UNAVAILABLE_PATH);
             }
