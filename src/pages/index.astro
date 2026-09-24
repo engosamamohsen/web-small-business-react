@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import Hero from "@/components/Hero/Hero";
 import Categories from "@/components/Categories/Categories";
 import ProductsSection from "@/components/Product/ProductsSection";
+import MealHelperPrompt from "@/components/MealHelper/MealHelperPrompt.astro";
 
 export const prerender = false;
 
@@ -187,6 +188,8 @@ const homeJsonLd = [
                 />
             )
         }
+
+        {showProducts && <MealHelperPrompt />}
 
         <section class="py-10" id="products">
             <ProductsSection

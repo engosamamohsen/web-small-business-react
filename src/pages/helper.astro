@@ -1,0 +1,69 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "@/layouts/Header/Header";
+import Footer from "@/layouts/Footer";
+import ColorHandler from "@/layouts/ColorHandler";
+import LoginHandler from "@/layouts/LoginHandler";
+import FaviconHandler from "@/layouts/FaviconHandler";
+import WhatsAppButton from "@/components/common/WhatsAppButton";
+import MealHelper from "@/components/MealHelper/MealHelper";
+import { ToastContainer } from "react-toastify";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { fetchMenu } from "@/lib/menu";
+import { resolveWhatsappNumber } from "@/lib/whatsapp-order";
+import packageJson from "../../package.json";
+import type { MenuDish } from "@/lib/meal-helper/engine";
+
+// Meal helper: a few questions, then dishes from this store's own menu.
+// Rendered per request so each tenant gets its own menu (Astro.locals.apiBase).
+export const prerender = false;
+
+const token = Astro.cookies.get("app_token")?.value;
+const apiBase = Astro.locals.apiBase;
+
+const [settingsResult, menuResult] = await Promise.allSettled([
+    fetchSettings(token, false, apiBase),
+    fetchMenu(apiBase),
+]);
+
+const settingsData = settingsResult.status === "fulfilled" ? settingsResult.value?.data ?? null : null;
+const isLogin = settingsResult.status === "fulfilled" && settingsResult.value?.ok ? Boolean(settingsResult.value?.is_login) : false;
+let dishes: MenuDish[] = [];
+if (menuResult.status === "fulfilled") {
+    dishes = menuResult.value;
+} else {
+    console.error("[helper] could not load the menu", menuResult.reason);
+}
+
+const storeName = settingsData?.name || "المتجر";
+---
+
+<Layout
+    title={`مش عارف تطلب إيه؟ | ${storeName}`}
+    description={`جاوب على كام سؤال ونرشحلك أنسب أطباق ${storeName}.`}
+    favicon={settingsData?.logo}
+    image={settingsData?.logo}
+>
+    <ColorHandler client:only="react" />
+    <LoginHandler client:only="react" />
+    <FaviconHandler client:load />
+
+    <Header
+        currentPath={Astro.url.pathname}
+        initialIsLoggedIn={isLogin}
+        settingsData={settingsData || undefined}
+        client:load
+    />
+    <ToastContainer position="top-right" rtl={true} client:load />
+
+    <main class="min-h-screen bg-slate-50 px-4 py-8 sm:py-12" dir="rtl">
+        <div class="mx-auto mb-6 flex max-w-xl flex-col gap-2 text-center">
+            <h1 class="text-2xl font-extrabold text-slate-900 sm:text-3xl">مش عارف تطلب إيه؟</h1>
+            <p class="text-slate-600">جاوب على كام سؤال سريع ونرشحلك الأنسب من منيو {storeName}.</p>
+        </div>
+        <MealHelper dishes={dishes} defaultImage={settingsData?.product_default_image} client:load />
+    </main>
+
+    <WhatsAppButton phone={resolveWhatsappNumber(settingsData)} client:idle />
+    <Footer settingsData={settingsData} appVersion={packageJson.version} client:visible />
+</Layout>

@@ -1,0 +1,283 @@
+[
+ {
+  "id": 9,
+  "slug": "ft-shaorma-frakh-9",
+  "name": "فتة شاورما فراخ",
+  "category": {
+   "id": 8,
+   "name": "شاورما",
+   "slug": "shaorma",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776964319_69ea52df86370.jpg"
+  },
+  "tags": [
+   {
+    "id": 1,
+    "name": "شاورما"
+   }
+  ],
+  "description_steps": [
+   "أرز بسمتى",
+   "تومية",
+   "مخلل",
+   "شاورما فراخ"
+  ],
+  "price": 159.98,
+  "discount": 0,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1781948770_6a3661628301d.jpg",
+  "variations": []
+ },
+ {
+  "id": 8,
+  "slug": "ft-shaorma-frakh-8",
+  "name": "فتة شاورما فراخ",
+  "category": {
+   "id": 8,
+   "name": "شاورما",
+   "slug": "shaorma",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776964319_69ea52df86370.jpg"
+  },
+  "tags": [
+   {
+    "id": 1,
+    "name": "شاورما"
+   }
+  ],
+  "description_steps": [],
+  "price": 100,
+  "discount": 10,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1778260518_69fe1a26ddd24.jpg",
+  "variations": [
+   {
+    "id": 2,
+    "name": "الحجم",
+    "is_required": 0,
+    "enable": 0,
+    "choices": [
+     {
+      "id": 31,
+      "name": "XL",
+      "enable": false,
+      "price": 10
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 7,
+  "slug": "sndotsh-shaorma-frakh-7",
+  "name": "سندوتش شاورما فراخ",
+  "category": {
+   "id": 8,
+   "name": "شاورما",
+   "slug": "shaorma",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776964319_69ea52df86370.jpg"
+  },
+  "tags": [
+   {
+    "id": 1,
+    "name": "شاورما"
+   }
+  ],
+  "description_steps": [],
+  "price": 80,
+  "discount": 0,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1778260398_69fe19aeae8d3.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "اضافات",
+    "is_required": 0,
+    "enable": 0,
+    "choices": [
+     {
+      "id": 29,
+      "name": "ثومية",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 30,
+      "name": "مخلل",
+      "enable": false,
+      "price": 0
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 6,
+  "slug": "sndotsh-shaorma-akstra-6",
+  "name": "سندوتش شاورما اكسترا",
+  "category": {
+   "id": 8,
+   "name": "شاورما",
+   "slug": "shaorma",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776964319_69ea52df86370.jpg"
+  },
+  "tags": [
+   {
+    "id": 1,
+    "name": "شاورما"
+   }
+  ],
+  "description_steps": [],
+  "price": 100,
+  "discount": 0,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1778260252_69fe191c2cdcb.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "اضافات",
+    "is_required": 0,
+    "enable": 0,
+    "choices": [
+     {
+      "id": 21,
+      "name": "جبنة",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 22,
+      "name": "مشروم",
+      "enable": false,
+      "price": 0
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 4,
+  "slug": "shysh-balkylo-gryl-4",
+  "name": "شيش بالكيلو جريل",
+  "category": {
+   "id": 8,
+   "name": "شاورما",
+   "slug": "shaorma",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776964319_69ea52df86370.jpg"
+  },
+  "tags": [
+   {
+    "id": 1,
+    "name": "شاورما"
+   }
+  ],
+  "description_steps": [],
+  "price": 510,
+  "discount": 0,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1777121928_69ecba88efcd9.jpg",
+  "variations": []
+ },
+ {
+  "id": 3,
+  "slug": "ns-frkhh-3",
+  "name": "نص فرخه",
+  "category": {
+   "id": 4,
+   "name": "المشويات",
+   "slug": "almshoyat",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776959084_69ea3e6c3192d.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 255,
+  "discount": 0,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1777121198_69ecb7ae6365a.jpg",
+  "variations": []
+ },
+ {
+  "id": 2,
+  "slug": "ogb-zngr-2",
+  "name": "وجبة زنجر",
+  "category": {
+   "id": 1,
+   "name": "الغربي",
+   "slug": "alghrby",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776958992_69ea3e10bed38.jpg"
+  },
+  "tags": [
+   {
+    "id": 1,
+    "name": "شاورما"
+   }
+  ],
+  "description_steps": [],
+  "price": 160,
+  "discount": 0,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1777120893_69ecb67d9873a.jpg",
+  "variations": []
+ },
+ {
+  "id": 1,
+  "slug": "shaorma-aarby-frakh-1",
+  "name": "شاورما عربي فراخ",
+  "category": {
+   "id": 8,
+   "name": "شاورما",
+   "slug": "shaorma",
+   "icon": "https://admin-asly.cashierthru.com/image/categories/1776964319_69ea52df86370.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 155,
+  "discount": 5,
+  "product_image": "https://admin-asly.cashierthru.com/uploads/products/1776965463_69ea57570fbf0.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "اضافات",
+    "is_required": 0,
+    "enable": 0,
+    "choices": [
+     {
+      "id": 15,
+      "name": "ثومية",
+      "enable": true,
+      "price": 10
+     },
+     {
+      "id": 16,
+      "name": "بطاطس",
+      "enable": true,
+      "price": 10
+     },
+     {
+      "id": 17,
+      "name": "مخلل",
+      "enable": true,
+      "price": 10
+     }
+    ]
+   },
+   {
+    "id": 2,
+    "name": "الحجم",
+    "is_required": 0,
+    "enable": 0,
+    "choices": [
+     {
+      "id": 18,
+      "name": "S",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 19,
+      "name": "M",
+      "enable": false,
+      "price": 10
+     },
+     {
+      "id": 20,
+      "name": "L",
+      "enable": false,
+      "price": 20
+     }
+    ]
+   }
+  ]
+ }
+]

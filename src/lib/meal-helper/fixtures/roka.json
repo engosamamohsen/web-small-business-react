@@ -1,0 +1,1110 @@
+[
+ {
+  "id": 33,
+  "slug": "akhtar-ogbtk-33",
+  "name": "أختار وجبتك",
+  "category": {
+   "id": 3,
+   "name": "الوجبات",
+   "slug": "alogbat",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185820_6a2abd1ca2066.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 10,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1782295969_6a3bada10a17c.jpg",
+  "variations": [
+   {
+    "id": 3,
+    "name": "الأساسية",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 75,
+      "name": "أرز بسمتي",
+      "enable": true,
+      "price": 40
+     },
+     {
+      "id": 76,
+      "name": "مكرونة بشامل",
+      "enable": true,
+      "price": 60
+     },
+     {
+      "id": 77,
+      "name": "مكرونة صلصة",
+      "enable": true,
+      "price": 40
+     }
+    ]
+   },
+   {
+    "id": 2,
+    "name": "الاصناف",
+    "is_required": 0,
+    "enable": 0,
+    "choices": [
+     {
+      "id": 78,
+      "name": "محشي",
+      "enable": true,
+      "price": 50
+     },
+     {
+      "id": 79,
+      "name": "كفتة",
+      "enable": true,
+      "price": 40
+     },
+     {
+      "id": 80,
+      "name": "شيش طاووق",
+      "enable": true,
+      "price": 60
+     },
+     {
+      "id": 81,
+      "name": "ربع فرخة",
+      "enable": true,
+      "price": 70
+     },
+     {
+      "id": 82,
+      "name": "2 قطعة بانية",
+      "enable": true,
+      "price": 60
+     },
+     {
+      "id": 83,
+      "name": "3 قطع ستربس",
+      "enable": true,
+      "price": 55
+     },
+     {
+      "id": 84,
+      "name": "ربع لحم نعام مشوي",
+      "enable": true,
+      "price": 110
+     },
+     {
+      "id": 85,
+      "name": "محشي",
+      "enable": false,
+      "price": 50
+     },
+     {
+      "id": 86,
+      "name": "كفتة",
+      "enable": false,
+      "price": 40
+     },
+     {
+      "id": 87,
+      "name": "شيش طاووق",
+      "enable": false,
+      "price": 60
+     },
+     {
+      "id": 88,
+      "name": "ربع فرخة",
+      "enable": false,
+      "price": 70
+     },
+     {
+      "id": 89,
+      "name": "2 قطعة بانية",
+      "enable": false,
+      "price": 60
+     },
+     {
+      "id": 90,
+      "name": "3 قطع ستربس",
+      "enable": false,
+      "price": 55
+     },
+     {
+      "id": 91,
+      "name": "ربع لحم نعام مشوي",
+      "enable": false,
+      "price": 110
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 31,
+  "slug": "mhshy-bathngan-31",
+  "name": "محشي باذنجان",
+  "category": {
+   "id": 4,
+   "name": "المحاشي",
+   "slug": "almhashy",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781266359_6a2bf7b73cf71.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 100,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781788850_6a33f0b2356af.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 67,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 68,
+      "name": "مطهي",
+      "enable": true,
+      "price": 40
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 29,
+  "slug": "kylo-mmbar-29",
+  "name": "كيلو ممبار",
+  "category": {
+   "id": 4,
+   "name": "المحاشي",
+   "slug": "almhashy",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781266359_6a2bf7b73cf71.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 250,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781288685_6a2c4eed878a8.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 19,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 20,
+      "name": "مطهي",
+      "enable": true,
+      "price": 40
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 28,
+  "slug": "kylo-flfl-28",
+  "name": "كيلو فلفل",
+  "category": {
+   "id": 4,
+   "name": "المحاشي",
+   "slug": "almhashy",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781266359_6a2bf7b73cf71.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 100,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781288528_6a2c4e50e8e35.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 61,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 62,
+      "name": "مطهي",
+      "enable": false,
+      "price": 40
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 27,
+  "slug": "kylo-kos-27",
+  "name": "كيلو كوسة",
+  "category": {
+   "id": 4,
+   "name": "المحاشي",
+   "slug": "almhashy",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781266359_6a2bf7b73cf71.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 100,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781288015_6a2c4c4f58f2c.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 63,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 64,
+      "name": "مطهي",
+      "enable": false,
+      "price": 40
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 26,
+  "slug": "kylo-ork-aanb-26",
+  "name": "كيلو ورق عنب",
+  "category": {
+   "id": 4,
+   "name": "المحاشي",
+   "slug": "almhashy",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781266359_6a2bf7b73cf71.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 130,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781287643_6a2c4adb8f191.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 25,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 26,
+      "name": "مطهي",
+      "enable": true,
+      "price": 40
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 25,
+  "slug": "kylo-krnb-25",
+  "name": "كيلو كرنب",
+  "category": {
+   "id": 4,
+   "name": "المحاشي",
+   "slug": "almhashy",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781266359_6a2bf7b73cf71.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 100,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781287354_6a2c49ba1f774.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 65,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 66,
+      "name": "مطهي",
+      "enable": false,
+      "price": 40
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 24,
+  "slug": "3-ktaa-shysh-taook-3-ktaa-kft-arz-24",
+  "name": "3 قطع شيش طاووق + 3 قطع كفتة +  أرز",
+  "category": {
+   "id": 3,
+   "name": "الوجبات",
+   "slug": "alogbat",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185820_6a2abd1ca2066.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 150,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781285557_6a2c42b50447d.jpg",
+  "variations": []
+ },
+ {
+  "id": 23,
+  "slug": "rbaa-frkh-3-ktaa-kft-a-rz-slt-23",
+  "name": "ربع فرخة + 3 قطع كفتة + أ رز + سلطة",
+  "category": {
+   "id": 3,
+   "name": "الوجبات",
+   "slug": "alogbat",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185820_6a2abd1ca2066.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 160,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781285317_6a2c41c59d7e9.jpg",
+  "variations": []
+ },
+ {
+  "id": 22,
+  "slug": "2-ktaa-banyh-arz-slt-22",
+  "name": "2 قطعة بانيه + أرز + سلطة",
+  "category": {
+   "id": 3,
+   "name": "الوجبات",
+   "slug": "alogbat",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185820_6a2abd1ca2066.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 100,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781285101_6a2c40ed021c7.jpg",
+  "variations": []
+ },
+ {
+  "id": 21,
+  "slug": "rbaa-frkh-arz-slt-21",
+  "name": "ربع فرخة + أرز + سلطة",
+  "category": {
+   "id": 3,
+   "name": "الوجبات",
+   "slug": "alogbat",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185820_6a2abd1ca2066.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 110,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781284873_6a2c4009256b2.jpg",
+  "variations": []
+ },
+ {
+  "id": 20,
+  "slug": "3-ktaa-shysh-taook-arz-slt-20",
+  "name": "3 قطع شيش طاووق + أرز + سلطة",
+  "category": {
+   "id": 3,
+   "name": "الوجبات",
+   "slug": "alogbat",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185820_6a2abd1ca2066.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 105,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781284636_6a2c3f1c11c6b.jpg",
+  "variations": []
+ },
+ {
+  "id": 19,
+  "slug": "3-ktaa-kft-arz-slt-19",
+  "name": "3 قطع كفتة + أرز + سلطة",
+  "category": {
+   "id": 3,
+   "name": "الوجبات",
+   "slug": "alogbat",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185820_6a2abd1ca2066.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 85,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781284472_6a2c3e78533e2.jpg",
+  "variations": []
+ },
+ {
+  "id": 18,
+  "slug": "kylo-lhm-naaam-ktaa-18",
+  "name": "كيلو لحم نعام قطع",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 370,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781284124_6a2c3d1cd49e2.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 29,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 30,
+      "name": "مطهي",
+      "enable": true,
+      "price": 60
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 17,
+  "slug": "nsf-kylo-lhm-mfrom-maasg-17",
+  "name": "نصف كيلو لحم مفروم معصج",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 200,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781283654_6a2c3b46ba8cd.jpg",
+  "variations": []
+ },
+ {
+  "id": 16,
+  "slug": "nsf-kylo-kft-arz-16",
+  "name": "نصف كيلو كفتة أرز",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 150,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781283505_6a2c3ab13b0f1.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 31,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 32,
+      "name": "مطهي",
+      "enable": true,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 15,
+  "slug": "nsf-kylo-shaorma-lhm-mlfof-fy-aaysh-sory-15",
+  "name": "نصف كيلو شاورما لحم ملفوف في عيش سوري",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 260,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781283352_6a2c3a1842960.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 33,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 34,
+      "name": "مطهي",
+      "enable": true,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 14,
+  "slug": "nsf-kylo-shaorma-lhm-14",
+  "name": "نصف كيلو شاورما لحم",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 210,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781283144_6a2c39489c316.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 35,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 36,
+      "name": "مطهي",
+      "enable": true,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 13,
+  "slug": "nsf-kylo-bftyk-gahz-llkly-13",
+  "name": "نصف كيلو بفتيك جاهز للقلي",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 250,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781282963_6a2c389333dfb.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 37,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 38,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 12,
+  "slug": "nsf-kylo-brgr-12",
+  "name": "نصف كيلو برجر",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 170,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781282702_6a2c378eccf71.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 39,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 40,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 11,
+  "slug": "nsf-kylo-hoaoshy-fy-aaysh-4-arghf-11",
+  "name": "نصف كيلو حواوشي في عيش (4 أرغفة)",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 150,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781282570_6a2c370aa274e.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 41,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 42,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 10,
+  "slug": "nsf-kylo-hoaoshy-10",
+  "name": "نصف كيلو حواوشي",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 135,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781276314_6a2c1e9a82128.jpg",
+  "variations": []
+ },
+ {
+  "id": 9,
+  "slug": "nsf-kylo-kft-9",
+  "name": "نصف كيلو كفتة",
+  "category": {
+   "id": 2,
+   "name": "اللحوم",
+   "slug": "allhom",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185642_6a2abc6a05e66.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 170,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781275466_6a2c1b4a228f5.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 43,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 44,
+      "name": "مطهي",
+      "enable": true,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 8,
+  "slug": "frkh-kaml-mtbl-8",
+  "name": "فرخة كاملة متبلة",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 230,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781267722_6a2bfd0ab8422.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 45,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 46,
+      "name": "مطهي",
+      "enable": false,
+      "price": 50
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 7,
+  "slug": "nsf-kylo-shysh-taook-7",
+  "name": "نصف كيلو شيش طاووق",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 150,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781267576_6a2bfc78498e5.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 47,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 48,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 6,
+  "slug": "nsf-kylo-sdor-mtbl-llshoaaa-6",
+  "name": "نصف كيلو صدور متبلة للشواء",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 145,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781267409_6a2bfbd1e67c6.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 49,
+      "name": "جاهز للطهي",
+      "enable": true,
+      "price": 0
+     },
+     {
+      "id": 50,
+      "name": "مطهي",
+      "enable": true,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 5,
+  "slug": "nsf-kylo-nagts-5",
+  "name": "نصف كيلو ناجتس",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 120,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781267292_6a2bfb5ca6038.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 51,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 52,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 4,
+  "slug": "nsf-kylo-shaorma-frakh-mlfof-fy-aaysh-sory-4",
+  "name": "نصف كيلو شاورما فراخ ملفوفة في عيش سوري",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 190,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781267004_6a2bfa3cb677f.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 53,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 54,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 3,
+  "slug": "nsf-kylo-shaorma-frakh-3",
+  "name": "نصف كيلو شاورما فراخ",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 140,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781267095_6a2bfa9750406.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 55,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 56,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 2,
+  "slug": "nsf-kylo-strbs-2",
+  "name": "نصف كيلو ستربس",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 130,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781266813_6a2bf97d4038c.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 57,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 58,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": 1,
+  "slug": "nsf-kylo-banyh-gahz-llkly-1",
+  "name": "نصف كيلو بانيه جاهز للقلي",
+  "category": {
+   "id": 1,
+   "name": "الفراخ",
+   "slug": "alfrakh",
+   "icon": "https://admin-roka.cashierthru.com/image/categories/1781185245_6a2abadd8a0ae.jpg"
+  },
+  "tags": [],
+  "description_steps": [],
+  "price": 125,
+  "discount": 0,
+  "product_image": "https://admin-roka.cashierthru.com/uploads/products/1781266594_6a2bf8a2b510f.jpg",
+  "variations": [
+   {
+    "id": 1,
+    "name": "التسويه",
+    "is_required": 1,
+    "enable": 1,
+    "choices": [
+     {
+      "id": 59,
+      "name": "جاهز للطهي",
+      "enable": false,
+      "price": 0
+     },
+     {
+      "id": 60,
+      "name": "مطهي",
+      "enable": false,
+      "price": 25
+     }
+    ]
+   }
+  ]
+ }
+]
