@@ -56,16 +56,23 @@ export function buildProductPath(product: {
 /**
  * Extracts the product id from a URL param.
  *
- * The id is the numeric token embedded in the slug. Canonical slugs end in the
- * id ("ft-shaorma-frakh-9"); SEO URLs append the product name after it
- * ("ft-shaorma-frakh-9-فتة-شاورما-فراخ"). The appended name carries no digits,
- * so the LAST numeric token in the param is always the id — this keeps old
- * (name-less) links working while tolerating the new name suffix.
+ * Canonical slugs end in the id ("ft-shaorma-frakh-9"); SEO URLs append the
+ * product name after it ("ft-shaorma-frakh-9-فتة-شاورما-فراخ"). The name can
+ * itself contain numbers ("2 قطعة بانيه" → "…-slt-22-2-قطعة-بانيه"), so the id
+ * is not simply the last number:
  *
- * "ft-shaorma-frakh-9-فتة-شاورما-فراخ" → { id: "9", slug: <param> }
- * "ft-shaorma-frakh-8"                 → { id: "8", slug: "ft-shaorma-frakh-8" }
- * "8"                                  → { id: "8", slug: "8" }
- * "no-number"                          → null
+ * 1. English name repeated after the id ("chicken-shawarma-9-chicken-shawarma")
+ *    → the number between the two copies.
+ * 2. Name in another script (Arabic) → the part before it is the API slug; the
+ *    id is the first of the numbers it ends with (a name starting "2 …" adds
+ *    a "2" right after the id).
+ * 3. Otherwise the last number, which covers name-less slugs and bare ids.
+ *
+ * "ft-shaorma-frakh-9-فتة-شاورما-فراخ"   → { id: "9" }
+ * "2-ktaa-banyh-arz-slt-22-2-قطعة-بانيه" → { id: "22" }
+ * "ft-shaorma-frakh-8"                   → { id: "8" }
+ * "8"                                    → { id: "8" }
+ * "no-number"                            → null
  */
 export function parseProductParam(
     param: string | undefined | null,
@@ -73,5 +80,26 @@ export function parseProductParam(
     if (!param) return null;
     const numbers = param.match(/\d+/g);
     if (!numbers || numbers.length === 0) return null;
+
+    const tokens = param.split("-").filter(Boolean);
+    const isNumber = (t: string) => /^\d+$/.test(t);
+
+    // 1. "<name>-<id>-<name>"
+    for (let i = 1; i < tokens.length - 1; i++) {
+        if (!isNumber(tokens[i])) continue;
+        const before = tokens.slice(0, i).join("-").toLowerCase();
+        const after = tokens.slice(i + 1).join("-").toLowerCase();
+        if (before === after) return { id: tokens[i], slug: param };
+    }
+
+    // 2. "<api-slug ending in the id>-<name in another script>"
+    const nameStart = tokens.findIndex((t) => !/^[a-z0-9]+$/i.test(t));
+    if (nameStart > 0 && isNumber(tokens[nameStart - 1])) {
+        let first = nameStart - 1;
+        while (first > 0 && isNumber(tokens[first - 1])) first--;
+        return { id: tokens[first], slug: param };
+    }
+
+    // 3. Name-less slug or bare id
     return { id: numbers[numbers.length - 1], slug: param };
 }

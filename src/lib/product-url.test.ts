@@ -72,6 +72,12 @@ describe("buildProductPath ↔ parseProductParam round-trip", () => {
     { id: 8, slug: "ft-shaorma-frakh-8" },
     { id: 8, name: "Some Product" },
     { id: 8 },
+    // Names with numbers (real roka dishes): the name's "2"/"3" must not win.
+    { id: 22, slug: "2-ktaa-banyh-arz-slt-22", name: "2 قطعة بانيه + أرز + سلطة" },
+    { id: 19, slug: "3-ktaa-kfth-arz-slt-19", name: "3 قطع كفتة + أرز + سلطة" },
+    { id: 11, slug: "nsf-kylo-hoaoshy-fy-aysh-4-arghf-11", name: "نصف كيلو حواوشي في عيش (4 أرغفة)" },
+    { id: 22, name: "2 قطعة بانيه" },
+    { id: 5, slug: "pepsi-2-liter-5", name: "Pepsi 2 Liter" },
   ];
 
   it.each(cases)("recovers id %j", (product) => {
