@@ -1,8 +1,22 @@
 import { cache } from "react";
 
 // ===== Types =====
+/**
+ * One tracking service the merchant added in the dashboard (Tracking & pixels).
+ * `type` is e.g. meta_pixel, google_analytics, custom; unknown types are skipped.
+ */
+export type TrackingItem = {
+  ref: string;
+  type: string;
+  id?: string;
+  name?: string;
+  placement?: "head" | "body";
+  code?: string;
+};
+
 export type SettingsResponse = {
   data?: any;
+  tracking?: TrackingItem[];
   is_login?: boolean;
   cart_count?: number;
   ok: boolean;
@@ -41,7 +55,7 @@ async function fetchWithTimeout(
 /**
  * Base fetch function - NOT cached
  */
-async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
+async function fetchSettingsBase(token?: string, fresh = false): Promise<SettingsResponse> {
   const url = `${API_BASE_URL}/v1/setting-profile`;
 
   try {
@@ -58,7 +72,10 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
       url,
       {
         headers,
-        next: { revalidate: token ? 60 : 300 }, // 1 min for auth, 5 min for public
+        // `fresh`: the tracking test view (?ct_debug=1) must show what was saved a second ago
+        ...(fresh
+          ? { cache: "no-store" as const }
+          : { next: { revalidate: token ? 60 : 300 } }), // 1 min for auth, 5 min for public
       },
       FETCH_TIMEOUT
     );
@@ -75,6 +92,7 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
 
     return {
       data: result.data,
+      tracking: Array.isArray(result.tracking) ? result.tracking : [],
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -96,17 +114,17 @@ async function fetchSettingsBase(token?: string): Promise<SettingsResponse> {
  * Cached public settings - for metadata and unauthenticated requests
  * Deduped within the same request using React cache()
  */
-export const fetchPublicSettings = cache(async (): Promise<SettingsResponse> => {
-  return fetchSettingsBase(undefined);
+export const fetchPublicSettings = cache(async (fresh = false): Promise<SettingsResponse> => {
+  return fetchSettingsBase(undefined, fresh);
 });
 
 /**
  * Cached settings - for authenticated requests
  * Each unique token gets its own cache entry
  */
-export const fetchSettings = cache(async (token?: string): Promise<SettingsResponse> => {
+export const fetchSettings = cache(async (token?: string, fresh = false): Promise<SettingsResponse> => {
   if (!token) {
-    return fetchPublicSettings();
+    return fetchPublicSettings(fresh);
   }
-  return fetchSettingsBase(token);
+  return fetchSettingsBase(token, fresh);
 });

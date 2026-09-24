@@ -35,6 +35,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.cashierthru.com",
       },
+      // Local dev against the Laravel app (http://admin-<store>.localhost:8000)
+      ...(process.env.NODE_ENV === "development"
+        ? [{ protocol: "http" as const, hostname: "*.localhost" }]
+        : []),
     ],
     // Image quality levels for Next.js 16+ compatibility
     qualities: [75, 80, 90, 100],

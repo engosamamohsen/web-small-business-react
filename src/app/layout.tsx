@@ -8,7 +8,7 @@ import "primeicons/primeicons.css";
 // ===== Type & Library Imports =====
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { ToastContainer } from "react-toastify";
 import dynamicImport from "next/dynamic";
 
@@ -18,6 +18,7 @@ import { SettingsProvider } from "@/providers";
 import Header from "@/layouts/Header/Header";
 import LoginHandler from "@/layouts/LoginHandler";
 import ColorHandler from "@/layouts/ColorHandler";
+import { TrackingHead, TrackingBodyStart, TrackingBodyEnd } from "@/layouts/Tracking/TrackingScripts";
 import packageJson from "../../package.json";
 
 // ===== Route Configuration =====
@@ -106,18 +107,26 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get("app_token")?.value;
 
+  // Tracking test view (?ct_debug=1, see middleware.ts): fresh settings + test panel
+  const trackingDebug = (await headers()).get("x-ct-debug") === "1";
+
   // Fetch settings ONCE - cached and deduped with generateMetadata
-  const settingsResponse = await fetchSettings(token);
+  const settingsResponse = await fetchSettings(token, trackingDebug);
 
   // Extract data with defaults
   const settingsData = settingsResponse?.data ?? null;
+  const tracking = settingsResponse?.tracking ?? [];
   const isLogin = settingsResponse?.ok ? Boolean(settingsResponse?.is_login) : false;
   const cartCount = settingsResponse?.cart_count ?? 0;
   const whatsappLink = buildWhatsAppLink(settingsData?.whatsapp_phone);
 
   return (
     <html lang="ar" dir="rtl" className={cairo.variable}>
+      <head>
+        <TrackingHead items={tracking} />
+      </head>
       <body className={`relative ${cairo.className}`}>
+        <TrackingBodyStart items={tracking} />
         {/* Global Provider - Settings available to ALL children */}
         <SettingsProvider
           initialSettings={settingsData}
@@ -153,6 +162,9 @@ export default async function RootLayout({
             theme="light"
           />
         </SettingsProvider>
+
+        {/* Tracking & pixels from the dashboard, plus the merchant's footer code */}
+        <TrackingBodyEnd items={tracking} debug={trackingDebug} />
       </body>
     </html>
   );
