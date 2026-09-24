@@ -3,6 +3,7 @@ import SEO from "../components/SEO.astro";
 import Analytics from "../components/Analytics.astro";
 import WebVitals from "../components/WebVitals.astro";
 import Tracking from "../components/Tracking/Tracking.astro";
+import MealHelperFab from "../components/MealHelper/MealHelperFab";
 import { getSiteOrigin } from "@/lib/site-origin";
 
 // CSS Imports
@@ -43,6 +44,12 @@ const {
 // Nginx, and Astro.site is the shared base domain, so neither can be trusted for
 // per-tenant canonical / Open Graph URLs.
 const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
+
+// Floating "help me choose" button on every storefront page, except the helper
+// page itself, the lockout screen and prebuilt error pages (no tenant there).
+const path = Astro.url.pathname;
+const showMealHelper =
+    !Astro.isPrerendered && path !== "/helper" && path !== "/store-unavailable";
 ---
 
 <!doctype html>
@@ -101,6 +108,7 @@ const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
     <body class="relative font-cairo">
         <Tracking part="bodyStart" />
         <slot />
+        {showMealHelper && <MealHelperFab lifted={path.startsWith("/product/")} client:idle />}
         <Tracking part="bodyEnd" />
     </body>
 </html>

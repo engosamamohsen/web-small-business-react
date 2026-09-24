@@ -6,7 +6,7 @@ import ColorHandler from "@/layouts/ColorHandler";
 import LoginHandler from "@/layouts/LoginHandler";
 import FaviconHandler from "@/layouts/FaviconHandler";
 import WhatsAppButton from "@/components/common/WhatsAppButton";
-import MealHelper from "@/components/MealHelper/MealHelper";
+import MealHelperPage from "@/components/MealHelper/MealHelperPage";
 import { ToastContainer } from "react-toastify";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { fetchMenu } from "@/lib/menu";
@@ -56,12 +56,8 @@ const storeName = settingsData?.name || "المتجر";
     />
     <ToastContainer position="top-right" rtl={true} client:load />
 
-    <main class="min-h-screen bg-slate-50 px-4 py-8 sm:py-12" dir="rtl">
-        <div class="mx-auto mb-6 flex max-w-xl flex-col gap-2 text-center">
-            <h1 class="text-2xl font-extrabold text-slate-900 sm:text-3xl">مش عارف تطلب إيه؟</h1>
-            <p class="text-slate-600">جاوب على كام سؤال سريع ونرشحلك الأنسب من منيو {storeName}.</p>
-        </div>
-        <MealHelper dishes={dishes} defaultImage={settingsData?.product_default_image} client:load />
+    <main>
+        <MealHelperPage storeName={storeName} dishes={dishes} defaultImage={settingsData?.product_default_image} client:load />
     </main>
 
     <WhatsAppButton phone={resolveWhatsappNumber(settingsData)} client:idle />
