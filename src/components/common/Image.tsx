@@ -47,6 +47,7 @@ export default function Image({
             loading={loading}
             decoding="async"
             fetchPriority={priority ? 'high' : undefined}
+            data-orig={resizable ? src : undefined}
             className={className}
             {...props}
         />

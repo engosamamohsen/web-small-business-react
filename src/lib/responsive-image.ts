@@ -45,6 +45,8 @@ export function storeImageProps(src: string | null | undefined, sizes: string, m
         src: resizedUrl(src, Math.min(maxDisplayWidth, 640)),
         srcSet: storeSrcSet(src, maxDisplayWidth),
         sizes,
+        // If a resized copy can't be loaded, Layout.astro switches the <img> back to this original.
+        "data-orig": src,
     };
 }
 
