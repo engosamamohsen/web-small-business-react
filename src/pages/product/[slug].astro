@@ -107,10 +107,19 @@ const pageKeywords = [
     "منتج",
     "شراء أونلاين",
 ].filter(Boolean) as string[];
-const productImage =
-    productData?.main_image ||
-    productData?.gallery_images?.[0] ||
-    productData?.image;
+// The product's own photos for link previews (WhatsApp, Facebook, Google) and the schema.
+// The API sends `images` (main first, then the gallery) and `product_image`; the store's
+// "no image" placeholder doesn't count, so a product without a photo keeps the default preview.
+const isRealImage = (url?: string | null): url is string =>
+    typeof url === "string" && url !== "" && !/no_image|placeholder/i.test(url);
+const productImages = [
+    ...(productData?.images ?? []),
+    productData?.product_image,
+    productData?.main_image,
+    ...(productData?.gallery_images ?? []),
+    productData?.image,
+].filter(isRealImage).filter((url, index, all) => all.indexOf(url) === index);
+const productImage: string | undefined = productImages[0];
 
 // Schema.org JSON-LD — the Product plus the store Organization (name / logo /
 // about / contact + facebook/instagram via sameAs), built from the tenant's
@@ -122,7 +131,7 @@ const productSchema = {
     "@type": "Product",
     name: productData?.name,
     description: productData?.description?.replace(/<[^>]*>/g, ""),
-    image: productImage,
+    image: productImages.length ? productImages : undefined,
     brand: {
         "@type": "Brand",
         name: settingsData?.name || "Store",
@@ -132,7 +141,8 @@ const productSchema = {
         url: canonicalUrl,
         priceCurrency: "EGP",
         price: productData?.price,
-        availability: "https://schema.org/InStock",
+        // Made from a recipe and an item ran out (API in_stock): tell search engines too.
+        availability: productData?.in_stock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
         seller: { "@id": storeOrganizationId(siteOrigin) },
     },
     category: productData?.category?.name,
@@ -148,8 +158,6 @@ export const prerender = false;
     description={pageDescription}
     keywords={pageKeywords}
     image={productImage}
-    imageWidth={1200}
-    imageHeight={630}
     favicon={settingsData?.logo}
     canonical={canonicalUrl}
 >
