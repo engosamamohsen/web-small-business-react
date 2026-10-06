@@ -17,6 +17,15 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
 
   const hasVariations = (product?.variations?.length ?? 0) > 0;
 
+  // Made from a recipe and an item ran out (API `in_stock`): no quick add.
+  if (product?.in_stock === false) {
+    return (
+      <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500">
+        غير متاح حالياً
+      </span>
+    );
+  }
+
   if (hasVariations) {
     return (
       <button

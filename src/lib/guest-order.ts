@@ -88,6 +88,34 @@ export async function submitGuestOrder(payload: GuestOrderPayload) {
     return data;
 }
 
+/** Products in the cart that can't be ordered now, and the store's message about them. */
+export interface CartStockCheck {
+    unavailableIds: number[];
+    message: string | null;
+}
+
+/**
+ * Ask the store which cart products can't be ordered right now (products made from
+ * a recipe stop when one of their items runs out). Throws on network / API error;
+ * callers treat that as "unknown" and let the order endpoint decide.
+ */
+export async function checkCartStock(items: CartItemType[]): Promise<CartStockCheck> {
+    const { data } = await $api.post("v1/basket/check-stock", {
+        items: buildGuestOrderItems(items).map(({ product_id, quantity }) => ({ product_id, quantity })),
+    });
+    return {
+        unavailableIds: (data?.unavailable_product_ids ?? []).map(Number),
+        message: data?.message ?? null,
+    };
+}
+
+/** The 422 a guest order gets when a product can't be made now, else null. */
+export function stockRefusal(error: any): CartStockCheck | null {
+    const body = error?.response?.data;
+    if (error?.response?.status !== 422 || !Array.isArray(body?.unavailable_product_ids)) return null;
+    return { unavailableIds: body.unavailable_product_ids.map(Number), message: body.message ?? null };
+}
+
 /**
  * Best-effort extraction of a gateway redirect URL from the guest-buy response
  * (online payment). The exact field name isn't part of a stable contract yet,

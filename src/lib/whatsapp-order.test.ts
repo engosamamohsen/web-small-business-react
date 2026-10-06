@@ -178,10 +178,10 @@ describe("buildWhatsAppOrderMessage", () => {
 describe("buildWhatsAppOrderUrl (number only from settings API)", () => {
   const settings = { whatsapp_phone: "01093341796", name: "عيدو", shop_type: "restaurant" };
 
-  it("builds a wa.me order URL with an encoded message from the settings number", () => {
+  it("builds an api.whatsapp.com order URL (keeps emojis) with an encoded message from the settings number", () => {
     const url = buildWhatsAppOrderUrl([item()], 200, settings);
     expect(url).toBeTypeOf("string");
-    expect(url!.startsWith("https://wa.me/201093341796?text=")).toBe(true);
+    expect(url!.startsWith("https://api.whatsapp.com/send?phone=201093341796&text=")).toBe(true);
     expect(decodeURIComponent(url!)).toContain("الإجمالي: 200 ج.م");
   });
 
@@ -204,13 +204,13 @@ describe("buildWhatsAppOrderUrl (number only from settings API)", () => {
       name: "عيدو",
       shop_type: "restaurant",
     });
-    expect(noWhatsapp!.startsWith("https://wa.me/201112124464?text=")).toBe(true);
+    expect(noWhatsapp!.startsWith("https://api.whatsapp.com/send?phone=201112124464&text=")).toBe(true);
 
     const placeholderWhatsapp = buildWhatsAppOrderUrl([item()], 200, {
       whatsapp_phone: "201234567890",
       phone: "01112124464",
     });
-    expect(placeholderWhatsapp!.startsWith("https://wa.me/201112124464?text=")).toBe(true);
+    expect(placeholderWhatsapp!.startsWith("https://api.whatsapp.com/send?phone=201112124464&text=")).toBe(true);
   });
 
   it("still returns null when BOTH numbers are placeholders / missing", () => {

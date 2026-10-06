@@ -29,9 +29,11 @@ if (!id) {
 // Resolve the canonical slug from the same product-details API
 let productData: ProductType | null = null;
 try {
+    // This store's API (set per request by the middleware), not the build-time default store
     const response = await fetchHook({
         url: `v1/product-details?product_id=${id}`,
         init: {},
+        baseUrl: Astro.locals.apiBase,
     });
 
     if (response?.ok && response?.data?.data) {

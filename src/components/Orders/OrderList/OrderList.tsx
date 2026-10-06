@@ -6,6 +6,8 @@ import { formatDate } from "@/lib/global";
 import { useOrderServices } from "@/hooks/order";
 import PageLoader from "@/components/PageLoader/PageLoader";
 import EmptyOrderList from "./EmptyOrderList";
+import RateOrderDialog, { RatingStars } from "./RateOrderDialog";
+import { ORDER_TABS, orderStatus, type OrderTabKey } from "@/lib/order-status";
 import {
   ChevronLeft,
   Package,
@@ -13,11 +15,15 @@ import {
   CheckCircle2,
   XCircle,
   Clock3,
+  Wallet,
+  ChefHat,
 } from "lucide-react";
 
 function OrderList() {
-  const { loading, data: orders } = useOrderServices();
-  const [activeTab] = useState<string>("All"); // ✅ logic unchanged
+  const { loading, data: orders, reload } = useOrderServices();
+  const [activeTab, setActiveTab] = useState<OrderTabKey>("all");
+  // Delivered order being rated (dialog open)
+  const [ratingOrderId, setRatingOrderId] = useState<number | null>(null);
   const router = useRouter();
 
   if (loading) {
@@ -28,26 +34,22 @@ function OrderList() {
     return <EmptyOrderList />;
   }
 
-  // ✅ same filtering logic
-  const filteredOrders = orders?.filter((order) => {
-    if (activeTab === "All") return true;
-    if (activeTab === "Open" && order.order_status_id === 1) return true;
-    if (activeTab === "Shipped" && order.order_status_id === 2) return true;
-    if (activeTab === "Completed" && order.order_status_id === 3) return true;
-    return false;
-  });
+  const tab = ORDER_TABS.find((t) => t.key === activeTab) ?? ORDER_TABS[0];
+  const filteredOrders = orders.filter((order) => tab.match(Number(order.order_status_id)));
 
   const getStatusIcon = (statusId: number) => {
     switch (statusId) {
       case 1:
         return <Clock3 className="h-3.5 w-3.5" />;
       case 2:
-        return <Truck className="h-3.5 w-3.5" />;
+        return <Wallet className="h-3.5 w-3.5" />;
       case 3:
-        return <CheckCircle2 className="h-3.5 w-3.5" />;
+        return <ChefHat className="h-3.5 w-3.5" />;
       case 4:
-        return <CheckCircle2 className="h-3.5 w-3.5" />;
+        return <Truck className="h-3.5 w-3.5" />;
       case 5:
+        return <CheckCircle2 className="h-3.5 w-3.5" />;
+      case 6:
         return <XCircle className="h-3.5 w-3.5" />;
       default:
         return <Package className="h-3.5 w-3.5" />;
@@ -73,6 +75,30 @@ function OrderList() {
               {orders.length} طلب
             </span>
           </div>
+        </div>
+        {/* Filter by status */}
+        <div className="mt-3 flex flex-wrap gap-2" role="tablist" aria-label="تصفية الطلبات حسب الحالة">
+          {ORDER_TABS.map((t) => {
+            const count = orders.filter((o) => t.match(Number(o.order_status_id))).length;
+            const selected = t.key === activeTab;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setActiveTab(t.key)}
+                className={cn(
+                  "rounded-full border px-4 py-1.5 text-sm transition-colors",
+                  selected
+                    ? "border-[var(--main-color)] bg-[var(--main-color)] text-white"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-[var(--main-color)]",
+                )}
+              >
+                {t.label} <span className={cn("text-xs", selected ? "text-white/80" : "text-gray-400")}>({count})</span>
+              </button>
+            );
+          })}
         </div>
       </header>
 
@@ -100,6 +126,9 @@ function OrderList() {
 
         {/* Orders list – responsive */}
         <div className="max-h-[calc(100vh-260px)] w-full overflow-y-auto border-t border-gray-50 md:border-t-0 md:bg-white" >
+          {filteredOrders.length === 0 && (
+            <p className="px-6 py-10 text-center text-sm text-gray-500">لا توجد طلبات في هذا القسم.</p>
+          )}
           {filteredOrders.map((order) => (
             <article
               key={order.id}
@@ -141,21 +170,12 @@ function OrderList() {
                 <span className="text-[11px] text-gray-400">الحالة</span>
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium",
-                    "bg-gray-100 text-gray-600",
-                    order.order_status_id === 1 &&
-                    "bg-yellow-500/90 text-white",
-                    order.order_status_id === 2 &&
-                    "bg-blue-500/90 text-white",
-                    order.order_status_id === 3 &&
-                    "bg-orange-400/90 text-white",
-                    order.order_status_id === 4 &&
-                    "bg-green-500/90 text-white",
-                    order.order_status_id === 5 && "bg-red-500/90 text-white"
+                    "inline-flex w-fit items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium",
+                    orderStatus(order.order_status_id)?.pill ?? "bg-gray-100 text-gray-600",
                   )}
                 >
-                  {getStatusIcon(order.order_status_id)}
-                  <span>{order.order_status_name}</span>
+                  {getStatusIcon(Number(order.order_status_id))}
+                  <span>{orderStatus(order.order_status_id)?.label ?? order.order_status_name}</span>
                 </span>
               </div>
 
@@ -173,10 +193,42 @@ function OrderList() {
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </span>
               </div>
+              {/* Delivered: rate it, or show the rating given */}
+              {(order.can_rate || order.rating) && (
+                <div
+                  className="flex items-center gap-2 md:col-span-4 md:px-6 md:pb-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {order.rating ? (
+                    <span className="inline-flex items-center gap-2 text-xs text-gray-500">
+                      <span>تقييمك</span>
+                      <RatingStars value={order.rating.rating} />
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setRatingOrderId(order.id)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    >
+                      <RatingStars value={0} size={12} />
+                      قيّم الطلب
+                    </button>
+                  )}
+                </div>
+              )}
+
             </article>
           ))}
         </div>
       </div>
+      {ratingOrderId !== null && (
+        <RateOrderDialog
+          orderId={ratingOrderId}
+          visible
+          onHide={() => setRatingOrderId(null)}
+          onRated={reload}
+        />
+      )}
     </section>
   );
 }

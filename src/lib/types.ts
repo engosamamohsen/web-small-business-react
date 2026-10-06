@@ -61,9 +61,13 @@ export interface ProductType {
   variations?: Variation[];
   gallery?: Array<string>;
   gallery_images?: Array<string>;
+  /** Every image URL for the product page gallery: main image first, then the gallery. */
+  images?: string[];
   sizes?: SizeOption[];
   colors?: ColorOption[];
   count?: number;
+  /** false = made from a recipe and an item ran out: shown, but can't be ordered. */
+  in_stock?: boolean;
   technical_information?: Array<{
     id: number;
     product_id: string;
@@ -102,6 +106,10 @@ export interface OrderType {
   delivery: number;
   table_id: number;
   created_at: string;
+  /** The customer's rating, once they rated the (delivered) order. */
+  rating?: { rating: number; review: string | null; created_at: string | null } | null;
+  /** Delivered and not rated yet. */
+  can_rate?: boolean;
 }
 
 export type PaymentMethod = {

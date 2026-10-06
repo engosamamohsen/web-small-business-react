@@ -60,6 +60,11 @@ export const useCartHook = () => {
    * Add product to cart
    */
   const addToCart = async (product: any) => {
+    if (product?.in_stock === false) {
+      toast.error(`${product.name} غير متاح حالياً`, { position: "top-right", autoClose: 3000, rtl: true });
+      return { status: false };
+    }
+
     if (storeConfig.usesLocalCart) {
       addLocalCartItem(product);
       setCartCount(localCartCount());

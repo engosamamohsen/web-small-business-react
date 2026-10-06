@@ -269,7 +269,8 @@ export function buildWhatsAppOrderUrl(
         settings?.shop_type,
         customer,
     );
-    return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+    // Not wa.me: its redirect turns every emoji in the message into "�" (checked 2026-10-06).
+    return `https://api.whatsapp.com/send?phone=${number}&text=${encodeURIComponent(message)}`;
 }
 
 /**

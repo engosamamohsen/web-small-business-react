@@ -48,6 +48,8 @@ export const CartActions = memo(({
     const [count, setCount] = useState(1);
     const [productNote, setProductNote] = useState("");
     const [isAvailable, setIsAvailable] = useState(true);
+    // false = made from a recipe and an item ran out (API `in_stock`); older APIs don't send it.
+    const inStock = product?.in_stock !== false;
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     // Track what action to run after successful login: "cart" | "buynow"
     const [pendingAction, setPendingAction] = useState<"cart" | "buynow" | null>(null);
@@ -186,6 +188,12 @@ export const CartActions = memo(({
                     />
                 </div>
 
+                {!inStock && (
+                    <p role="status" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                        غير متاح حالياً — نفد أحد مكوناته
+                    </p>
+                )}
+
                 {/* Quantity Counter */}
                 <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-600">الكمية</span>
@@ -221,12 +229,12 @@ export const CartActions = memo(({
                 >
                     {/* Add to Cart — outlined */}
                     <button
-                        disabled={loading || !isAvailable}
+                        disabled={loading || !isAvailable || !inStock}
                         onClick={handleAddToCart}
                         className={cn(
                             "flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-[var(--main-color)] px-5 py-3.5 text-sm font-bold text-[var(--main-color)] transition-all duration-200",
                             "hover:bg-[var(--main-color)]/8 active:scale-[0.98]",
-                            (loading || !isAvailable) && "cursor-not-allowed border-gray-300 text-gray-400"
+                            (loading || !isAvailable || !inStock) && "cursor-not-allowed border-gray-300 text-gray-400"
                         )}
                     >
                         {loading ? (
@@ -240,12 +248,12 @@ export const CartActions = memo(({
 
                     {/* Buy Now — filled → goes to /shop/cart */}
                     <button
-                        disabled={loading || !isAvailable}
+                        disabled={loading || !isAvailable || !inStock}
                         onClick={handleBuyNow}
                         className={cn(
                             "flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--main-color)] px-5 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200",
                             "hover:opacity-90 active:scale-[0.98]",
-                            (loading || !isAvailable) && "cursor-not-allowed bg-gray-300"
+                            (loading || !isAvailable || !inStock) && "cursor-not-allowed bg-gray-300"
                         )}
                     >
                         <Zap size={16} />
@@ -257,8 +265,9 @@ export const CartActions = memo(({
                 <div className="h-20 md:hidden" />
             </div>
 
-            {/* Auth Dialog — shown when user is not logged in (premium only) */}
-            {storeConfig.canAuthenticate && (
+            {/* Auth Dialog — shown when user is not logged in (premium only). Mounted on demand:
+                the lazy dialog can't render on the server. */}
+            {storeConfig.canAuthenticate && showAuthDialog && (
                 <Suspense fallback={null}>
                     <AuthDialog
                         visible={showAuthDialog}

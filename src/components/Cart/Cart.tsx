@@ -24,7 +24,13 @@ import {
 } from "@/lib/subscription";
 import { clearLocalCart } from "@/lib/cart/local-cart";
 import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-totals";
-import { buildGuestOrderItems, submitGuestOrder } from "@/lib/guest-order";
+import {
+  buildGuestOrderItems,
+  checkCartStock,
+  stockRefusal,
+  submitGuestOrder,
+  type CartStockCheck,
+} from "@/lib/guest-order";
 import { captureElementToFile, shareImageFile } from "@/lib/cart-screenshot";
 import { trackWhatsAppOrder } from "@/lib/firebase-tracker";
 import { toast } from "react-toastify";
@@ -35,6 +41,8 @@ import { CartItemType } from "@/types/types";
 // ===== Cart Item Component =====
 interface CartItemProps {
   item: CartItemType;
+  /** Can't be ordered now (a recipe item ran out). */
+  unavailable?: boolean;
   loading: boolean;
   updateCount: (itemId: number, quantity: number, productName: string) => void;
   removeFromCart: (item: any) => void;
@@ -43,6 +51,7 @@ interface CartItemProps {
 
 const CartItem = ({
   item,
+  unavailable = false,
   loading,
   updateCount,
   removeFromCart,
@@ -75,6 +84,11 @@ const CartItem = ({
           <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 md:text-base">
             {item.product_name}
           </h3>
+          {unavailable && (
+            <span className="w-fit rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">
+              غير متاح حالياً — احذفه من السلة لإتمام الطلب
+            </span>
+          )}
 
           <div className="flex flex-wrap items-baseline gap-3 text-sm">
             <span className="font-medium text-orange-500">
@@ -202,6 +216,7 @@ const OrderSummary = ({
   processing = false,
   whatsappAvailable = false,
   orderingBlocked = false,
+  stockMessage = null,
 }: {
   subtotal: number;
   originalSubtotal?: number;
@@ -213,6 +228,8 @@ const OrderSummary = ({
   processing?: boolean;
   whatsappAvailable?: boolean;
   orderingBlocked?: boolean;
+  /** Set when a cart product can't be ordered now: the order button waits until it's removed. */
+  stockMessage?: string | null;
 }) => {
   const total = subtotal + shipping + tax;
   const hasDiscount = discountAmount > 0;
@@ -252,7 +269,11 @@ const OrderSummary = ({
           </div>
         </div>
       </div>
-      {orderingBlocked ? (
+      {stockMessage && !orderingBlocked ? (
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-3 text-center text-sm font-medium text-red-700">
+          {stockMessage}
+        </p>
+      ) : orderingBlocked ? (
         // The store used up its plan's order quota (free trial capped at
         // orders_limit). Browsing and the cart stay untouched — only placing a
         // new order is off. Deliberately says nothing about plans or trials:
@@ -480,6 +501,32 @@ export default function Cart({
   // double submits.
   const [processing, setProcessing] = useState(false);
 
+  // Products that can't be ordered now (recipe items ran out), checked with the
+  // store whenever the cart's products or quantities change.
+  const [stock, setStock] = useState<CartStockCheck>({ unavailableIds: [], message: null });
+  const stockKey = (cartResponse?.cart_items ?? [])
+    .map((item: CartItemType) => `${item.product_id}:${item.qty}`)
+    .join(",");
+  useEffect(() => {
+    const items = cartResponse?.cart_items ?? [];
+    if (!items.length) {
+      setStock({ unavailableIds: [], message: null });
+      return;
+    }
+    let cancelled = false;
+    checkCartStock(items)
+      .then((result) => {
+        if (!cancelled) setStock(result);
+      })
+      .catch(() => {
+        // unknown → don't block; the order endpoint still refuses what can't be made
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stockKey]);
+
   // The off-screen <OrderReceipt> element captured into the order PNG that is
   // shared into WhatsApp via the native share sheet (no download).
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -560,6 +607,11 @@ export default function Cart({
       return;
     }
 
+    if (stock.unavailableIds.length) {
+      toast.error(stock.message || "بعض المنتجات غير متاحة حالياً", { rtl: true });
+      return;
+    }
+
     // Plus tier: customer fields are required and go into the API order + the
     // order image. Validate before doing anything irreversible.
     if (isPlusOrder) {
@@ -609,27 +661,40 @@ export default function Cart({
       // basket/guest-buy — Basic has no customer form, so name / phone / address /
       // notes are sent empty; the details reach the shop through the WhatsApp text.
       if (!isPlusOrder) {
-        trackWhatsAppOrder().catch(() => {});
         const textUrl = buildWhatsAppOrderUrl(items, orderTotal, settings, customer);
-        const win = textUrl ? window.open(textUrl, "_blank") : null;
+        // Open the window now, while the click still allows pop-ups, and point it
+        // at WhatsApp once the store has accepted the order.
+        const win = textUrl ? window.open("", "_blank") : null;
         if (win) {
+          // Record the order server-side first. Only a "can't be made now" refusal
+          // stops the WhatsApp order; any other API failure still lets the text
+          // order through (it carries the details to the shop), as before.
+          try {
+            await submitGuestOrder({
+              items: buildGuestOrderItems(items),
+              payment_method: 1, // cash on delivery (online not enabled yet)
+              order_type: "takeaway", // Basic has no address → takeaway
+              full_name: "",
+              full_address: "",
+              phone: "",
+              notes: "",
+            });
+          } catch (error: any) {
+            const refused = stockRefusal(error);
+            if (refused) {
+              win.close();
+              setStock(refused);
+              toast.error(refused.message || "بعض المنتجات غير متاحة حالياً", { rtl: true });
+              return;
+            }
+          }
+          trackWhatsAppOrder().catch(() => {});
           try {
             win.opener = null;
           } catch {
             // cross-origin — ignore
           }
-          // Record the order server-side, best-effort (fire-and-forget so an API
-          // failure never blocks the WhatsApp flow). Fired only AFTER the wa.me
-          // window opened, so a blocked-popup retry can't double-record.
-          submitGuestOrder({
-            items: buildGuestOrderItems(items),
-            payment_method: 1, // cash on delivery (online not enabled yet)
-            order_type: "takeaway", // Basic has no address → takeaway
-            full_name: "",
-            full_address: "",
-            phone: "",
-            notes: "",
-          }).catch(() => {});
+          win.location.href = textUrl!;
           finishOrder("تم تجهيز طلبك عبر واتساب");
         } else {
           // Nothing opened / recorded → keep the cart so the user can retry.
@@ -678,6 +743,8 @@ export default function Cart({
       // which the shop still receives in WhatsApp).
       const order = await orderResult;
       if (!order.ok) {
+        const refused = stockRefusal(order.error);
+        if (refused) setStock(refused);
         const message =
           order.error?.response?.data?.message ||
           "تعذر تأكيد الطلب، حاول مرة أخرى";
@@ -806,6 +873,7 @@ export default function Cart({
             <CartItem
               key={item.cart_item_id}
               item={item}
+              unavailable={stock.unavailableIds.includes(Number(item.product_id))}
               loading={loading}
               updateCount={handleUpdateCount}
               removeFromCart={handleRemoveFromCart}
@@ -850,6 +918,7 @@ export default function Cart({
             taxRate={isPlusOrder ? taxRate : 0}
             onWhatsAppOrder={handleWhatsAppOrder}
             orderingBlocked={orderingBlocked}
+            stockMessage={stock.unavailableIds.length ? stock.message || "بعض المنتجات غير متاحة حالياً" : null}
             processing={processing}
             whatsappAvailable={whatsappAvailable}
           />
