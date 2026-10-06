@@ -90,7 +90,7 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-[var(--main-background)]/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
+      <header className="ct-header sticky top-0 z-40 border-b border-black/5 bg-[var(--main-background)]/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
             {/* Logo */}
@@ -103,7 +103,7 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
                 )}
               </div>
               {settings?.name && (
-                <span className="hidden text-lg font-semibold text-[var(--main-font-color)] sm:block">
+                <span className="ct-header__name hidden text-lg font-semibold text-[var(--main-font-color)] sm:block">
                   {settings.name}
                 </span>
               )}
@@ -121,7 +121,7 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
               {isLoggedIn && (
                 <Link
                   href="/user/orders"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
+                  className="ct-header__icon relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
                   aria-label="طلباتي"
                 >
                   <ClipboardList className="h-4 w-4 text-[var(--second-font-color)]" />
@@ -130,7 +130,7 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
 
               <Link
                 href={!storeConfig.canAuthenticate || isLoggedIn ? "/shop/cart" : "#"}
-                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
+                className="ct-header__icon relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
                 aria-label="سلة المشتريات"
                 onClick={handleCartClick}
               >

@@ -37,6 +37,16 @@ export default function ColorHandler({ globalData }: ColorHandlerProps) {
 
     const root = document.documentElement;
 
+    // Themes other than classic bring their own colours (src/styles/themes.css);
+    // inline values here would override them, so only the classic look sets them.
+    const theme = root.dataset.theme;
+    if (theme && theme !== "classic") {
+      setCookie("app_data", data, { path: "/", maxAge: 86400 });
+      effectRan.current = true;
+      setIsLoading(false);
+      return;
+    }
+
     // 🔸 Use old version color logic with fallbacks
     const mainColor = "#FC7643"; // support both mainColor & main_color
     const secondColor = data?.main_font_color ?? "#FC7643";

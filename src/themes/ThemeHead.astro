@@ -1,0 +1,11 @@
+---
+// The theme's stylesheet and fonts, for pages that build their own <html> instead of
+// using src/layouts/Layout.astro (the auth screens). Such a page also sets
+// <html data-theme={resolveTheme(Astro.locals.theme).key}>; Classic adds nothing.
+import "../styles/themes.css";
+import { fontsHref, resolveTheme } from "./registry";
+
+const href = fontsHref(resolveTheme(Astro.locals.theme));
+---
+
+{href && <link href={href} rel="stylesheet" />}

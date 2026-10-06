@@ -5,9 +5,12 @@ import WebVitals from "../components/WebVitals.astro";
 import Tracking from "../components/Tracking/Tracking.astro";
 import MealHelperFab from "../components/MealHelper/MealHelperFab";
 import { getSiteOrigin } from "@/lib/site-origin";
+import { resolveTheme, fontsHref, THEME_PREVIEW_PARAM } from "@/themes/registry";
+import { isFoodStore } from "@/lib/shop-type";
 
 // CSS Imports
 import "../styles/globals.css";
+import "../styles/themes.css";
 import "nprogress/nprogress.css";
 import "react-toastify/dist/ReactToastify.css";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
@@ -48,15 +51,32 @@ const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
 // Floating "help me choose" button on every storefront page, except the helper
 // page itself, the lockout screen and prebuilt error pages (no tenant there).
 const path = Astro.url.pathname;
+// Website theme (dashboard → Website settings), resolved per request in middleware.
+const theme = resolveTheme(Astro.locals.theme);
+const themeFonts = fontsHref(theme);
+const themePreview = Boolean(Astro.locals.themePreview);
+
+// Store mode for the browser (src/lib/store-config.ts), printed before any island hydrates.
+const storeBoot = JSON.stringify({
+    plan: Astro.locals.plan === "premium" ? "premium" : "basic",
+    socialLogin: Astro.locals.socialLogin ?? [],
+    onlinePayment: Boolean(Astro.locals.onlinePayment),
+}).replace(/</g, "\\u003c");
+
 const showMealHelper =
-    !Astro.isPrerendered && path !== "/helper" && path !== "/store-unavailable";
+    !Astro.isPrerendered && path !== "/helper" && path !== "/store-unavailable" &&
+    isFoodStore(Astro.locals.shopType);
 ---
 
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme={theme.key} data-motion={theme.motion}>
     <head>
         <meta charset="UTF-8" />
+        <script is:inline set:html={`(function(b){window.__CT_PLAN__=b.plan;window.__CT_STORE__=b;})(${storeBoot});`}></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- Scroll reveals (src/components/motion/scroll-reveal.ts): switched on before first paint so marked
+             content starts hidden, never for Classic or reduced motion, and dropped if the module never starts. -->
+        <script is:inline>(function(d){const m=d.getAttribute("data-motion");if(!m||m==="none"||!window.matchMedia||matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("ct-motion");setTimeout(function(){if(!window.__ctReveal)d.classList.remove("ct-motion")},4000)})(document.documentElement);</script>
 
         <!-- Preload critical fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -65,6 +85,7 @@ const showMealHelper =
             href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
+        {themeFonts && <link href={themeFonts} rel="stylesheet" />}
 
         <!-- Favicon -->
         <link rel="icon" type="image/png" href={favicon || "/favicon.ico"} />
@@ -107,9 +128,21 @@ const showMealHelper =
     </head>
     <body class="relative font-cairo">
         <Tracking part="bodyStart" />
+        {
+            themePreview && (
+                <div class="ct-preview-bar" role="status">
+                    <span>أنت تعاين ثيم «{theme.name}».<span class="ct-preview-bar__more"> يظهر لك وحدك، وعملاؤك يرون ثيمك الحالي.</span></span>
+                    <a href={`?${THEME_PREVIEW_PARAM}=off`}>إنهاء المعاينة</a>
+                </div>
+            )
+        }
         <slot />
         {showMealHelper && <MealHelperFab lifted={path.startsWith("/product/")} client:idle />}
         <Tracking part="bodyEnd" />
+        <script>
+            import { installReveal } from "@/components/motion/scroll-reveal";
+            installReveal();
+        </script>
     </body>
 </html>
 

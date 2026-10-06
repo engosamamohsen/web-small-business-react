@@ -13,6 +13,7 @@ import { fetchMenu } from "@/lib/menu";
 import { resolveWhatsappNumber } from "@/lib/whatsapp-order";
 import packageJson from "../../package.json";
 import type { MenuDish } from "@/lib/meal-helper/engine";
+import { isFoodStore } from "@/lib/shop-type";
 
 // Meal helper: a few questions, then dishes from this store's own menu.
 // Rendered per request so each tenant gets its own menu (Astro.locals.apiBase).
@@ -27,6 +28,9 @@ const [settingsResult, menuResult] = await Promise.allSettled([
 ]);
 
 const settingsData = settingsResult.status === "fulfilled" ? settingsResult.value?.data ?? null : null;
+if (settingsData && !isFoodStore(settingsData.shop_type)) {
+    return Astro.redirect("/");
+}
 const isLogin = settingsResult.status === "fulfilled" && settingsResult.value?.ok ? Boolean(settingsResult.value?.is_login) : false;
 let dishes: MenuDish[] = [];
 if (menuResult.status === "fulfilled") {

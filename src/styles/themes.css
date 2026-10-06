@@ -1,0 +1,334 @@
+/*
+ * Storefront themes (see src/themes/registry.ts). Layout sets data-theme on <html>.
+ *
+ * "classic" has no rules here on purpose: it is the original look, drawn by the
+ * components' own classes. Every other theme sets the tokens below and restyles the
+ * shared hooks (.ct-header, .ct-footer, .ct-section-title, …). Themed home-page
+ * components (src/components/Themed) read the same tokens.
+ *
+ * Tokens
+ *   --main-color      accent: buttons, prices, active states (used across the app)
+ *   --t-bg            page background        --t-surface   cards and panels
+ *   --t-ink           text                   --t-muted     secondary text
+ *   --t-line          borders                --t-accent-ink text on the accent
+ *   --t-highlight     second accent (badges, stickers)
+ *   --t-header-bg / --t-header-ink / --t-footer-bg / --t-footer-ink
+ *   --t-font / --t-display   body and heading families
+ *   --t-radius / --t-radius-lg
+ */
+
+/* ── Studio: calm catalogue, product photos lead ─────────────────────────────── */
+[data-theme="studio"] {
+  --main-color: #2f5bea;
+  --second-color: #2f5bea;
+  --main-background: #ffffff;
+  --t-bg: #f5f6f8;
+  --t-surface: #ffffff;
+  --t-ink: #16233b;
+  --t-muted: #5b6576;
+  --t-line: #dce1e8;
+  --t-accent-ink: #ffffff;
+  --t-highlight: #e8eefe;
+  --t-header-bg: #ffffff;
+  --t-header-ink: #16233b;
+  --t-footer-bg: #16233b;
+  --t-footer-ink: #e9edf5;
+  --t-font: "IBM Plex Sans Arabic", "Cairo", sans-serif;
+  --t-display: "IBM Plex Sans Arabic", "Cairo", sans-serif;
+  --t-radius: 4px;
+  --t-radius-lg: 8px;
+}
+
+/* ── Souq: boutique, Kufic headings, dark header ─────────────────────────────── */
+[data-theme="souq"] {
+  --main-color: #5e3fa8;
+  --second-color: #5e3fa8;
+  --main-background: #241b3f;
+  --t-bg: #f4f1f8;
+  --t-surface: #ffffff;
+  --t-ink: #241b3f;
+  --t-muted: #6a6285;
+  --t-line: #e3dcee;
+  --t-accent-ink: #ffffff;
+  --t-highlight: #d69a1f;
+  --t-header-bg: #241b3f;
+  --t-header-ink: #f4f1f8;
+  --t-footer-bg: #241b3f;
+  --t-footer-ink: #e3dcee;
+  --t-font: "Tajawal", "Cairo", sans-serif;
+  --t-display: "Reem Kufi", "Tajawal", sans-serif;
+  --t-radius: 14px;
+  --t-radius-lg: 22px;
+}
+
+/* ── Fashion: fashion magazine, black and white, tall photos ─────────────────── */
+[data-theme="fashion"] {
+  --main-color: #141414;
+  --second-color: #141414;
+  --main-background: #faf8f5;
+  --t-bg: #faf8f5;
+  --t-surface: #ffffff;
+  --t-ink: #141414;
+  --t-muted: #6b6560;
+  --t-line: #e4dfd8;
+  --t-accent-ink: #ffffff;
+  --t-highlight: #b8865b;
+  --t-header-bg: #faf8f5;
+  --t-header-ink: #141414;
+  --t-footer-bg: #141414;
+  --t-footer-ink: #e4dfd8;
+  --t-font: "Almarai", "Cairo", sans-serif;
+  --t-display: "Amiri", "Almarai", serif;
+  --t-radius: 0px;
+  --t-radius-lg: 0px;
+}
+
+/* ── Furniture: warm showroom, wood and linen ────────────────────────────────── */
+[data-theme="furniture"] {
+  --main-color: #8a5a3b;
+  --second-color: #8a5a3b;
+  --main-background: #ffffff;
+  --t-bg: #f3eee7;
+  --t-surface: #ffffff;
+  --t-ink: #2b2620;
+  --t-muted: #6e655a;
+  --t-line: #e2d9cc;
+  --t-accent-ink: #ffffff;
+  --t-highlight: #d9b98c;
+  --t-header-bg: #ffffff;
+  --t-header-ink: #2b2620;
+  --t-footer-bg: #2b2620;
+  --t-footer-ink: #e2d9cc;
+  --t-font: "Readex Pro", "Cairo", sans-serif;
+  --t-display: "Readex Pro", "Cairo", sans-serif;
+  --t-radius: 10px;
+  --t-radius-lg: 18px;
+}
+
+/* ── Bistro: printed-menu restaurant / café ──────────────────────────────────── */
+[data-theme="bistro"] {
+  --main-color: #2f7a4f;
+  --second-color: #2f7a4f;
+  --main-background: #1f2a24;
+  --t-bg: #f1f4ef;
+  --t-surface: #ffffff;
+  --t-ink: #1f2a24;
+  --t-muted: #5e6b63;
+  --t-line: #d9e1d6;
+  --t-accent-ink: #ffffff;
+  --t-highlight: #f2b33d;
+  --t-header-bg: #1f2a24;
+  --t-header-ink: #f1f4ef;
+  --t-footer-bg: #1f2a24;
+  --t-footer-ink: #d9e1d6;
+  --t-font: "Cairo", sans-serif;
+  --t-display: "El Messiri", "Cairo", sans-serif;
+  --t-radius: 12px;
+  --t-radius-lg: 18px;
+}
+
+/* ── Street: loud fast food, sticker prices ──────────────────────────────────── */
+[data-theme="street"] {
+  --main-color: #e63946;
+  --second-color: #e63946;
+  --main-background: #ffb703;
+  --t-bg: #fff9ec;
+  --t-surface: #ffffff;
+  --t-ink: #1b1b3a;
+  --t-muted: #55557a;
+  --t-line: #1b1b3a;
+  --t-accent-ink: #ffffff;
+  --t-highlight: #ffb703;
+  --t-header-bg: #ffb703;
+  --t-header-ink: #1b1b3a;
+  --t-footer-bg: #1b1b3a;
+  --t-footer-ink: #fff9ec;
+  --t-font: "Cairo", sans-serif;
+  --t-display: "Lalezar", "Cairo", sans-serif;
+  --t-radius: 10px;
+  --t-radius-lg: 16px;
+}
+
+/* ── Shared hooks for every non-classic theme ────────────────────────────────── */
+[data-theme]:not([data-theme="classic"]) body {
+  background: var(--t-bg);
+  color: var(--t-ink);
+  font-family: var(--t-font);
+}
+
+[data-theme]:not([data-theme="classic"]) :is(h1, h2, h3, .ct-display) {
+  font-family: var(--t-display);
+}
+
+[data-theme]:not([data-theme="classic"]) .ct-header {
+  background: var(--t-header-bg);
+  color: var(--t-header-ink);
+  border-color: var(--t-line);
+}
+[data-theme]:not([data-theme="classic"]) .ct-header__name {
+  color: var(--t-header-ink);
+  font-family: var(--t-display);
+}
+
+[data-theme]:not([data-theme="classic"]) .ct-footer {
+  background: var(--t-footer-bg);
+  color: var(--t-footer-ink);
+}
+
+[data-theme]:not([data-theme="classic"]) .ct-section-title {
+  color: var(--t-ink);
+}
+
+/* Studio: hairline header, square controls */
+[data-theme="studio"] .ct-header {
+  border-bottom: 1px solid var(--t-line);
+}
+[data-theme="studio"] .ct-header__icon {
+  border-radius: var(--t-radius);
+  box-shadow: none;
+  border: 1px solid var(--t-line);
+}
+
+/* Souq: gold rule under the dark header */
+[data-theme="souq"] .ct-header {
+  border-bottom: 3px solid var(--t-highlight);
+}
+
+/* Fashion: hairline ink rule, square icons */
+[data-theme="fashion"] .ct-header {
+  border-bottom: 1px solid var(--t-ink);
+}
+[data-theme="fashion"] .ct-header__icon {
+  border-radius: 0;
+  box-shadow: none;
+  border: 1px solid var(--t-ink);
+}
+[data-theme="fashion"] .ct-header__name {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+/* Furniture: soft shadow under a white header */
+[data-theme="furniture"] .ct-header {
+  border-bottom: 1px solid var(--t-line);
+  box-shadow: 0 6px 24px -18px rgba(43, 38, 32, 0.45);
+}
+[data-theme="furniture"] .ct-header__icon {
+  box-shadow: none;
+  background: var(--t-bg);
+}
+
+/* Bistro: thin herb-green rule under the dark header */
+[data-theme="bistro"] .ct-header {
+  border-bottom: 3px solid var(--main-color);
+}
+
+/* Street: heavy ink outline under the mustard header */
+[data-theme="street"] .ct-header {
+  border-bottom: 3px solid var(--t-ink);
+}
+[data-theme="street"] .ct-header__icon {
+  border: 2px solid var(--t-ink);
+  box-shadow: 2px 2px 0 var(--t-ink);
+}
+[data-theme="street"] .ct-header__name {
+  font-size: 1.5rem;
+  letter-spacing: 0.01em;
+}
+
+/* Visible keyboard focus in every theme */
+[data-theme]:not([data-theme="classic"]) :is(a, button):focus-visible {
+  outline: 2px solid var(--main-color);
+  outline-offset: 2px;
+}
+
+/* ── Theme preview bar (owner only, from the dashboard) ──────────────────────── */
+.ct-preview-bar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: #111827;
+  color: #fff;
+  font: 500 0.875rem/1.4 "Cairo", sans-serif;
+}
+.ct-preview-bar a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Motion: scroll reveals ──────────────────────────────────────────────────────
+ * <html data-motion> comes from the theme (registry.ts → motion). Marked elements
+ * ([data-reveal]) start hidden only while <html class="ct-motion"> is on, and come in
+ * as src/components/motion/scroll-reveal.ts flags them: "in" plays the entrance, "done" hands
+ * the element back to its own (hover) transitions. --ct-i is its place in a cascade.
+ */
+[data-motion="lift"] {
+  --ct-from: translateY(36px);
+  --ct-blur: 0px;
+  --ct-dur: 0.75s;
+  --ct-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ct-stagger: 90ms;
+}
+[data-motion="rise"] {
+  --ct-from: translateY(64px);
+  --ct-blur: 0px;
+  --ct-dur: 1.05s;
+  --ct-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ct-stagger: 120ms;
+}
+[data-motion="fade"] {
+  --ct-from: translateY(12px) scale(0.98);
+  --ct-blur: 10px;
+  --ct-dur: 1.1s;
+  --ct-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ct-stagger: 110ms;
+}
+[data-motion="pop"] {
+  --ct-from: translateY(24px) scale(0.82) rotate(-2deg);
+  --ct-blur: 0px;
+  --ct-dur: 0.6s;
+  --ct-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ct-stagger: 70ms;
+}
+
+html.ct-motion [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  transform: var(--ct-from);
+  filter: blur(var(--ct-blur));
+}
+html.ct-motion [data-reveal][data-revealed="in"] {
+  transition:
+    opacity var(--ct-dur) ease-out,
+    transform var(--ct-dur) var(--ct-ease),
+    filter var(--ct-dur) ease-out;
+  transition-delay: calc(var(--ct-i, 0) * var(--ct-stagger));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.ct-motion [data-reveal]:not([data-revealed]) {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  [data-theme] * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Footer store name: the accent is too dark on the dark footers, use the highlight */
+[data-theme]:not([data-theme="classic"]) .ct-footer__name {
+  color: var(--t-highlight);
+  font-family: var(--t-display);
+  font-size: 1rem;
+}
+@media (max-width: 639px) {
+  .ct-preview-bar__more { display: none; }
+}

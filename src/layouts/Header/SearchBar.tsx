@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import Image from "@/components/common/Image";
 import { fetchHookClient } from "@/hooks/fetch-hook-client";
 import { buildProductPath } from "@/lib/product-url";
+import { storeConfig } from "@/lib/store-config";
 
 type Category = {
     id?: number | string;
@@ -150,6 +151,14 @@ export default function SearchBar() {
                     onFocus={() => {
                         if (results.length > 0) setIsOpen(true);
                     }}
+                    onKeyDown={(e) => {
+                        // Full e-commerce stores: Enter shows every result on the product list.
+                        if (e.key === "Enter" && storeConfig.isPremium && query.trim()) {
+                            e.preventDefault();
+                            window.location.href = `/?q=${encodeURIComponent(query.trim())}#products`;
+                        }
+                    }}
+                    aria-label="ابحث عن منتج"
                 />
 
                 {query && (

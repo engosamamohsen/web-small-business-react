@@ -27,7 +27,7 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
   return (
     <footer
       className={cn(
-        "mt-10 border-t border-white/10 bg-black/95 text-white",
+        "ct-footer mt-10 border-t border-white/10 bg-black/95 text-white",
         "backdrop-blur",
         pathname.startsWith("/product") ? "max-md:pb-72" : "",
       )}
@@ -50,7 +50,7 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
             )}
 
             <div className="space-y-1">
-              <h4 className="text-sm font-semibold tracking-wide text-[var(--main-color)]">
+              <h4 className="ct-footer__name text-sm font-semibold tracking-wide text-[var(--main-color)]">
                 {siteName}
               </h4>
               {settings?.about_us && (

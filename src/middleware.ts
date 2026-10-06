@@ -1,6 +1,15 @@
 import { defineMiddleware } from "astro:middleware";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { PLAN_COOKIE, planFromSettings, type StorePlan } from "@/lib/store-config";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { isStoreExpired } from "@/lib/subscription";
+import { devApiOrigin } from "@/lib/config";
+import { DEFAULT_THEME, THEME_PREVIEW_COOKIE, THEME_PREVIEW_PARAM, isThemeKey } from "@/themes/registry";
+
+// Store mode for this request (basic / premium), read by storeConfig on the server.
+// See src/lib/store-config.ts.
+const planContext = new AsyncLocalStorage<StorePlan>();
+(globalThis as unknown as { __ctPlanStore?: AsyncLocalStorage<StorePlan> }).__ctPlanStore = planContext;
 
 // Lockout screen shown when the tenant's subscription has expired.
 const STORE_UNAVAILABLE_PATH = "/store-unavailable";
@@ -50,7 +59,7 @@ function deriveAdminOrigin(hostname: string, protocol: string): { origin: string
     // Local dev server (npm run dev)
     if (import.meta.env.DEV) {
         return {
-            origin: import.meta.env.PUBLIC_DEV_API_ORIGIN || "https://admin-asly.cashierthru.com",
+            origin: devApiOrigin(hostname),
             fallback: false,
         };
     }
@@ -93,6 +102,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const apiBase = `${adminOrigin}/api/`;
     context.locals.apiBase = apiBase;
 
+    // ── Website theme ─────────────────────────────────────────────────────────
+    // The store's saved theme comes with the settings below. A preview from the
+    // dashboard (?theme_preview=<key>) overrides it for this browser only, kept in a
+    // session cookie so the owner can click around; ?theme_preview=off ends it.
+    const previewParam = context.url.searchParams.get(THEME_PREVIEW_PARAM);
+    if (previewParam === "off") {
+        context.cookies.delete(THEME_PREVIEW_COOKIE, { path: "/" });
+    } else if (isThemeKey(previewParam)) {
+        context.cookies.set(THEME_PREVIEW_COOKIE, previewParam, { path: "/", httpOnly: true, sameSite: "lax" });
+    }
+    const previewTheme =
+        previewParam === "off"
+            ? null
+            : isThemeKey(previewParam)
+              ? previewParam
+              : context.cookies.get(THEME_PREVIEW_COOKIE)?.value;
+    context.locals.theme = isThemeKey(previewTheme) ? previewTheme : DEFAULT_THEME;
+    context.locals.themePreview = isThemeKey(previewTheme);
+
     // ── Expired-subscription store lockout ───────────────────────────────────
     // Every storefront route is SSR, so this single check guards the whole site
     // (homepage, product/category pages, cart, …). When the plan is expired we
@@ -106,6 +134,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     //   • fetchSettings fails OPEN (network/API error → store stays available)
     const isGet = context.request.method === "GET";
     const isLockoutPage = context.url.pathname === STORE_UNAVAILABLE_PATH;
+    context.locals.plan = "basic";
+    context.locals.socialLogin = [];
+    context.locals.onlinePayment = false;
+    context.locals.shopType = null;
     if (isGet && !isLockoutPage) {
         // Tracking test view (?ct_debug=1, the dashboard's "Test in my browser"):
         // load fresh settings so it shows what was saved a second ago, plus the test panel.
@@ -117,6 +149,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
             // Only when the tenant is known: on the PUBLIC_BASE_URL fallback every store
             // would get the default tenant's pixels and send its visitors to that account.
             context.locals.tracking = tenantUnknown ? [] : settings.tracking ?? [];
+            if (!tenantUnknown) {
+                context.locals.plan = planFromSettings(settings);
+                context.locals.socialLogin = settings.social_login ?? [];
+                context.locals.onlinePayment = Boolean(settings.online_payment?.enabled);
+                context.locals.shopType = settings.data?.shop_type ?? null;
+                if (context.cookies.get(PLAN_COOKIE)?.value !== context.locals.plan) {
+                    context.cookies.set(PLAN_COOKIE, context.locals.plan, { path: "/", sameSite: "lax" });
+                }
+            }
+            if (!context.locals.themePreview && isThemeKey(settings.data?.storefront_theme)) {
+                context.locals.theme = settings.data.storefront_theme;
+            }
             if (isStoreExpired(settings.current_subscription_plan)) {
                 return context.rewrite(STORE_UNAVAILABLE_PATH);
             }
@@ -125,5 +169,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
         }
     }
 
-    return next();
+    // Render the page inside this store's mode, so storeConfig answers for this store only.
+    return planContext.run(context.locals.plan, () => next());
 });
