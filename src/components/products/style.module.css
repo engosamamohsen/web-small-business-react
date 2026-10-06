@@ -1,27 +1,109 @@
+/* ── Product page gallery (ProductGallery.tsx) ── */
+
+.product-swiper {
+  --swiper-theme-color: var(--main-color, #0f766e);
+  --swiper-navigation-size: 40px;
+  --swiper-navigation-sides-offset: 12px;
+  --swiper-pagination-bullet-inactive-color: #94a3b8;
+  --swiper-pagination-bullet-inactive-opacity: 0.6;
+  --swiper-pagination-bottom: 10px;
+}
+
+.product-swiper :global(.swiper-slide) {
+  overflow: hidden;
+  background-color: white;
+}
+
+.product-swiper :global(.swiper-zoom-container) {
+  cursor: zoom-in;
+}
+
+.product-swiper :global(.swiper-slide-zoomed .swiper-zoom-container) {
+  cursor: grab;
+}
+
+/* Arrows: round white buttons, shown on tablet/desktop (mobile swipes + dots). */
 .product-swiper :global(.swiper-button-next),
 .product-swiper :global(.swiper-button-prev) {
   width: 40px;
   height: 40px;
-  background-color: white;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.92);
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
   border: 1px solid #e5e7eb;
+  color: #334155;
+  transition: background-color 0.2s, color 0.2s, opacity 0.2s;
 }
 
 .product-swiper :global(.swiper-button-next:hover),
 .product-swiper :global(.swiper-button-prev:hover) {
-  background-color: #f9fafb;
-  @apply !border-white bg-orange-500 !text-white !transition;
+  background-color: var(--main-color, #0f766e);
+  border-color: transparent;
+  color: white;
 }
 
-.product-swiper :global(.swiper-button-next::after),
-.product-swiper :global(.swiper-button-prev::after) {
-  font-size: 18px;
-  color: #4b5563;
-  @apply !transition hover:text-white;
+.product-swiper :global(.swiper-button-next:focus-visible),
+.product-swiper :global(.swiper-button-prev:focus-visible),
+.product-swiper :global(.swiper-pagination-bullet:focus-visible) {
+  outline: 2px solid var(--main-color, #0f766e);
+  outline-offset: 2px;
 }
 
 .product-swiper :global(.swiper-button-disabled) {
-  opacity: 0;
-  cursor: default;
+  opacity: 0 !important;
+}
+
+.product-swiper :global(.swiper-pagination-bullet) {
+  width: 8px;
+  height: 8px;
+  transition: width 0.25s, background-color 0.25s;
+}
+
+.product-swiper :global(.swiper-pagination-bullet-active) {
+  width: 22px;
+  border-radius: 9999px;
+}
+
+.product-swiper :global(.swiper-lazy-preloader) {
+  border-color: var(--main-color, #0f766e);
+  border-top-color: transparent;
+}
+
+@media (max-width: 767px) {
+  .product-swiper :global(.swiper-button-next),
+  .product-swiper :global(.swiper-button-prev) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .product-swiper :global(.swiper-pagination) {
+    display: none;
+  }
+}
+
+/* Thumbnails strip */
+.product-thumbs :global(.swiper-slide) {
+  opacity: 0.6;
+  padding: 2px;
+  transition: opacity 0.2s;
+}
+
+.product-thumbs :global(.swiper-slide:hover),
+.product-thumbs :global(.swiper-slide-thumb-active) {
+  opacity: 1;
+}
+
+.product-thumbs :global(.swiper-slide-thumb-active button) {
+  box-shadow: 0 0 0 2px var(--main-color, #0f766e);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-swiper :global(.swiper-button-next),
+  .product-swiper :global(.swiper-button-prev),
+  .product-swiper :global(.swiper-pagination-bullet),
+  .product-thumbs :global(.swiper-slide) {
+    transition: none;
+  }
 }

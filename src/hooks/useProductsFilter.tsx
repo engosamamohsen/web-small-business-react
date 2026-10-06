@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "@/lib/navigation";
 import { fetchHookClient } from "./fetch-hook-client";
+import { productsUrl } from "@/lib/products-query";
 
 interface ProductsResponse {
     data: any[];
@@ -71,8 +72,8 @@ export function useProductsFilter(
             setError(null);
 
             try {
-                const url = `v1/product${categoryParam ? `?category_id=${categoryParam}` : ""}${subCategoryParam ? `&sub_category_id=${subCategoryParam}` : ""
-                    }${subCategoryParam || categoryParam ? `&` : "?"}page=${currentPage}&limit=${limit}`;
+                // Keeps the search / price / sort filters from the URL (src/lib/products-query.ts).
+                const url = productsUrl(searchParams, { category: categoryParam, subCategory: subCategoryParam });
 
                 const response = await fetchHookClient<ProductsResponse>({
                     url,
