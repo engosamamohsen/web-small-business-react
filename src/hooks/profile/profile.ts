@@ -1,4 +1,4 @@
-import { useAsync } from "react-use";
+import { useAsyncRetry } from "react-use";
 import Cookies from "js-cookie";
 import { $api } from "@/client";
 import { useRouter } from "@/lib/navigation";
@@ -12,15 +12,15 @@ interface ProfileUpdateData {
 
 export const useProfileServices = () => {
   const router = useRouter();
-  const { value, loading, error } = useAsync(async () => {
-    return $api.post("/get-profile");
+  const { value, loading, error, retry } = useAsyncRetry(async () => {
+    return $api.post("v1/get-profile");
   }, []);
-  const errorStatus = (error as any)?.status;
-  if (errorStatus === 403) {
+  const errorStatus = (error as any)?.status ?? (error as any)?.response?.status;
+  if (errorStatus === 401 || errorStatus === 403) {
     Cookies.remove("app_token");
     router.push("/auth/login");
   }
-  return { data: value?.data?.data, loading };
+  return { data: value?.data?.data, loading, reload: retry };
 };
 
 export const useProfileUpdate = () => {
@@ -32,7 +32,7 @@ export const useProfileUpdate = () => {
       if (profileData.phone) formData.append("phone", profileData.phone);
       if (profileData.image) formData.append("image", profileData.image);
 
-      const response = await $api.post("/update-profile", formData, {
+      const response = await $api.post("v1/update-profile", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

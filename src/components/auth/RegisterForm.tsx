@@ -3,13 +3,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import Link from "@/components/common/Link";
-import { loginWithGoogle } from "@/firebase/firebase-hooks";
-import Image from "@/components/common/Image";
+import SocialLoginButtons from "./SocialLoginButtons";
+import type { SocialLoginOption } from "@/hooks/fetchSettings";
 import { SettingsType } from "@/lib/types";
 
 import { useRouter } from "@/lib/navigation";
@@ -41,8 +40,11 @@ export default function RegisterForm({
   onSwitchToLogin,
   onSuccess,
   onNeedVerify,
+  socialLogin,
 }: {
   initSettings: SettingsType;
+  /** The store's Google / Facebook buttons (pages pass them; dialogs read window.__CT_STORE__). */
+  socialLogin?: SocialLoginOption[];
   onSwitchToLogin?: () => void;
   onSuccess?: () => void;
   /** Called after successful registration — dialog mode, shows verify screen */
@@ -60,18 +62,8 @@ export default function RegisterForm({
   });
 
   const { loading, register: registerUser } = useAuthHook();
-  const [googleLoading, setGoogleLoading] = useState(false);
   const onSubmit = async (inputs: any) => {
     await registerUser(inputs, onSuccess, onNeedVerify);
-  };
-
-  const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
-    try {
-      await loginWithGoogle({ action: () => router.push("/") });
-    } finally {
-      setGoogleLoading(false);
-    }
   };
 
   const token = Cookies.get("app_token");
@@ -99,29 +91,8 @@ export default function RegisterForm({
           يرجى تسجيل الدخول لإجراء الطلب
         </div>
       </div>
-      <div className="flex flex-col items-stretch justify-center gap-4">
-        <Button
-          type="button"
-          loading={googleLoading}
-          disabled={googleLoading || loading}
-          onClick={handleGoogleLogin}
-          className="mx-auto flex h-12 w-full flex-row-reverse items-center justify-center gap-2 rounded-full bg-orange-700 text-center text-white !shadow-none !outline-none disabled:opacity-70"
-          icon={
-            !googleLoading ? (
-              <Image
-                src="/icons8-google.svg"
-                alt="أيقونة التسجيل عبر جوجل"
-                width={28}
-                height={28}
-                className="mr-[6px]"
-              />
-            ) : undefined
-          }
-        >
-          {googleLoading ? "جارٍ تسجيل الدخول..." : "Sign In with Google"}
-        </Button>
-        <h6 className="text-center text-[18px] font-semibold text-black">أو</h6>
-      </div>
+      {/* Continue with Google / Facebook (full e-commerce plans; hidden when the store has none) */}
+      <SocialLoginButtons options={socialLogin} />
       <div className="space-y-4">
         <div>
           <label
@@ -249,7 +220,7 @@ export default function RegisterForm({
           label="إنشاء حساب"
           className="w-full bg-[var(--main-color)] py-4 text-white"
           loading={loading}
-          disabled={loading || googleLoading}
+          disabled={loading}
         />
       </div>
 

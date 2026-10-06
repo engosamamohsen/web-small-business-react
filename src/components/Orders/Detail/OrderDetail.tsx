@@ -16,10 +16,10 @@ const OrderDetail = ({
 }: {
   orderId: string | number;
 }): React.ReactNode => {
-  const { loading, data: order } = useOrderDetailServices(orderId);
+  const { loading, data: order, reload } = useOrderDetailServices(orderId);
 
   const content = useMemo(() => {
-    if (loading) {
+    if (loading && !order) {
       return <PageLoader text="جاري تحميل التفاصيل" />;
     }
 
@@ -36,6 +36,10 @@ const OrderDetail = ({
         <MemoizedOrderStatusTracker
           orderStatus={order.order_status_id}
           orderId={orderId}
+          createdAt={order.created_at}
+          updatedAt={order.updated_at}
+          canCancel={Boolean(order.can_cancel)}
+          onCancelled={reload}
         />
 
         <div className="mt-6 space-y-4">
@@ -61,7 +65,7 @@ const OrderDetail = ({
         </div>
       </div>
     );
-  }, [loading, order, orderId]);
+  }, [loading, order, orderId, reload]);
 
   return content;
 };

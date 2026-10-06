@@ -13,20 +13,26 @@ import { useForm } from "react-hook-form";
 import { CircleX } from "lucide-react";
 import {
   useAddress,
+  useAddressBook,
   useBranchesWithCity,
   useCities,
   useGovernorate,
+  type SavedAddress,
 } from "@/hooks/addressHook";
 import { useUpdateEffect } from "react-use";
+import { useEffect } from "react";
 
 function DialogAddressForm({
   showDialog,
   setShowDialog,
   retryAddress,
+  address,
 }: {
   showDialog: boolean;
   setShowDialog: any;
   retryAddress: () => void;
+  /** Edit this saved address instead of adding a new one. */
+  address?: SavedAddress | null;
 }) {
   const {
     handleSubmit,
@@ -34,6 +40,7 @@ function DialogAddressForm({
     watch,
     register,
     setError,
+    reset,
     formState: { errors },
   } = useForm<AddressFormSchemaType>({
     mode: "all",
@@ -54,10 +61,36 @@ function DialogAddressForm({
     }
   }, [watch("governorate")]);
 
-  const { createAddress, loading } = useAddress();
+  // Opening the dialog fills the form with the address being edited (or clears it).
+  useEffect(() => {
+    if (!showDialog) return;
+    if (!address) {
+      reset(AddressFormSchemaDefaultValues);
+      return;
+    }
+    reset({
+      ...AddressFormSchemaDefaultValues,
+      name: address.name || "—",
+      email: address.email || "",
+      phone: address.phone || "",
+      address: [address.area_name, address.street].filter(Boolean).join(" - ").padEnd(5, " "),
+      governorate: { value: address.city_id, name: address.city_name } as any,
+      city: { value: address.area_id, name: address.area_name } as any,
+      branch_id: { value: address.branch_id, name: address.branch_name } as any,
+      street: address.street || "",
+      special_Sign: address.special_sign || "",
+      building: String(address.building ?? ""),
+      floor: String(address.floor ?? "") as any,
+      flat: String(address.flat ?? "") as any,
+    });
+  }, [showDialog, address, reset]);
+
+  const { createAddress, loading: creating } = useAddress();
+  const { updateAddress, loading: updating } = useAddressBook();
+  const loading = creating || updating;
   const onSubmit = async (inputs: any) => {
-    const data = await createAddress(inputs);
-    if (data?.status === 201) {
+    const data = address ? await updateAddress(address.id, inputs) : await createAddress(inputs);
+    if (data?.status === 201 || (address && data?.status === 200)) {
       setShowDialog(false);
       retryAddress();
     }
@@ -78,7 +111,7 @@ function DialogAddressForm({
               <div className="absolute top-1 flex w-full items-center justify-between gap-2 px-4 text-[var(--second-font-color)]">
                 <div className="flex w-full items-center gap-1">
                   <h4 className="text-[15px] font-semibold text-[var(--main-color)]">
-                    اضف العنوان الخاص بيك
+                    {address ? "تعديل العنوان" : "اضف العنوان الخاص بيك"}
                   </h4>
                 </div>
                 <Button

@@ -1,22 +1,22 @@
 ---
 import ThemeHead from "@/themes/ThemeHead.astro";
 import { resolveTheme } from "@/themes/registry";
-import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
+import SocialLoginCallback from "@/components/auth/SocialLoginCallback";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { storeConfig } from "@/lib/store-config";
 
-// BASIC plan: authentication is disabled — this screen doesn't exist
+// Back from "Continue with Google / Facebook": SocialLoginCallback swaps the one-time code
+// for the customer's token (full e-commerce plans only).
 if (!storeConfig.canAuthenticate) {
     return Astro.redirect("/");
 }
 
-// Fetch public settings
 const settingsResponse = await fetchSettings(undefined, false, Astro.locals.apiBase);
 const settingsData = settingsResponse?.data ?? null;
 
 const siteName = settingsData?.name || "المتجر";
-const pageTitle = `إعادة تعيين كلمة المرور | ${siteName}`;
-const pageDescription = "أدخل كلمة المرور الجديدة لإعادة تعيين حسابك";
+const pageTitle = `تسجيل الدخول | ${siteName}`;
+const pageDescription = settingsData?.about_us || "";
 
 export const prerender = false;
 ---
@@ -28,6 +28,7 @@ export const prerender = false;
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
+        <meta name="robots" content="noindex" />
 
         <!-- Preload critical fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -37,6 +38,16 @@ export const prerender = false;
             rel="stylesheet"
         />
         <ThemeHead />
+
+        <!-- Open Graph -->
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="website" />
+        {
+            settingsData?.logo && (
+                <meta property="og:image" content={settingsData.logo} />
+            )
+        }
 
         <!-- Favicon -->
         {settingsData?.logo && <link rel="icon" href={settingsData.logo} />}
@@ -55,9 +66,7 @@ export const prerender = false;
         <link rel="stylesheet" href="/node_modules/primeicons/primeicons.css" />
     </head>
     <body class="relative font-cairo bg-gray-50">
-        <div class="flex min-h-screen items-center justify-center px-4">
-            <ResetPasswordForm client:only="react" />
-        </div>
+        <SocialLoginCallback client:only="react" />
     </body>
 </html>
 
@@ -65,6 +74,7 @@ export const prerender = false;
     :root {
         --font-cairo: "Cairo", sans-serif;
     }
+
     body {
         font-family: var(--font-cairo);
     }

@@ -1,14 +1,13 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import Link from "@/components/common/Link";
-import { loginWithGoogle } from "@/firebase/firebase-hooks";
-import Image from "@/components/common/Image";
+import SocialLoginButtons from "./SocialLoginButtons";
+import type { SocialLoginOption } from "@/hooks/fetchSettings";
 import { SettingsType } from "@/lib/types";
 import { useRouter } from "@/lib/navigation";
 import {
@@ -28,8 +27,11 @@ export default function LoginForm({
   onSwitchToForgotPassword,
   onSuccess,
   onNeedVerify,
+  socialLogin,
 }: {
   initSettings: SettingsType;
+  /** The store's Google / Facebook buttons (pages pass them; dialogs read window.__CT_STORE__). */
+  socialLogin?: SocialLoginOption[];
   onSwitchToRegister?: () => void;
   onSwitchToForgotPassword?: () => void;
   onSuccess?: () => void;
@@ -48,23 +50,8 @@ export default function LoginForm({
     resolver: zodResolver(formSchema),
   });
   const { loading, login } = useAuthHook();
-  const [googleLoading, setGoogleLoading] = useState(false);
   const onSubmit = async (inputs: any) => {
     await login(inputs, onSuccess, onNeedVerify);
-  };
-
-  const handleGoogleLogin = async () => {
-    setGoogleLoading(true);
-    try {
-      // In dialog mode, call onSuccess to let the parent handle post-login flow
-      // (e.g. close dialog, run pending action). In standalone page mode, go home.
-      const action = onSuccess
-        ? () => onSuccess()
-        : () => router.push("/");
-      await loginWithGoogle({ action });
-    } finally {
-      setGoogleLoading(false);
-    }
   };
 
   // Only auto-redirect if NOT in dialog mode (no onSuccess callback).
@@ -95,29 +82,8 @@ export default function LoginForm({
           يرجى تسجيل الدخول لإجراء الطلب
         </div>
       </div>
-      <div className="flex flex-col items-stretch justify-center gap-4">
-        <Button
-          type="button"
-          loading={googleLoading}
-          disabled={googleLoading || loading}
-          onClick={handleGoogleLogin}
-          className="mx-auto flex h-12 w-full flex-row-reverse items-center justify-center gap-2 rounded-full bg-orange-700 text-center text-white !shadow-none !outline-none disabled:opacity-70"
-          icon={
-            !googleLoading ? (
-              <Image
-                src="/icons8-google.svg"
-                alt="أيقونة التسجيل عبر جوجل"
-                width={28}
-                height={28}
-                className="mr-[6px]"
-              />
-            ) : undefined
-          }
-        >
-          {googleLoading ? "جارٍ تسجيل الدخول..." : "Sign In with Google"}
-        </Button>
-        <h6 className="text-center text-[18px] font-semibold text-black">أو</h6>
-      </div>
+      {/* Continue with Google / Facebook (full e-commerce plans; hidden when the store has none) */}
+      <SocialLoginButtons options={socialLogin} />
       <div className="space-y-4">
         <div>
           <label

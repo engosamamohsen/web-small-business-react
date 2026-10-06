@@ -62,7 +62,12 @@ export default function CheckoutPage() {
       shippingFees,
     });
     if (res?.status === 200) {
-      const orderId = res?.data?.data?.id;
+      // Pay online: go to the payment page; the order waits for the payment meanwhile.
+      if (res?.data?.redirect && res?.data?.payment_url) {
+        window.location.href = res.data.payment_url;
+        return;
+      }
+      const orderId = res?.data?.order?.id ?? res?.data?.data?.id;
       if (orderId) {
         router.push(`/order/${orderId}`);
       } else {
@@ -125,6 +130,12 @@ export default function CheckoutPage() {
       )}
     </>
   );
+}
+
+/** The store turned on online payments (dashboard → Online payments); printed by Layout.astro. */
+function onlinePaymentEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  return Boolean((window as unknown as { __CT_STORE__?: { onlinePayment?: boolean } }).__CT_STORE__?.onlinePayment);
 }
 
 // --------------------- Sub Components ---------------------
@@ -255,6 +266,21 @@ const BillingForm = ({
     )}
 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-6">
+      <fieldset>
+        <legend className="mb-2 block text-sm font-medium text-gray-700">طريقة الدفع</legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 px-4 py-3 has-[:checked]:border-[var(--main-color)] has-[:checked]:bg-[var(--main-color)]/5">
+            <input type="radio" value="1" {...register("paymentMethod")} className="accent-[var(--main-color)]" />
+            <span>الدفع عند الاستلام</span>
+          </label>
+          {onlinePaymentEnabled() && (
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 px-4 py-3 has-[:checked]:border-[var(--main-color)] has-[:checked]:bg-[var(--main-color)]/5">
+              <input type="radio" value="2" {...register("paymentMethod")} className="accent-[var(--main-color)]" />
+              <span>الدفع أونلاين (بطاقة، محفظة، فوري)</span>
+            </label>
+          )}
+        </div>
+      </fieldset>
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
           ملاحظات إضافية

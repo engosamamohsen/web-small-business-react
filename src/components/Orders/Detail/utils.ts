@@ -19,8 +19,8 @@ export const getOrderStatus = (status: string): OrderStatusState => {
  * Formats address details into a readable string
  */
 export const formatAddress = (address?: Address): string => {
-  if (!address) return "Address not available";
-  return `${address.city_name || ""}, ${address.area_name || ""}, ${address.street || ""}, Building ${address.building || ""}, Floor ${address.floor || ""}, Flat ${address.flat || ""}`;
+  if (!address) return "العنوان غير متاح";
+  return `${address.city_name || ""}، ${address.area_name || ""}، شارع ${address.street || ""}، عمارة ${address.building || ""}، الدور ${address.floor || ""}، شقة ${address.flat || ""}`;
 };
 
 /**

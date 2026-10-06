@@ -114,6 +114,76 @@ export const useAddress = () => {
   };
 };
 
+/** A saved address as GET v1/customer-addresses/view returns it (default first). */
+export type SavedAddress = {
+  id: number;
+  is_default?: boolean;
+  /** governorate */
+  city_id: number;
+  city_name: string;
+  /** city / area */
+  area_id: number;
+  area_name: string;
+  branch_id: number;
+  branch_name: string;
+  street: string;
+  building: string;
+  floor: number;
+  flat: number;
+  phone: string;
+  special_sign: string;
+  name?: string | null;
+  email?: string | null;
+  shipping_fees?: number;
+};
+
+const toastOptions = { position: "top-right" as const, autoClose: 2500, rtl: true };
+
+/** Edit, delete, and choose the default address (My account → Addresses). */
+export const useAddressBook = () => {
+  const [loading, setLoading] = useState(false);
+
+  const run = async (call: () => Promise<any>, ok: string, fail: string) => {
+    try {
+      setLoading(true);
+      const response = await call();
+      toast.success(ok, toastOptions);
+      return response;
+    } catch (err: any) {
+      toast.error(`${fail}${err?.response?.data?.message ? ` : ${err.response.data.message}` : ""}`, toastOptions);
+      return err?.response;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // The edit endpoint names the governorate city_id and the city area_id (like the list).
+  const updateAddress = (id: number, inputs: any) =>
+    run(
+      () =>
+        $api.put(`v1/customer-address/edit/${id}`, {
+          city_id: inputs?.governorate?.value,
+          area_id: inputs?.city?.value,
+          street: inputs?.street,
+          building: inputs?.building,
+          floor: inputs?.floor,
+          flat: inputs?.flat,
+          phone: inputs?.phone,
+          special_sign: inputs?.special_Sign || "-",
+        }),
+      "تم تعديل العنوان",
+      "تعذر تعديل العنوان",
+    );
+
+  const deleteAddress = (id: number) =>
+    run(() => $api.delete(`v1/customer-address/delete/${id}`), "تم حذف العنوان", "تعذر حذف العنوان");
+
+  const makeDefault = (id: number) =>
+    run(() => $api.post(`v1/customer-address/default/${id}`), "أصبح هذا عنوانك الافتراضي", "تعذر تعيين العنوان الافتراضي");
+
+  return { updateAddress, deleteAddress, makeDefault, loading };
+};
+
 export const useCheckout = () => {
   const [loading, setLoading] = useState(false);
 
@@ -126,8 +196,9 @@ export const useCheckout = () => {
         shipping: inputs.shippingFees ?? 0,
         notes: inputs.desc,
         branch_id: inputs.branch_id?.value ?? null,
+        payment_method: Number(inputs.paymentMethod || 1),
       });
-      toast.success(`تمت إضافة الطلب بنجاح`, {
+      toast.success(data?.data?.message || `تمت إضافة الطلب بنجاح`, {
         position: "top-right",
         autoClose: 2000,
         rtl: true,

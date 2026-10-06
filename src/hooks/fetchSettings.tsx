@@ -26,10 +26,23 @@ export interface SettingsData {
   updated_at?: string;
   plan_type?: string;
   shop_type?: string;
+  /** Website theme picked in the dashboard (src/themes/registry.ts). */
+  storefront_theme?: string;
 }
+
+/** "Continue with Google / Facebook" (full e-commerce plans). The storefront adds &return=<path>. */
+export type SocialLoginOption = { provider: "google" | "facebook"; url: string };
+
+export type StoreFeatures = { full_ecommerce?: boolean };
+
+export type OnlinePaymentSetting = { enabled?: boolean; payment_method?: number };
 
 export type SettingsResponse = {
   data?: SettingsData;
+  // Plan features (super admin → Plans); full_ecommerce turns on the premium store mode.
+  features?: StoreFeatures;
+  social_login?: SocialLoginOption[];
+  online_payment?: OnlinePaymentSetting;
   // Top-level sibling of `data` in the setting-profile response. Drives the
   // expired-store lockout (see src/lib/subscription.ts + src/middleware.ts).
   current_subscription_plan?: CurrentSubscriptionPlan | null;
@@ -59,6 +72,9 @@ const serverSettingsCache = new Map<
     data: SettingsData;
     current_subscription_plan: CurrentSubscriptionPlan | null;
     tracking: TrackingItem[];
+    features: StoreFeatures;
+    social_login: SocialLoginOption[];
+    online_payment: OnlinePaymentSetting;
     timestamp: number;
   }
 >();
@@ -136,6 +152,9 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
       data: result.data,
       current_subscription_plan: result.current_subscription_plan ?? null,
       tracking: Array.isArray(result.tracking) ? result.tracking : [],
+      features: result.features ?? {},
+      social_login: Array.isArray(result.social_login) ? result.social_login : [],
+      online_payment: result.online_payment ?? {},
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -173,6 +192,9 @@ export async function fetchSettings(
           data: cached.data,
           current_subscription_plan: cached.current_subscription_plan,
           tracking: cached.tracking,
+          features: cached.features,
+          social_login: cached.social_login,
+          online_payment: cached.online_payment,
           ok: true,
           status: 200,
         };
@@ -217,6 +239,9 @@ export async function fetchSettings(
             data: result.data,
             current_subscription_plan: result.current_subscription_plan ?? null,
             tracking: result.tracking ?? [],
+            features: result.features ?? {},
+            social_login: result.social_login ?? [],
+            online_payment: result.online_payment ?? {},
             timestamp: Date.now(),
           });
         } else {

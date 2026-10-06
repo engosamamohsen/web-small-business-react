@@ -13,6 +13,7 @@ const formSchema = z.object({
       },
     ),
   branch_id: z.any().optional(),
+  paymentMethod: z.enum(["1", "2"], { required_error: "يرجى اختيار طريقة الدفع" }),
 });
 
 type FormSchemaType = z.infer<typeof formSchema>;
@@ -21,6 +22,7 @@ const formSchemaDefaultValues: FormSchemaType = {
   desc: "",
   address: "",
   branch_id: "",
+  paymentMethod: "1",
 };
 
 export { formSchema, type FormSchemaType, formSchemaDefaultValues };

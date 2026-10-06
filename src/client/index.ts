@@ -13,7 +13,7 @@ $api.interceptors.request.use((config) => {
     config.baseURL = getApiUrl();
   }
   const token = Cookies.get("app_token");
-  if (token) config.headers.Authorization = "Token " + token;
+  if (token) config.headers.Authorization = "Bearer " + token;
 
   console.log(
     `%c[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,

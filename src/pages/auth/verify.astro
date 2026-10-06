@@ -1,4 +1,6 @@
 ---
+import ThemeHead from "@/themes/ThemeHead.astro";
+import { resolveTheme } from "@/themes/registry";
 import VerifyForm from "@/components/auth/VerifyForm";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { storeConfig } from "@/lib/store-config";
@@ -9,7 +11,7 @@ if (!storeConfig.canAuthenticate) {
 }
 
 // Fetch public settings
-const settingsResponse = await fetchSettings();
+const settingsResponse = await fetchSettings(undefined, false, Astro.locals.apiBase);
 const settingsData = settingsResponse?.data ?? null;
 
 const siteName = settingsData?.name || "المتجر";
@@ -20,7 +22,7 @@ export const prerender = false;
 ---
 
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme={resolveTheme(Astro.locals.theme).key}>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -34,6 +36,7 @@ export const prerender = false;
             href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
+        <ThemeHead />
 
         <!-- Favicon -->
         {settingsData?.logo && <link rel="icon" href={settingsData.logo} />}

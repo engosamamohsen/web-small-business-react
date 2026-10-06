@@ -1,11 +1,11 @@
 "use client";
 
 import { cn } from "@/utils/utils";
-import React from "react";
-import { useUpdateEffect } from "react-use";
+import React, { useEffect } from "react";
 
 interface AddressData {
   id: number;
+  is_default?: boolean;
   area_id: number;
   area_name: string;
   branch_id: number;
@@ -33,8 +33,9 @@ export default function AddressList({
   selectedAddressId,
   onSelectAddress,
 }: AddressListProps) {
-  // Auto select first address if no selected address
-  useUpdateEffect(() => {
+  // Pre-select the first address (the default one comes first). Runs on mount too: the
+  // addresses are already loaded when this list first renders.
+  useEffect(() => {
     if (addresses.length > 0 && !selectedAddressId) {
       onSelectAddress(addresses[0]);
     }
@@ -63,6 +64,11 @@ export default function AddressList({
                 <p className="font-medium">
                   {address.city_name}, {address.area_name},
                   {address.branch_name}
+                  {address.is_default && (
+                    <span className="ms-2 rounded-full bg-[var(--main-color)]/10 px-2 py-0.5 text-xs font-semibold text-[var(--main-color)]">
+                      الافتراضي
+                    </span>
+                  )}
                 </p>
                 <p className="text-sm text-gray-600">
                   شارع: {address.street}, عمارة: {address.building}, طابق:

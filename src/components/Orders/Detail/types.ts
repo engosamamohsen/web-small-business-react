@@ -64,6 +64,10 @@ export interface OrderDetailType {
   total: string;
   order_status_id: string;
   order_status_name: string;
+  /** The customer may cancel it now (full e-commerce plans, before the store starts preparing it). */
+  can_cancel?: boolean;
+  is_paid?: boolean;
+  updated_at?: string | null;
   address_id: string;
   customer_id: string;
   created_at: string;
@@ -96,6 +100,10 @@ export interface OrderDetailProps {
 export interface OrderStatusTrackerProps {
   orderStatus: string;
   orderId: string | number;
+  createdAt?: string;
+  updatedAt?: string | null;
+  canCancel?: boolean;
+  onCancelled?: () => void;
 }
 
 export interface OrderSummaryProps {

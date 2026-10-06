@@ -1,241 +1,151 @@
 import React, { useState } from "react";
-import { twMerge } from "tailwind-merge";
+import { ArrowBigLeftDash, Check, XCircle } from "lucide-react";
 import { OrderStatusTrackerProps } from "./types";
-import { getOrderStatus } from "./utils";
-import { ArrowBigLeftDash } from "lucide-react";
 import styles from "./style.module.css";
 import { cn } from "@/utils/utils";
 import DialogPaymentMethodsForm from "./DialogPaymentMethodsForm";
+import { orderStatus, orderSteps, stepIndex } from "@/lib/order-status";
+import { formatDate } from "@/lib/global";
+import { useCancelOrder } from "@/hooks/order";
 
+// Where the order is now (statuses 1-6 from the dashboard), and the customer's cancel button
+// while the store hasn't started preparing it (full e-commerce plans).
 export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
-  orderStatus,
+  orderStatus: rawStatus,
   orderId,
+  createdAt,
+  updatedAt,
+  canCancel,
+  onCancelled,
 }) => {
-  const status = getOrderStatus(orderStatus);
-  const [showDialogPaymentMethods, setShowDialogPaymentMethods] =
-    useState(false);
+  const statusId = Number(rawStatus);
+  const current = orderStatus(statusId);
+  const [showDialogPaymentMethods, setShowDialogPaymentMethods] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const { cancelOrder, loading: cancelling } = useCancelOrder();
 
-  if (status.cancelled) {
+  const handleCancel = async () => {
+    if (await cancelOrder(orderId)) {
+      setConfirming(false);
+      onCancelled?.();
+    }
+  };
+
+  if (statusId === 6) {
     return (
-      <div className="mb-6 flex flex-col items-center justify-center rounded-2xl bg-red-50 p-6 shadow-sm ring-1 ring-red-100">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500 text-white">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </div>
-        <p className="mt-4 text-center text-lg font-semibold text-red-600">
-          تم إلغاء الطلب
-        </p>
+      <div className="mb-6 flex flex-col items-center justify-center rounded-2xl bg-red-50 p-6 text-center shadow-sm ring-1 ring-red-100">
+        <XCircle className="h-12 w-12 text-red-500" aria-hidden="true" />
+        <p className="mt-3 text-lg font-semibold text-red-700">تم إلغاء الطلب</p>
+        {updatedAt && <p className="mt-1 text-sm text-red-600/80">{formatDate(updatedAt)}</p>}
       </div>
     );
   }
 
+  const steps = orderSteps(statusId);
+  const activeIndex = stepIndex(statusId);
+
   return (
-    <div className="mb-6 flex flex-col items-center justify-center rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-      <div className="flex w-full items-center">
-        {/* Waiting for Approval */}
-        <div className="flex flex-1 items-center">
-          <div
-            className={twMerge(
-              "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
-              status.waitingApproval
-                ? "border-yellow-500 bg-yellow-500 text-white"
-                : "border-gray-200 bg-gray-100 text-gray-400",
-            )}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <span
-            className={twMerge(
-              "absolute -ml-8 mt-16 text-xs font-medium",
-              status.waitingApproval ? "text-yellow-600" : "text-gray-400",
-            )}
-          >
-            بانتظار الموافقة
-          </span>
-          <div
-            className={twMerge(
-              "h-1 flex-1",
-              status.waitingPayment ||
-                status.waitingShipping ||
-                status.delivered
-                ? "bg-yellow-500"
-                : "bg-gray-200",
-            )}
-          />
+    <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-xs text-gray-500">حالة الطلب</p>
+          <p className="text-lg font-semibold text-gray-900">{current?.label ?? "—"}</p>
         </div>
-
-        {/* Waiting for Payment */}
-        <div className="flex flex-1 items-center">
-          <div
-            className={twMerge(
-              "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
-              status.waitingPayment
-                ? "border-blue-500 bg-blue-500 text-white"
-                : "border-gray-200 bg-gray-100 text-gray-400",
-            )}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-          </div>
-          <span
-            className={twMerge(
-              "absolute -ml-6 mt-16 text-xs font-medium",
-              status.waitingPayment ? "text-blue-600" : "text-gray-400",
-            )}
-          >
-            بانتظار الدفع
-          </span>
-          <div
-            className={twMerge(
-              "h-1 flex-1",
-              status.waitingShipping || status.delivered
-                ? "bg-blue-500"
-                : "bg-gray-200",
-            )}
-          />
-        </div>
-
-        {/* Waiting for Shipping */}
-        <div className="flex flex-1 items-center">
-          <div
-            className={twMerge(
-              "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
-              status.waitingShipping
-                ? "border-orange-400 bg-orange-400 text-white"
-                : "border-gray-200 bg-gray-100 text-gray-400",
-            )}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-              />
-            </svg>
-          </div>
-          <span
-            className={twMerge(
-              "absolute -ml-6 mt-16 text-xs font-medium",
-              status.waitingShipping ? "text-orange-500" : "text-gray-400",
-            )}
-          >
-            بانتظار الشحن
-          </span>
-          <div
-            className={twMerge(
-              "h-1 flex-1",
-              status.delivered ? "bg-orange-500" : "bg-gray-200",
-            )}
-          />
-        </div>
-
-        {/* Delivered */}
-        <div className="flex items-center">
-          <div
-            className={twMerge(
-              "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2",
-              status.delivered
-                ? "border-green-500 bg-green-500 text-white"
-                : "border-gray-200 bg-gray-100 text-gray-400",
-            )}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <span
-            className={twMerge(
-              "absolute -ml-6 mt-16 text-xs font-medium",
-              status.delivered ? "text-green-600" : "text-gray-400",
-            )}
-          >
-            تم التسليم
-          </span>
-        </div>
+        {createdAt && (
+          <p className="text-xs text-gray-500">
+            تاريخ الطلب: <span className="font-medium text-gray-700">{formatDate(createdAt)}</span>
+          </p>
+        )}
       </div>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
-        طلبك
-        {status.delivered
-          ? "تم تسليمه بنجاح."
-          : status.waitingShipping
-            ? "بإنتظار الشحن وسوف يتم توصيله إليك قريباً."
-            : status.waitingPayment
-              ? "بإنتظار الدفع لإتمام الطلب."
-              : "بإنتظار الموافقة من الإدارة."}
-      </p>
+      <ol className="mt-5 grid gap-3 sm:grid-flow-col sm:auto-cols-fr sm:gap-0" aria-label="مراحل الطلب">
+        {steps.map((step, i) => {
+          const done = i < activeIndex || statusId === 5;
+          const active = i === activeIndex && statusId !== 5;
+          return (
+            <li key={step.id} className="relative flex items-center gap-3 sm:flex-col sm:text-center">
+              {i > 0 && (
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute hidden h-1 sm:top-5 sm:block sm:w-full",
+                    i <= activeIndex || statusId === 5 ? "bg-[var(--main-color)]" : "bg-gray-200",
+                  )}
+                  style={{ insetInlineEnd: "50%" }}
+                />
+              )}
+              <span
+                className={cn(
+                  "relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold",
+                  done && "border-[var(--main-color)] bg-[var(--main-color)] text-white",
+                  active && "border-[var(--main-color)] bg-white text-[var(--main-color)]",
+                  !done && !active && "border-gray-200 bg-gray-50 text-gray-400",
+                )}
+                aria-current={active ? "step" : undefined}
+              >
+                {done ? <Check className="h-5 w-5" aria-hidden="true" /> : i + 1}
+              </span>
+              <span className={cn("text-sm sm:mt-2", done || active ? "font-semibold text-gray-900" : "text-gray-400")}>
+                {step.label}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
 
-      {status.waitingPayment && (
-        <>
+      <p className="mt-5 text-center text-sm text-gray-600">{current?.hint}</p>
+
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+        {statusId === 2 && (
+          <>
+            <button
+              onClick={() => setShowDialogPaymentMethods(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--main-color)] px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              <ArrowBigLeftDash className={cn(styles["slide-left-right"])} />
+              اختر طريقة الدفع
+            </button>
+            <DialogPaymentMethodsForm
+              showDialog={showDialogPaymentMethods}
+              setShowDialog={setShowDialogPaymentMethods}
+              orderId={orderId}
+            />
+          </>
+        )}
+
+        {canCancel && !confirming && (
           <button
-            onClick={() => setShowDialogPaymentMethods(true)}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="rounded-lg border border-red-200 px-5 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
           >
-            <ArrowBigLeftDash className={cn(styles["slide-left-right"])} />
-            اختر طريقة الدفع
+            إلغاء الطلب
           </button>
+        )}
+      </div>
 
-          <DialogPaymentMethodsForm
-            showDialog={showDialogPaymentMethods}
-            setShowDialog={setShowDialogPaymentMethods}
-            orderId={orderId}
-          />
-        </>
+      {canCancel && confirming && (
+        <div className="mx-auto mt-4 max-w-md rounded-xl bg-red-50 p-4 text-center ring-1 ring-red-100" role="alertdialog" aria-label="تأكيد إلغاء الطلب">
+          <p className="text-sm font-medium text-red-800">هل تريد إلغاء هذا الطلب؟ لا يمكن التراجع بعد الإلغاء.</p>
+          <div className="mt-3 flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="rounded-lg bg-red-600 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {cancelling ? "جارٍ الإلغاء…" : "نعم، ألغِ الطلب"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              disabled={cancelling}
+              className="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-semibold text-gray-700"
+            >
+              تراجع
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

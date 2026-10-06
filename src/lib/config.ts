@@ -13,8 +13,24 @@ const SSR_FALLBACK =
 // tenant subdomain to derive the admin API from. Test tenant by default.
 // import.meta.env.DEV is true only on the dev server, so production builds
 // are unaffected and keep the pure window.location.origin behavior.
-const DEV_API_ORIGIN =
-  import.meta.env.PUBLIC_DEV_API_ORIGIN || "https://admin-asly.cashierthru.com";
+//
+// PUBLIC_DEV_API_ORIGIN may contain "{tenant}" (e.g. http://admin-{tenant}.localhost:8001)
+// so one dev server can show several local stores: http://moda.localhost:3000 uses
+// admin-moda, http://nilebakery.localhost:3000 uses admin-nilebakery. Plain localhost
+// uses PUBLIC_DEV_TENANT (default "demo").
+export function devApiOrigin(hostname?: string): string {
+  const template =
+    import.meta.env.PUBLIC_DEV_API_ORIGIN || "https://admin-asly.cashierthru.com";
+  if (!template.includes("{tenant}")) return template;
+  const parts = (hostname ?? "").split(".");
+  const tenant =
+    parts.length === 2 && parts[1] === "localhost"
+      ? parts[0]
+      : import.meta.env.PUBLIC_DEV_TENANT || "demo";
+  return template.replace("{tenant}", tenant);
+}
+
+const DEV_API_ORIGIN = devApiOrigin();
 
 // ─── Core helpers ─────────────────────────────────────────────────────────────
 
@@ -66,11 +82,12 @@ export function getAdminOrigin(): string {
   // localhost / IP handling
   if (
     hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
     hostname === "127.0.0.1" ||
     hostname.startsWith("192.168.") ||
     hostname.startsWith("10.")
   ) {
-    return DEV_API_ORIGIN;
+    return devApiOrigin(hostname);
   }
 
   const parts = hostname.split(".");

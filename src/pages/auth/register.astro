@@ -1,4 +1,6 @@
 ---
+import ThemeHead from "@/themes/ThemeHead.astro";
+import { resolveTheme } from "@/themes/registry";
 import RegisterForm from "@/components/auth/RegisterForm";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { storeConfig } from "@/lib/store-config";
@@ -9,8 +11,9 @@ if (!storeConfig.canAuthenticate) {
 }
 
 // Fetch public settings for the page
-const settingsResponse = await fetchSettings();
+const settingsResponse = await fetchSettings(undefined, false, Astro.locals.apiBase);
 const settingsData = settingsResponse?.data ?? null;
+const socialLogin = Astro.locals.socialLogin ?? [];
 
 // SEO metadata
 const siteName = settingsData?.name || "المتجر";
@@ -29,7 +32,7 @@ export const prerender = false;
 ---
 
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme={resolveTheme(Astro.locals.theme).key}>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -44,6 +47,7 @@ export const prerender = false;
             href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
+        <ThemeHead />
 
         <!-- Open Graph -->
         <meta property="og:title" content={pageTitle} />
@@ -72,7 +76,7 @@ export const prerender = false;
         <link rel="stylesheet" href="/node_modules/primeicons/primeicons.css" />
     </head>
     <body class="relative font-cairo bg-gray-50">
-        <RegisterForm initSettings={settingsData ?? {}} client:only="react" />
+        <RegisterForm initSettings={settingsData ?? {}} socialLogin={socialLogin} client:only="react" />
     </body>
 </html>
 
