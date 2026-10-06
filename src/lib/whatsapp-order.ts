@@ -15,6 +15,7 @@ import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-total
  */
 export interface WhatsAppCustomerInfo {
     name?: string | null;
+    phone?: string | null;
     address?: string | null;
 }
 
@@ -176,10 +177,12 @@ export function buildWhatsAppOrderMessage(
     // Plus-plan stores collect the customer name + full address on the cart and
     // include them here. Basic-plan stores pass no customer → block is skipped.
     const customerName = customer?.name?.trim();
+    const customerPhone = customer?.phone?.trim();
     const customerAddress = customer?.address?.trim();
-    if (customerName || customerAddress) {
+    if (customerName || customerPhone || customerAddress) {
         lines.push("👤 *بيانات العميل*");
         if (customerName) lines.push(`الاسم: ${customerName}`);
+        if (customerPhone) lines.push(`📞 الهاتف: ${customerPhone}`);
         if (customerAddress) lines.push(`📍 العنوان: ${customerAddress}`);
         lines.push("");
     }

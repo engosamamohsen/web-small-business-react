@@ -61,6 +61,10 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
                 String(item?.discount ?? "0"),
                 String(item?.qty ?? "0"),
               );
+              const productName = item.product_name || item.name || "";
+              const productImage = item.main_image || item.image;
+              const hasDiscount = Number(item.discount) > 0;
+              const hasExtras = Number(item.additional_price) > 0;
 
               return (
                 <tr
@@ -70,11 +74,11 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
                   {/* المنتج */}
                   <td className="py-3 px-4 align-top">
                     <div className="flex items-start gap-3">
-                      {item.main_image && (
+                      {productImage && (
                         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-slate-100">
                           <Image
-                            src={item.main_image}
-                            alt={item.product_name ? `صورة المنتج ${item.product_name}` : `صورة المنتج رقم ${item.id}`}
+                            src={productImage}
+                            alt={productName ? `صورة المنتج ${productName}` : "صورة المنتج"}
                             fill
                             className="object-cover"
                           />
@@ -83,7 +87,7 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
 
                       <div className="flex flex-1 flex-col gap-1">
                         <p className="text-sm font-medium text-slate-900">
-                          {item.product_name || `Product #${item.id}`}
+                          {productName || "منتج"}
                         </p>
 
                         {/* Variations */}
@@ -139,13 +143,13 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
                       <span className="font-semibold tabular-nums">
                         {unitPrice} ج.م
                       </span>
-                      <span className="text-[11px] text-slate-500">
-                        قبل الخصم: {item.product_price} ج.م
-                        {item.discount ? ` • خصم ${item.discount}%` : ""}
-                        {item.additional_price
-                          ? ` • إضافات ${item.additional_price} ج.م`
-                          : ""}
-                      </span>
+                      {(hasDiscount || hasExtras) && (
+                        <span className="text-[11px] text-slate-500">
+                          {hasDiscount ? `قبل الخصم: ${item.product_price} ج.م • خصم ${item.discount}%` : ""}
+                          {hasDiscount && hasExtras ? " • " : ""}
+                          {hasExtras ? `إضافات ${item.additional_price} ج.م` : ""}
+                        </span>
+                      )}
                     </div>
                   </td>
 
@@ -155,11 +159,6 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
                       <span className="font-semibold tabular-nums">
                         {lineTotal} ج.م
                       </span>
-                      {item.total_price && (
-                        <span className="text-[11px] text-slate-500">
-                          (من النظام: {item.total_price} ج.م)
-                        </span>
-                      )}
                     </div>
                   </td>
                 </tr>

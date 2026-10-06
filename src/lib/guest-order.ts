@@ -45,6 +45,8 @@ export interface GuestOrderPayload {
     full_address: string;
     phone: string;
     notes: string;
+    /** "whatsapp": the order is sent as a WhatsApp message; the store accepts it once it arrives. */
+    channel?: "whatsapp";
 }
 
 /**

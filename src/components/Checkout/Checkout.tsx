@@ -118,6 +118,7 @@ export default function CheckoutPage() {
             items={items}
             total={total}
             shippingFees={shippingFees}
+            shippingKnown={!!selectedAddress?.id}
           />
         </div>
       </div>
@@ -320,9 +321,11 @@ type OrderSummaryProps = {
   items: CartItemType[];
   total: number;
   shippingFees: number;
+  /** An address is chosen, so its shipping fee is known. */
+  shippingKnown: boolean;
 };
 
-const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
+const OrderSummary = ({ items, total, shippingFees, shippingKnown }: OrderSummaryProps) => (
   <div className="h-fit w-full flex-1 rounded-lg bg-gray-100 p-6">
     <h2 className="mb-4 text-xl font-bold">ملخص الطلب</h2>
     <div className="max-h-[500px] space-y-4 overflow-y-auto bg-gray-50 px-10 pb-10">
@@ -402,12 +405,16 @@ const OrderSummary = ({ items, total, shippingFees }: OrderSummaryProps) => (
       </div>
       <div className="flex justify-between text-sm">
         <span>رسوم الشحن</span>
-        <span className={shippingFees > 0 ? "text-orange-600" : "text-green-600"}>
-          {shippingFees > 0 ? `${shippingFees.toFixed(2)} ج.م` : "مجاني"}
-        </span>
+        {shippingKnown ? (
+          <span className={shippingFees > 0 ? "text-orange-600" : "text-green-600"}>
+            {shippingFees > 0 ? `${shippingFees.toFixed(2)} ج.م` : "مجاني"}
+          </span>
+        ) : (
+          <span className="font-normal text-slate-500">يُحدد بعد اختيار العنوان</span>
+        )}
       </div>
       <div className="text-md flex justify-between border-t pt-2">
-        <span>الإجمالي النهائي</span>
+        <span>{shippingKnown ? "الإجمالي النهائي" : "الإجمالي بدون الشحن"}</span>
         <span>{(total + shippingFees).toFixed(2)} ج.م</span>
       </div>
     </div>

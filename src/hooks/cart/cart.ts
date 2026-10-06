@@ -27,6 +27,10 @@ export const useCartServices = () => {
     if (storeConfig.usesLocalCart) {
       return { data: { data: readLocalCart() } };
     }
+    // Not signed in: there is no basket to load (the API would only answer 401).
+    if (!Cookies.get("app_token")) {
+      return { data: { data: null } };
+    }
     return $api.get("v1/basket");
   }, []);
 

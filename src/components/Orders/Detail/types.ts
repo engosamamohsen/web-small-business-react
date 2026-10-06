@@ -47,6 +47,8 @@ export interface OrderProduct {
   color: string | null;
   name?: string;
   main_image?: string;
+  /** The order details API sends the product photo as `image` and its name as `name`. */
+  image?: string;
   product_name?: string;
   variations?: OrderProductVariation[];
   product_note?: string;

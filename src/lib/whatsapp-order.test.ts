@@ -222,3 +222,12 @@ describe("buildWhatsAppOrderUrl (number only from settings API)", () => {
     ).toBeNull();
   });
 });
+
+describe("buildWhatsAppOrderMessage — customer contact", () => {
+  it("carries the Basic customer's name and phone so the store can reach them", () => {
+    const msg = buildWhatsAppOrderMessage([item()], 200, "Nile Bakery", "bakery", { name: "منى", phone: "01012345678" });
+    expect(msg).toContain("الاسم: منى");
+    expect(msg).toContain("📞 الهاتف: 01012345678");
+    expect(msg).not.toContain("العنوان");
+  });
+});

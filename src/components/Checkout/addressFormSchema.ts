@@ -1,110 +1,66 @@
 import { z } from "zod";
 
-const addressFormSchema = z.object({
-  governorate: z
-    .any({
-      required_error: "يرجى اختيار المحافظة",
-    })
+// Required: name, phone, governorate, city and the street address. Building, floor, flat,
+// landmark and email are optional; the branch comes from the city on the server.
+const selected = (message: string) =>
+  z
+    .any({ required_error: message })
+    .refine(
+      (val: any) =>
+        val?.value !== "" && val?.value !== null && val?.value !== undefined,
+      { message },
+    );
 
-    .refine(
-      (val: any) =>
-        val?.value !== "" && val?.value !== null && val?.value !== undefined,
-      {
-        message: "يرجى اختيار المحافظة",
-      },
-    ),
-  city: z
-    .any({
-      required_error: "يرجى اختيار المدينة",
-    })
-    .refine(
-      (val: any) =>
-        val?.value !== "" && val?.value !== null && val?.value !== undefined,
-      {
-        message: "يرجى اختيار المدينة",
-      },
-    ),
-  branch_id: z
-    .any({
-      required_error: "يرجى اختيار الفرع",
-    })
-    .refine(
-      (val: any) =>
-        val?.value !== "" && val?.value !== null && val?.value !== undefined,
-      {
-        message: "يرجى اختيار الفرع",
-      },
-    ),
+const optionalNumber = (message: string) =>
+  z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), message);
+
+const addressFormSchema = z.object({
+  governorate: selected("يرجى اختيار المحافظة"),
+  city: selected("يرجى اختيار المدينة أو المنطقة"),
   name: z
-    .string({
-      required_error: "يرجى إدخال الاسم",
-    })
+    .string({ required_error: "يرجى إدخال الاسم" })
+    .trim()
     .min(2, "الاسم يجب أن يحتوي على حرفين على الأقل"),
-  email: z
-    .string({
-      required_error: "يرجى إدخال البريد الإلكتروني",
-    })
-    .email("البريد الإلكتروني غير صحيح"),
   phone: z
-    .string({
-      required_error: "يرجى إدخال رقم الهاتف",
-    })
-    .length(11, "رقم الهاتف يجب أن يتكون من 11 رقم بالضبط")
-    .refine(
-      (val) => /^\d+$/.test(val),
-      "رقم الهاتف يجب أن يحتوي على أرقام فقط",
+    .string({ required_error: "يرجى إدخال رقم الهاتف" })
+    .trim()
+    .regex(
+      /^01[0125]\d{8}$/,
+      "رقم الهاتف يجب أن يكون 11 رقماً ويبدأ بـ 010 أو 011 أو 012 أو 015",
     ),
-  address: z
-    .string({
-      required_error: "يرجى إدخال العنوان",
-    })
-    .min(5, "العنوان يجب أن يحتوي على 5 أحرف على الأقل"),
-  special_Sign: z
-    .string({
-      required_error: "يرجى إدخال علامة خاصة",
-    })
-    .min(2, "اسم علامة خاصة يجب أن يحتوي على حرفين على الأقل")
-    .optional(),
   street: z
-    .string({
-      required_error: "يرجى إدخال اسم الشارع",
-    })
-    .min(2, "اسم الشارع يجب أن يحتوي على حرفين على الأقل"),
-  building: z.string({
-    required_error: "يرجى إدخال رقم المبنى",
-  }),
-  floor: z
-    .string({
-      required_error: "يرجى إدخال رقم الدور",
-    })
+    .string({ required_error: "يرجى إدخال العنوان" })
+    .trim()
+    .min(3, "اكتب الشارع والمنطقة"),
+  building: z.string().optional(),
+  floor: optionalNumber("رقم الدور يكون أرقاماً فقط"),
+  flat: optionalNumber("رقم الشقة يكون أرقاماً فقط"),
+  special_Sign: z.string().optional(),
+  email: z
+    .string()
+    .optional()
     .refine(
-      (val) => /^\d+$/.test(val),
-      "رقم الدور يجب أن يتكون من رقم على الأقل",
-    ),
-  flat: z
-    .string({
-      required_error: "يرجى إدخال رقم الشقة",
-    })
-    .refine(
-      (val) => /^\d+$/.test(val),
-      "رقم الشقة يجب أن يتكون من رقم على الأقل",
+      (val) => !val || z.string().email().safeParse(val).success,
+      "البريد الإلكتروني غير صحيح",
     ),
 });
 
 type AddressFormSchemaType = z.infer<typeof addressFormSchema>;
 
 const AddressFormSchemaDefaultValues: AddressFormSchemaType = {
+  governorate: "",
   city: "",
   name: "",
-  email: "",
   phone: "",
-  address: "",
-  building: "" as any,
   street: "",
+  building: "",
+  floor: "",
+  flat: "",
   special_Sign: "",
-  floor: "" as any,
-  flat: "" as any,
-  governorate: "",
+  email: "",
 };
 
 export {

@@ -204,6 +204,9 @@ const CartItem = ({
   );
 };
 
+// The customer's name and phone, remembered in this browser for the next order.
+const CONTACT_KEY = "ct_order_contact";
+
 // ===== Order Summary Component =====
 const OrderSummary = ({
   subtotal,
@@ -338,7 +341,10 @@ const CustomerInfoFields = ({
   onPhoneChange,
   onAddressChange,
   onNotesChange,
+  contactOnly = false,
 }: {
+  /** Basic stores: only the name and phone, so the store can reach the customer. */
+  contactOnly?: boolean;
   name: string;
   phone: string;
   address: string;
@@ -350,8 +356,11 @@ const CustomerInfoFields = ({
   onNotesChange: (value: string) => void;
 }) => (
   <div className="mb-4 rounded-lg bg-white p-6 shadow-sm">
-    <h2 className="mb-4 text-xl font-bold">بيانات الطلب</h2>
-    <div className="space-y-4">
+    <h2 className="mb-1 text-xl font-bold">{contactOnly ? "بياناتك للتواصل" : "بيانات الطلب"}</h2>
+    {contactOnly && (
+      <p className="mb-4 text-sm text-slate-500">تصل للمتجر مع طلبك على واتساب ليتواصل معك.</p>
+    )}
+    <div className={cn("space-y-4", !contactOnly && "mt-3")}>
       <div>
         <label
           htmlFor="customer-name"
@@ -400,6 +409,8 @@ const CustomerInfoFields = ({
           <p className="mt-1 text-xs text-red-500">برجاء إدخال رقم هاتف صحيح</p>
         )}
       </div>
+      {!contactOnly && (
+      <>
       <div>
         <label
           htmlFor="customer-address"
@@ -439,6 +450,8 @@ const CustomerInfoFields = ({
           className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
         />
       </div>
+      </>
+      )}
     </div>
   </div>
 );
@@ -487,9 +500,18 @@ export default function Cart({
   const [subscriptionPlan, setSubscriptionPlan] =
     useState<CurrentSubscriptionPlan | null>(propSubscriptionPlan);
 
-  // Plus-plan order details (only collected/used when isPlusOrder is true).
+  // Customer details: name + phone on every WhatsApp order, plus the address on Plus.
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CONTACT_KEY) || "null");
+      if (saved?.name) setCustomerName((current) => current || String(saved.name));
+      if (saved?.phone) setCustomerPhone((current) => current || String(saved.phone));
+    } catch {
+      // storage unavailable — the fields just start empty
+    }
+  }, []);
   const [customerAddress, setCustomerAddress] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
   const [customerErrors, setCustomerErrors] = useState<{
@@ -612,25 +634,33 @@ export default function Cart({
       return;
     }
 
-    // Plus tier: customer fields are required and go into the API order + the
-    // order image. Validate before doing anything irreversible.
-    if (isPlusOrder) {
+    // The store needs the customer's name and phone (and, on Plus, the address).
+    // Validate before doing anything irreversible.
+    {
       const name = customerName.trim();
       const phoneDigits = customerPhone.replace(/[^\d]/g, "");
       const address = customerAddress.trim();
       const errors = {
         name: !name,
         phone: phoneDigits.length < 7 || phoneDigits.length > 15,
-        address: !address,
+        address: isPlusOrder && !address,
       };
       if (errors.name || errors.phone || errors.address) {
         setCustomerErrors(errors);
-        toast.error("برجاء إدخال اسم العميل ورقم هاتف صحيح والعنوان", {
-          rtl: true,
-        });
+        toast.error(
+          isPlusOrder
+            ? "برجاء إدخال اسم العميل ورقم هاتف صحيح والعنوان"
+            : "برجاء إدخال اسمك ورقم هاتف صحيح",
+          { rtl: true },
+        );
         return;
       }
       setCustomerErrors({});
+      try {
+        localStorage.setItem(CONTACT_KEY, JSON.stringify({ name: customerName.trim(), phone: customerPhone.trim() }));
+      } catch {
+        // storage unavailable — nothing to remember
+      }
     }
 
     // Fail closed on a missing/placeholder number BEFORE placing a Plus order we
@@ -643,7 +673,7 @@ export default function Cart({
     const greeting = buildWhatsAppGreeting(settings?.name, settings?.shop_type);
     const customer = isPlusOrder
       ? { name: customerName, address: customerAddress }
-      : null;
+      : { name: customerName, phone: customerPhone };
     const orderTotal = subtotal + (isPlusOrder ? taxAmount : 0);
 
     const finishOrder = (message: string) => {
@@ -674,10 +704,12 @@ export default function Cart({
               items: buildGuestOrderItems(items),
               payment_method: 1, // cash on delivery (online not enabled yet)
               order_type: "takeaway", // Basic has no address → takeaway
-              full_name: "",
+              full_name: customerName.trim(),
               full_address: "",
-              phone: "",
+              phone: customerPhone.trim(),
               notes: "",
+              // Waits for the store to accept it once the WhatsApp message arrives
+              channel: "whatsapp",
             });
           } catch (error: any) {
             const refused = stockRefusal(error);
@@ -882,8 +914,9 @@ export default function Cart({
           ))}
         </div>
         <div className="lg:self-start">
-          {isPlusOrder && (
+          {(isPlusOrder || (storeConfig.checkoutMode === "whatsapp" && whatsappAvailable && !orderingBlocked)) && (
             <CustomerInfoFields
+              contactOnly={!isPlusOrder}
               name={customerName}
               phone={customerPhone}
               address={customerAddress}
