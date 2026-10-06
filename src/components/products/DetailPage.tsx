@@ -193,28 +193,28 @@ export default function DetailPage({
                     <PolicySection title="سياسة العائدات" icon="↩️">
                         <div className="space-y-4 text-right">
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">شروط العودة</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">شروط العودة</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>يمكن للعملاء طلب إرجاع المنتج خلال 14 يومًا من تاريخ استلام الطلب.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>يجب أن يكون المنتج بحالته الأصلية وغير مستخدم ومزود بجميع الملصقات والتغليف الأصلي.</span></li>
                                 </ul>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">إجراءات العودة</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">إجراءات العودة</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>يجب على العميل الاتصال بخدمة العملاء لتقديم طلب الإرجاع والحصول على تعليمات التعبئة والشحن.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>يلتزم العميل بتغليف المنتج بشكل آمن قبل إرساله إلى مركز الإرجاع.</span></li>
                                 </ul>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">المبالغ المستردة</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">المبالغ المستردة</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>بعد استلام المنتج ومعاينته، سيتم استرداد المبلغ المدفوع حسب طريقة الدفع المستخدمة.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>قد يتم خصم تكاليف الشحن من المبلغ المسترد في حالة الإرجاعات التي لا تتعلق بخطأ في المتجر.</span></li>
                                 </ul>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">الاستثناءات</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">الاستثناءات</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>لا يتم قبول إرجاع المنتجات المعدلة أو المستعملة.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>قد لا تكون بعض المنتجات قابلة للإرجاع لأسباب تتعلق بالصحة أو السلامة، وسيتم توضيح ذلك عند الشراء.</span></li>
@@ -227,34 +227,34 @@ export default function DetailPage({
                     <PolicySection title="سياسة الدفع عند التسليم" icon="💵">
                         <div className="space-y-4 text-right">
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">تعريف الخدمة</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">تعريف الخدمة</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>خدمة الدفع عند الاستلام تتيح للعملاء دفع قيمة الطلب نقدًا أو عن طريق البطاقة الائتمانية عند استلام المنتج مباشرة.</span></li>
                                 </ul>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">شروط الخدمة</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">شروط الخدمة</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>هذه الخدمة متاحة في مناطق محددة فقط، وسيتم توضيحها أثناء عملية الشراء.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>قد يتم فرض رسوم إضافية على هذه الخدمة وفقًا لسياسة المتجر.</span></li>
                                 </ul>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">إجراءات الدفع</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">إجراءات الدفع</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>عند تسليم الطلب، يطلب من العميل دفع كامل المبلغ نقدًا أو عن طريق بطاقة الائتمان حسب الخيارات المتاحة.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>إذا لم يكن العميل متواجدًا وقت التسليم، فقد يتم إلغاء الطلب أو إعادة جدولة التسليم.</span></li>
                                 </ul>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">مزايا الخدمة</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">مزايا الخدمة</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>يمنح العملاء الثقة في استلام المنتج قبل الدفع.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>تسهيل عملية الشراء للأشخاص الذين لا يفضلون الدفع الإلكتروني.</span></li>
                                 </ul>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">ملاحظات هامة</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">ملاحظات هامة</h3>
                                 <ul className="space-y-1.5 text-slate-600">
                                     <li className="flex gap-2"><span>•</span><span>قد يختلف وقت إعداد الطلب والشحن عند اختيار الدفع عند الاستلام بسبب الإجراءات الإضافية.</span></li>
                                     <li className="flex gap-2"><span>•</span><span>لا يمكن إرجاع الطلبات المدفوعة نقدًا عند الاستلام إلا وفقًا لسياسة الإرجاع العامة.</span></li>
@@ -267,35 +267,35 @@ export default function DetailPage({
                     <PolicySection title="سياسة الشحن" icon="🚚">
                         <div className="space-y-4 text-right">
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">1. مناطق الشحن</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">1. مناطق الشحن</h3>
                                 <p className="text-slate-600">نقوم بالشحن إلى جميع المحافظات داخل جمهورية مصر العربية.</p>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">2. مدة تجهيز الطلب</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">2. مدة تجهيز الطلب</h3>
                                 <p className="text-slate-600">يتم تجهيز الطلب خلال مدة تتراوح بين 24 إلى 48 ساعة من تأكيد الطلب.</p>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">3. مدة الشحن والتوصيل</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">3. مدة الشحن والتوصيل</h3>
                                 <p className="text-slate-600">تتراوح مدة الشحن عادة بين 2 إلى 5 أيام عمل حسب المحافظة وموقع العميل.</p>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">4. رسوم الشحن</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">4. رسوم الشحن</h3>
                                 <p className="text-slate-600">قد تختلف رسوم الشحن حسب موقع التوصيل ويتم توضيحها للعميل قبل إتمام عملية الشراء.</p>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">5. تأكيد الطلب</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">5. تأكيد الطلب</h3>
                                 <p className="text-slate-600">قد يتم التواصل مع العميل عبر الهاتف أو البريد الإلكتروني لتأكيد الطلب قبل الشحن.</p>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">6. في حالة تأخر الشحن</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">6. في حالة تأخر الشحن</h3>
                                 <p className="text-slate-600">في بعض الحالات الاستثنائية (مثل العطل الرسمية أو الظروف الجوية) قد يحدث تأخير بسيط في الشحن، وسيتم إبلاغ العميل بذلك.</p>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">7. استلام الطلب</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">7. استلام الطلب</h3>
                                 <p className="text-slate-600">يرجى التأكد من سلامة المنتج عند الاستلام، وفي حال وجود أي مشكلة يرجى التواصل معنا خلال 24 ساعة من استلام الطلب.</p>
                             </section>
                             <section>
-                                <h4 className="mb-2 font-bold text-slate-700">8. التواصل معنا</h4>
+                                <h3 className="mb-2 font-bold text-slate-700">8. التواصل معنا</h3>
                                 <p className="text-slate-600">
                                     في حال وجود أي استفسار بخصوص الشحن أو الطلبات يمكنكم التواصل معنا:
                                 </p>

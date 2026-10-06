@@ -1,7 +1,6 @@
 ---
 import SEO from "../components/SEO.astro";
 import Analytics from "../components/Analytics.astro";
-import WebVitals from "../components/WebVitals.astro";
 import Tracking from "../components/Tracking/Tracking.astro";
 import MealHelperFab from "../components/MealHelper/MealHelperFab";
 import { getSiteOrigin } from "@/lib/site-origin";
@@ -9,11 +8,12 @@ import { resolveTheme, fontsHref, THEME_PREVIEW_PARAM } from "@/themes/registry"
 import { isFoodStore } from "@/lib/shop-type";
 
 // CSS Imports
+import "../styles/fonts.css";
 import "../styles/globals.css";
 import "../styles/themes.css";
 import "nprogress/nprogress.css";
 import "react-toastify/dist/ReactToastify.css";
-import "primereact/resources/themes/lara-light-cyan/theme.css";
+// PrimeReact's theme is imported by the components that use it (src/styles/primereact-theme.ts).
 import "primeicons/primeicons.css";
 
 interface Props {
@@ -27,6 +27,8 @@ interface Props {
     canonical?: string;
     noindex?: boolean;
     jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+    /** The page's main image (e.g. the first banner): fetched early, before the page's scripts run. */
+    preloadImage?: { href: string; srcset?: string; sizes?: string };
 }
 
 const {
@@ -40,7 +42,17 @@ const {
     canonical,
     noindex = false,
     jsonLd,
+    preloadImage,
 } = Astro.props;
+
+// The store's API and images live on admin-<store>: open that connection while the HTML downloads.
+const adminOrigin = (() => {
+    try {
+        return new URL(Astro.locals.apiBase).origin;
+    } catch {
+        return null;
+    }
+})();
 
 // Resolve the requesting tenant's own origin (roka.cashierthru.com, …) from the
 // proxy headers — the Node adapter leaves Astro.url.host as "localhost" behind
@@ -63,13 +75,27 @@ const storeBoot = JSON.stringify({
     onlinePayment: Boolean(Astro.locals.onlinePayment),
 }).replace(/</g, "\\u003c");
 
+// Classic theme: the store's colours on <html> from the first paint (ColorHandler sets the same
+// values after hydration). Only plain colour values are printed.
+const safeColor = (value?: string | null) =>
+    value && /^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|[a-z]{3,20})$/i.test(value.trim()) ? value.trim() : null;
+const colorVars =
+    theme.key === "classic"
+        ? [
+              safeColor(Astro.locals.storeColors?.font) && `--second-color:${safeColor(Astro.locals.storeColors?.font)}`,
+              safeColor(Astro.locals.storeColors?.background) && `--main-background:${safeColor(Astro.locals.storeColors?.background)}`,
+          ]
+              .filter(Boolean)
+              .join(";") || undefined
+        : undefined;
+
 const showMealHelper =
     !Astro.isPrerendered && path !== "/helper" && path !== "/store-unavailable" &&
     isFoodStore(Astro.locals.shopType);
 ---
 
 <!doctype html>
-<html lang="ar" dir="rtl" data-theme={theme.key} data-motion={theme.motion}>
+<html lang="ar" dir="rtl" data-theme={theme.key} data-motion={theme.motion} style={colorVars}>
     <head>
         <meta charset="UTF-8" />
         <script is:inline set:html={`(function(b){window.__CT_PLAN__=b.plan;window.__CT_STORE__=b;})(${storeBoot});`}></script>
@@ -78,13 +104,26 @@ const showMealHelper =
              content starts hidden, never for Classic or reduced motion, and dropped if the module never starts. -->
         <script is:inline>(function(d){const m=d.getAttribute("data-motion");if(!m||m==="none"||!window.matchMedia||matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("ct-motion");setTimeout(function(){if(!window.__ctReveal)d.classList.remove("ct-motion")},4000)})(document.documentElement);</script>
 
-        <!-- Preload critical fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-        />
+        <!-- The store's API and images (admin-<store>): connect early. Images load without CORS, API calls with it. -->
+        {adminOrigin && <link rel="preconnect" href={adminOrigin} />}
+        {adminOrigin && <link rel="preconnect" href={adminOrigin} crossorigin />}
+        {preloadImage && (
+            <link
+                rel="preload"
+                as="image"
+                href={preloadImage.href}
+                imagesrcset={preloadImage.srcset}
+                imagesizes={preloadImage.sizes}
+                fetchpriority="high"
+            />
+        )}
+
+        <!-- Cairo is self-hosted (src/styles/fonts.css): preload the Arabic and Latin files so text
+             is drawn in Cairo from the start and doesn't jump. Other themes add their own Google font. -->
+        <link rel="preload" href="/fonts/cairo/cairo-arabic.woff2" as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href="/fonts/cairo/cairo-latin.woff2" as="font" type="font/woff2" crossorigin />
+        {themeFonts && <link rel="preconnect" href="https://fonts.googleapis.com" />}
+        {themeFonts && <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />}
         {themeFonts && <link href={themeFonts} rel="stylesheet" />}
 
         <!-- Favicon -->
@@ -108,9 +147,6 @@ const showMealHelper =
 
         <!-- Analytics -->
         <Analytics />
-
-        <!-- Web Vitals -->
-        <WebVitals />
 
         <!-- Global error handler -->
         <script is:inline>

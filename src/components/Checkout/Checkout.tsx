@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CartItemType } from "@/types/types";
 import { useCheckout, useGetAddress, useBranchesWithCity } from "@/hooks/addressHook";
 import { InputTextarea } from "primereact/inputtextarea";
+import "@/styles/primereact-theme";
 
 import {
   formSchema,
@@ -340,6 +341,7 @@ const OrderSummary = ({ items, total, shippingFees, shippingKnown }: OrderSummar
                 src={item.product_image}
                 alt={item.product_name ? `صورة المنتج ${item.product_name}` : "صورة منتج"}
                 fill
+                sizes="80px"
                 className="rounded object-cover"
               />
             </div>

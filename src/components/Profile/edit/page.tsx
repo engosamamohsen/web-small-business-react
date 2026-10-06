@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useProfileServices, useProfileUpdate } from "@/hooks/profile/profile";
 import { InputText } from "primereact/inputtext";
+import "@/styles/primereact-theme";
 import { Button } from "primereact/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card } from "primereact/card";

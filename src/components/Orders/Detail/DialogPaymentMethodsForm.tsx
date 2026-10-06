@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog } from "primereact/dialog";
+import "@/styles/primereact-theme";
 import { Button } from "primereact/button";
 
 import { useForm } from "react-hook-form";

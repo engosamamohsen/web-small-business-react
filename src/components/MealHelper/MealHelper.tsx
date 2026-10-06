@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, RotateCcw, Sparkles } from "lucide-react";
 import { questionsFor, recommend, type Answers, type MenuDish, type Recommendation } from "@/lib/meal-helper/engine";
 import { buildProductPath } from "@/lib/product-url";
+import { storeImageProps } from "@/lib/responsive-image";
 
 // ─── Meal helper: a few taps, then dishes from this store's menu ─────────────
 
@@ -160,7 +161,7 @@ function ResultCard({ pick, rank, defaultImage }: { pick: Recommendation; rank: 
   return (
     <li className="flex gap-3 rounded-2xl bg-white p-3 ring-1 ring-black/5 sm:gap-4 sm:p-4">
       {image ? (
-        <img src={image} alt="" loading="lazy" decoding="async" className="h-24 w-24 shrink-0 rounded-xl object-cover sm:h-28 sm:w-28" />
+        <img {...storeImageProps(image, "112px", 112)} alt="" width={112} height={112} loading="lazy" decoding="async" className="h-24 w-24 shrink-0 rounded-xl object-cover sm:h-28 sm:w-28" />
       ) : (
         <div className="h-24 w-24 shrink-0 rounded-xl bg-slate-100 sm:h-28 sm:w-28" aria-hidden="true" />
       )}

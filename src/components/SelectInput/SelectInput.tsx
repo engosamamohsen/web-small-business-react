@@ -1,5 +1,6 @@
 import React from "react";
 import { Dropdown } from "primereact/dropdown";
+import "@/styles/primereact-theme";
 import Styles from "./style.module.css";
 import { cn } from "@/utils/utils";
 

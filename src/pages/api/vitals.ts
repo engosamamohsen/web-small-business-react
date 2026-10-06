@@ -1,5 +1,8 @@
 import type { APIRoute } from 'astro';
 
+// An endpoint that takes a POST must run on the server (the site builds as static by default).
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request }) => {
     try {
         const vitals = await request.json();

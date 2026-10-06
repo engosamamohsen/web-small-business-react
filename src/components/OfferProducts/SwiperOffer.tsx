@@ -3,6 +3,7 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { Skeleton } from "primereact/skeleton";
+import "@/styles/primereact-theme";
 
 import "swiper/css";
 import "swiper/css/navigation";

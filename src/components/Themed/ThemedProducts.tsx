@@ -8,6 +8,7 @@ import { ButtonAddToCart } from "@/components/Product/ButtonAddToCart";
 import { revealProps } from "@/components/motion/scroll-reveal";
 import type { ThemeLayout } from "@/themes/registry";
 import "./themed.css";
+import { storeImageProps } from "@/lib/responsive-image";
 
 // ─── Price helpers (same maths as the classic card, src/components/Product/Product.tsx) ───
 
@@ -66,7 +67,7 @@ function Card({
       >
         {image ? (
           <img
-            src={image}
+            {...storeImageProps(image, "(min-width: 1024px) 300px, (min-width: 640px) 33vw, 50vw", 400)}
             alt={`صورة المنتج ${product.name}`}
             loading="lazy"
             decoding="async"
@@ -130,7 +131,9 @@ function MenuRow({
           aria-label={`عرض تفاصيل ${product.name}`}
         >
           <img
-            src={image}
+            {...storeImageProps(image, "88px", 88)}
+            width={88}
+            height={88}
             alt={`صورة ${product.name}`}
             loading="lazy"
             decoding="async"

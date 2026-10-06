@@ -21,5 +21,7 @@ declare namespace App {
         onlinePayment?: boolean;
         // Kind of store (setting-profile data.shop_type); the meal helper is for food stores only.
         shopType?: string | null;
+        // The store's own colours (Classic theme), printed on <html> so the first paint already has them.
+        storeColors?: { font?: string | null; background?: string | null };
     }
 }

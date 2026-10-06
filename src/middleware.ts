@@ -56,8 +56,9 @@ function deriveAdminOrigin(hostname: string, protocol: string): { origin: string
         return { origin: `${protocol}://${adminParts.join(".")}`, fallback: false };
     }
 
-    // Local dev server (npm run dev)
-    if (import.meta.env.DEV) {
+    // Local dev server (npm run dev), or a production build run locally against
+    // the local stores (http://<store>.localhost:<port>) — real hosts never end in .localhost.
+    if (import.meta.env.DEV || hostname.endsWith(".localhost")) {
         return {
             origin: devApiOrigin(hostname),
             fallback: false,
@@ -154,6 +155,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 context.locals.socialLogin = settings.social_login ?? [];
                 context.locals.onlinePayment = Boolean(settings.online_payment?.enabled);
                 context.locals.shopType = settings.data?.shop_type ?? null;
+                context.locals.storeColors = { font: settings.data?.main_font_color, background: settings.data?.main_bg };
                 if (context.cookies.get(PLAN_COOKIE)?.value !== context.locals.plan) {
                     context.cookies.set(PLAN_COOKIE, context.locals.plan, { path: "/", sameSite: "lax" });
                 }

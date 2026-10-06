@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { useUpdateEffect } from "react-use";
 import { cn } from "@/utils/utils";
 import { InputTextarea } from "primereact/inputtextarea";
+import "@/styles/primereact-theme";
 import { toast } from "react-toastify";
 import { ShoppingCart, Zap, Plus, Minus } from "lucide-react";
 import { useSettings } from "@/providers";
@@ -201,6 +202,7 @@ export const CartActions = memo(({
                         <button
                             onClick={() => setCount((p) => Math.max(p - 1, 1))}
                             disabled={count <= 1}
+                            aria-label="تقليل الكمية"
                             className="flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 disabled:opacity-40"
                         >
                             <Minus size={14} />
@@ -210,6 +212,7 @@ export const CartActions = memo(({
                         </span>
                         <button
                             onClick={() => setCount((p) => p + 1)}
+                            aria-label="زيادة الكمية"
                             className="flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100"
                         >
                             <Plus size={14} />

@@ -80,6 +80,7 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ order }) => {
                             src={productImage}
                             alt={productName ? `صورة المنتج ${productName}` : "صورة المنتج"}
                             fill
+                            sizes="56px"
                             className="object-cover"
                           />
                         </div>

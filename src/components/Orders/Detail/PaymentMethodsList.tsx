@@ -33,6 +33,7 @@ const PaymentMethodsList = ({
                   src={method.logo}
                   alt={`شعار طريقة الدفع ${method.name_ar}`}
                   fill
+                  sizes="64px"
                   className="object-contain"
                   onError={(e) => {
                     // Fallback for broken images

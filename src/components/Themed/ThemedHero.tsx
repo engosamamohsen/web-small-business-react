@@ -8,6 +8,7 @@ import { motionPreset } from "@/components/motion/presets";
 import type { ThemeMotion } from "@/themes/registry";
 import { m } from "motion/react";
 import "./themed.css";
+import { storeImageProps } from "@/lib/responsive-image";
 
 export interface HeroSlide {
   id?: number | string;
@@ -102,7 +103,7 @@ export default function ThemedHero({
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
               <img
-                src={slide.image}
+                {...storeImageProps(slide.image, "100vw", 1600)}
                 alt={slide.title ? `صورة إعلان ${slide.title}` : "صورة إعلانية"}
                 loading={index === 0 ? "eager" : "lazy"}
                 fetchPriority={index === 0 ? "high" : undefined}

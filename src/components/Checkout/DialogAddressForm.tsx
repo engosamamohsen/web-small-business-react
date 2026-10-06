@@ -1,4 +1,5 @@
 import { InputText } from "primereact/inputtext";
+import "@/styles/primereact-theme";
 import SelectInput from "../SelectInput/SelectInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog } from "primereact/dialog";

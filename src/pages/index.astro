@@ -30,6 +30,7 @@ import { productsUrl as buildProductsUrl, filtersFromParams } from "@/lib/produc
 import { storeConfig } from "@/lib/store-config";
 import ProductFilters from "@/components/products/ProductFilters";
 import { isFoodStore, productsWording } from "@/lib/shop-type";
+import { resizedUrl, storeSrcSet } from "@/lib/responsive-image";
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
@@ -139,6 +140,16 @@ const foodStore = isFoodStore(settingsData?.shop_type);
 const wording = productsWording(settingsData?.shop_type, layout.productsTitle, layout.introCta);
 const showThemedHero = !isClassic && (showBanner ? layout.hero !== "overlay" : layout.intro);
 
+// The first banner is the page's largest image: let the browser start it with the HTML.
+// Same srcset/sizes as the hero <img> (100vw, up to 1600 px), so it is fetched once.
+const firstBanner: string | undefined = showBanner ? bannerData[0]?.image : undefined;
+const bannerSrcSet = storeSrcSet(firstBanner, 1600);
+const preloadImage = firstBanner
+    ? bannerSrcSet
+        ? { href: resizedUrl(firstBanner, 640), srcset: bannerSrcSet, sizes: "100vw" }
+        : { href: firstBanner }
+    : undefined;
+
 // SEO metadata — all sourced from the tenant's settings API (per request).
 const pageTitle = settingsData?.name || "الرئيسية - منصة الأعمال";
 // about_us can carry CRLF line breaks; collapse to one clean line.
@@ -180,10 +191,11 @@ const homeJsonLd = [
     image={settingsData?.logo}
     favicon={settingsData?.logo}
     jsonLd={homeJsonLd}
+    preloadImage={preloadImage}
 >
     <ColorHandler client:only="react" />
     <LoginHandler client:only="react" />
-    <FaviconHandler client:load />
+    <FaviconHandler client:idle />
 
     <Header
         currentPath={Astro.url.pathname}
@@ -191,7 +203,7 @@ const homeJsonLd = [
         settingsData={settingsData || undefined}
         client:load
     />
-    <ToastContainer position="top-right" rtl={true} client:load />
+    <ToastContainer position="top-right" rtl={true} client:idle />
 
     <main class="min-h-screen">
         {showBanner && !showThemedHero && <Hero bannerData={bannerData} client:load />}
@@ -275,7 +287,7 @@ const homeJsonLd = [
     </main>
 
     <WhatsAppButton phone={resolveWhatsappNumber(settingsData)} client:idle />
-    <SettingsCookieSync settings={settingsData} client:load />
+    <SettingsCookieSync settings={settingsData} client:idle />
 
     <Footer
         settingsData={settingsData}

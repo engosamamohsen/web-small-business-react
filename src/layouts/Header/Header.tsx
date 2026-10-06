@@ -13,11 +13,15 @@ import SearchBar from "./SearchBar";
 import CircleLogo from "@/global/CircleLogo";
 import { storeConfig } from "@/lib/store-config";
 import { localCartCount, LOCAL_CART_EVENT } from "@/lib/cart/local-cart";
+import { loadPrimeTheme } from "@/styles/primereact-theme-lazy";
 
 // Lazy-loaded: AuthDialog pulls in the Firebase SDK (~287 KB). Loading it only
 // when the user actually opens the login dialog keeps it out of every page's
 // initial bundle (on the BASIC plan it never loads at all).
-const AuthDialog = lazy(() => import("@/components/auth/AuthDialog"));
+// The dialog and PrimeReact's theme load together, when it is first opened (not with the page).
+const AuthDialog = lazy(() =>
+  Promise.all([import("@/components/auth/AuthDialog"), loadPrimeTheme()]).then(([module]) => module),
+);
 
 interface HeaderProps {
   currentPath?: string;

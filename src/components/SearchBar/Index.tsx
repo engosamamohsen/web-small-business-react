@@ -1,5 +1,6 @@
 import React from "react";
 import { InputText } from "primereact/inputtext";
+import "@/styles/primereact-theme";
 import { Search } from "lucide-react";
 
 function SearchBar() {

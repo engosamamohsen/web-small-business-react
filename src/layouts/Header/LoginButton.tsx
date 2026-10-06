@@ -31,6 +31,7 @@ export default function LoginButton({ isLoggedIn, onLogout, onOpenAuthDialog }: 
     return (
       <button
         onClick={() => onOpenAuthDialog?.()}
+        aria-label="تسجيل الدخول"
         className="flex h-9 items-center gap-2 rounded-full bg-[var(--main-color)] px-4 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
       >
         <User className="h-4 w-4" />

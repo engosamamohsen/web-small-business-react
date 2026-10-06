@@ -7,6 +7,10 @@ import { getApiUrl } from "@/lib/config";
 // built bundle works on every tenant subdomain.
 const $api = axios.create();
 
+// Request logs only while developing: in production they cost time on every call and
+// printed customers' API responses in the browser console.
+const logApi = import.meta.env.DEV;
+
 $api.interceptors.request.use((config) => {
   NProgress.start();
   if (!config.baseURL) {
@@ -15,7 +19,7 @@ $api.interceptors.request.use((config) => {
   const token = Cookies.get("app_token");
   if (token) config.headers.Authorization = "Bearer " + token;
 
-  console.log(
+  if (logApi) console.log(
     `%c[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
     "color: #4f9cf9; font-weight: bold",
   );
@@ -26,7 +30,7 @@ $api.interceptors.request.use((config) => {
 $api.interceptors.response.use(
   (response) => {
     NProgress.done();
-    console.log(
+    if (logApi) console.log(
       `%c[API] ${response.status} ${response.config.baseURL}${response.config.url}`,
       "color: #22c55e; font-weight: bold",
       response.data,
@@ -35,7 +39,7 @@ $api.interceptors.response.use(
   },
   (error) => {
     NProgress.done();
-    console.error(
+    if (logApi) console.error(
       `%c[API] ERROR ${error?.response?.status ?? "network"} ${error?.config?.baseURL}${error?.config?.url}`,
       "color: #ef4444; font-weight: bold",
       error?.response?.data ?? error?.message,

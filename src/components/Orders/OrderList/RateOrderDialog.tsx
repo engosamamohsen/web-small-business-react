@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Dialog } from "primereact/dialog";
+import "@/styles/primereact-theme";
 import { Star } from "lucide-react";
 import { toast } from "react-toastify";
 import { $api } from "@/client";

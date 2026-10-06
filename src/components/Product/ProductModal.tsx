@@ -38,6 +38,7 @@ export default function ProductModal({
                 src={product.image}
                 alt={product?.title ? `صورة المنتج ${product.title}` : "صورة منتج"}
                 fill
+                sizes="(min-width: 768px) 400px, 100vw"
                 className="rounded-lg object-cover"
               />
             </div>

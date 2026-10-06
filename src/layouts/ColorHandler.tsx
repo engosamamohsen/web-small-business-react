@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ProgressSpinner } from "primereact/progressspinner";
 import { useCookies } from "react-cookie";
 
 import { useSettings, useCart } from "@/providers";
@@ -88,11 +87,11 @@ function LoadingOverlay() {
       suppressHydrationWarning
     >
       <div className="flex flex-col items-center gap-3">
-        <ProgressSpinner
-          style={{ width: "40px", height: "40px" }}
-          strokeWidth="4"
-          animationDuration=".5s"
+        {/* A CSS spinner: PrimeReact's would load its whole library on every page */}
+        <span
+          role="progressbar"
           aria-label="Loading"
+          className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[var(--main-color)]"
         />
         <span className="text-lg text-gray-600">جاري التحميل...</span>
       </div>

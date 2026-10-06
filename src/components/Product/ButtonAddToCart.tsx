@@ -6,9 +6,8 @@ import { buildProductPath } from "@/lib/product-url";
 import { storeConfig } from "@/lib/store-config";
 import { cn } from "@/utils/utils";
 import Cookies from "js-cookie";
-import { ShoppingCart, SlidersHorizontal } from "lucide-react";
+import { Loader2, ShoppingCart, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "@/lib/navigation";
-import { Button } from "primereact/button";
 
 export function ButtonAddToCart({ product }: { product: ProductType }) {
   const router = useRouter();
@@ -31,20 +30,24 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
       <button
         type="button"
         onClick={() => router.push(buildProductPath(product))}
-        className="items-center gap-1.5 rounded-full bg-[var(--main-color)] px-3 py-1.5 text-xs font-semibold text-white shadow transition-opacity hover:opacity-90"
+        // ct-choose / ct-choose__icon: restyled by the themes (themed.css); Classic looks as before.
+        className="ct-choose items-center gap-1.5 rounded-full bg-[var(--main-color)] px-3 py-1.5 text-xs font-semibold text-white shadow transition-opacity hover:opacity-90"
         aria-label={`اختر خيارات ${product?.name ?? "المنتج"}`}
       >
-        {/* <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" /> */}
-        اختر الخيارات
+        <SlidersHorizontal className="ct-choose__icon hidden h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+        <span className="ct-choose__label">اختر الخيارات</span>
       </button>
     );
   }
 
+  // A plain button (no PrimeReact): product cards are on every home page, and PrimeReact
+  // added ~45 KB of JavaScript there just for this. Same look as before.
   return (
-    <Button
+    <button
+  type="button"
   aria-label="أضف إلى السلة"
+  aria-busy={loading || undefined}
   disabled={loading}
-  loading={loading}
   onClick={async () => {
     if (storeConfig.canAuthenticate && !token) {
       router.push("/auth/login");
@@ -58,13 +61,15 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
     }
   }}
   className={cn(
-    "flex h-10 w-10 items-center justify-center rounded-full !border-2 !border-[var(--main-color)] !bg-white shadow-sm",
-    loading && "!cursor-not-allowed",
+    "flex h-10 w-10 items-center justify-center rounded-full !border-2 !border-[var(--main-color)] !bg-white shadow-sm transition-[background-color,color,border-color,box-shadow] duration-200",
+    loading && "!cursor-not-allowed opacity-60",
   )}
 >
-  {!loading && (
-    <ShoppingCart className="h-5 w-5 text-[var(--main-color)]" />
+  {loading ? (
+    <Loader2 className="h-5 w-5 animate-spin text-[var(--main-color)]" aria-hidden="true" />
+  ) : (
+    <ShoppingCart className="h-5 w-5 text-[var(--main-color)]" aria-hidden="true" />
   )}
-</Button>
+</button>
   );
 }

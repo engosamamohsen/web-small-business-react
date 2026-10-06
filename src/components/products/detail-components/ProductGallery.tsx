@@ -11,6 +11,7 @@ import "swiper/css/zoom";
 import styles from "../style.module.css";
 import { ProductType } from "@/lib/types";
 import { collectProductImages, galleryAlt } from "./gallery-images";
+import { storeImageProps } from "@/lib/responsive-image";
 
 interface ProductGalleryProps {
     product: ProductType;
@@ -58,7 +59,7 @@ export const ProductGallery = memo(({ product }: ProductGalleryProps) => {
         return (
             <div className={frameClass}>
                 <img
-                    src={images[0]}
+                    {...storeImageProps(images[0], "(min-width: 1024px) 50vw, 100vw", 800)}
                     alt={galleryAlt(product?.name, 0, 1)}
                     width={800}
                     height={800}
@@ -111,7 +112,7 @@ export const ProductGallery = memo(({ product }: ProductGalleryProps) => {
                         <SwiperSlide key={src} className="!flex items-center justify-center">
                             <div className="swiper-zoom-container">
                                 <img
-                                    src={src}
+                                    {...storeImageProps(src, "(min-width: 1024px) 50vw, 100vw", 800)}
                                     alt={galleryAlt(product?.name, index, total)}
                                     width={800}
                                     height={800}
@@ -169,7 +170,7 @@ export const ProductGallery = memo(({ product }: ProductGalleryProps) => {
                             className="block h-full w-full overflow-hidden rounded-xl bg-white ring-1 ring-slate-200 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--main-color)] focus-visible:ring-offset-2 motion-reduce:transition-none"
                         >
                             <img
-                                src={src}
+                                {...storeImageProps(src, "80px", 80)}
                                 alt=""
                                 width={80}
                                 height={80}

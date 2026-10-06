@@ -9,6 +9,7 @@ import SubCategories from "@/components/Categories/SubCategories";
 import { revealProps } from "@/components/motion/scroll-reveal";
 import type { ThemeLayout } from "@/themes/registry";
 import "./themed.css";
+import { storeImageProps } from "@/lib/responsive-image";
 
 type Variant = Exclude<ThemeLayout["categories"], "swiper">;
 
@@ -96,7 +97,7 @@ export default function CategoryNav({
             onClick={() => selectCategory(category)}
           >
             {category.icon && (
-              <img src={category.icon} alt="" loading="lazy" decoding="async" />
+              <img {...storeImageProps(category.icon, "28px", 28)} alt="" width={28} height={28} loading="lazy" decoding="async" />
             )}
             {category.name}
           </button>
@@ -123,7 +124,11 @@ export default function CategoryNav({
               <span className={`${base}__img`}>
                 {category?.icon ? (
                   <img
-                    src={category.icon}
+                    {...storeImageProps(
+                      category.icon,
+                      variant === "tiles" ? "(min-width: 1024px) 200px, 45vw" : "96px",
+                      variant === "tiles" ? 400 : 96,
+                    )}
                     alt=""
                     loading="lazy"
                     decoding="async"
