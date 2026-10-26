@@ -24,6 +24,8 @@ import { Button } from "primereact/button";
 import { useCartServices } from "@/hooks/cart/cart";
 import PageLoader from "../PageLoader/PageLoader";
 import SelectInput from "../SelectInput/SelectInput";
+import { useStoreHours } from "@/hooks/useStoreHours";
+import { closedRefusal } from "@/lib/guest-order";
 
 export default function CheckoutPage() {
   const { loading: cartLoading, data: cartResponse } = useCartServices();
@@ -55,13 +57,34 @@ export default function CheckoutPage() {
 
   const { loading: branchesLoading, value: branches } = useBranchesWithCity(areaId || undefined);
 
+  // Opening hours: while the store is closed "Confirm order" waits (a hint, re-checked every
+  // minute). The server's 422 store_closed / last_orders_closed is final: kept until the
+  // next opening it names; the cart stays as it is.
+  const storeHours = useStoreHours();
+  const [serverClosed, setServerClosed] = useState<{ message: string; until: number | null } | null>(null);
+  const closedMessage =
+    (serverClosed && (serverClosed.until === null || Date.now() < serverClosed.until) ? serverClosed.message : "") ||
+    (storeHours.closed ? storeHours.text : "") ||
+    null;
+
   const { createOrder } = useCheckout();
   const onSubmit = async (inputs: any) => {
+    if (closedMessage) return;
     setLoading(true);
     const res = await createOrder({
       ...inputs,
       shippingFees,
     });
+    const closed = closedRefusal({ response: res });
+    if (closed) {
+      const until = closed.nextOpenAt ? Date.parse(closed.nextOpenAt) : NaN;
+      setServerClosed({
+        message: closed.message || storeHours.text || "المتجر لا يستقبل طلبات الآن",
+        until: Number.isFinite(until) ? until : null,
+      });
+      setLoading(false);
+      return;
+    }
     if (res?.status === 200) {
       // Pay online: go to the payment page; the order waits for the payment meanwhile.
       if (res?.data?.redirect && res?.data?.payment_url) {
@@ -109,6 +132,7 @@ export default function CheckoutPage() {
                 handleSubmit={handleSubmit}
                 onSubmit={onSubmit}
                 loading={loading}
+                closedMessage={closedMessage}
                 branches={branches || []}
                 branchesLoading={branchesLoading}
                 hasAddressSelected={!!selectedAddress?.id}
@@ -181,6 +205,8 @@ type BillingFormProps = {
   handleSubmit: any;
   onSubmit: (inputs: any) => void;
   loading: boolean;
+  /** Outside opening hours: the order button waits and this text shows above it. */
+  closedMessage?: string | null;
   branches: any[];
   branchesLoading: boolean;
   hasAddressSelected: boolean;
@@ -197,6 +223,7 @@ const BillingForm = ({
   handleSubmit,
   onSubmit,
   loading,
+  closedMessage = null,
   branches,
   branchesLoading,
   hasAddressSelected,
@@ -307,9 +334,15 @@ const BillingForm = ({
         )}
       </div>
 
+      {closedMessage && (
+        <p role="status" className="rounded-lg bg-amber-50 px-3 py-3 text-center text-sm font-medium text-amber-800">
+          {closedMessage}
+        </p>
+      )}
       <Button
         type="submit"
         loading={loading}
+        disabled={Boolean(closedMessage)}
         className="flex w-full items-center justify-center gap-4 rounded-lg bg-orange-500 py-3 text-center font-semibold text-white transition-colors hover:bg-orange-600"
       >
         تأكيد الطلب

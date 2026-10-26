@@ -263,6 +263,27 @@
   text-underline-offset: 3px;
 }
 
+/* ── Closed banner (opening hours; src/components/common/StoreHoursBanner.tsx) ─────
+ * Only drawn while the store doesn't take orders. Themes colour it with their own
+ * highlight and ink; Classic has no tokens, so it gets the warm neutral fallbacks and
+ * none of its own styles change. Never red: red is for danger only. */
+.ct-hours-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: var(--t-highlight, #fff4df);
+  color: var(--t-ink, #4a3300);
+  border-bottom: 1px solid var(--t-line, #f0d6a6);
+  font: 600 0.875rem/1.5 var(--t-font, "Cairo"), sans-serif;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.ct-hours-bar__icon {
+  flex-shrink: 0;
+}
+
 /* ── Motion: scroll reveals ──────────────────────────────────────────────────────
  * <html data-motion> comes from the theme (registry.ts → motion). Marked elements
  * ([data-reveal]) start hidden only while <html class="ct-motion"> is on, and come in

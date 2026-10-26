@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { useAsync, useAsyncRetry } from "react-use";
 import { transformSelectData } from "@/lib/global";
+import { closedRefusal } from "@/lib/guest-order";
 
 export const useGovernorate = () => {
   const { value, loading, retry } = useAsyncRetry(async () => {
@@ -208,7 +209,9 @@ export const useCheckout = () => {
 
       return data;
     } catch (err: any) {
-      toast.error(`  فشل اضافة الطلب : ${err?.response?.data?.message}`, {
+      // Outside opening hours (422 store_closed / last_orders_closed): the store's own message.
+      const closed = closedRefusal(err);
+      toast.error(closed ? closed.message || "المتجر لا يستقبل طلبات الآن" : `  فشل اضافة الطلب : ${err?.response?.data?.message}`, {
         position: "top-right",
         autoClose: 2000,
         rtl: true,

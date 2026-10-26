@@ -2,6 +2,7 @@
 import { getApiUrl } from "@/lib/config";
 import type { CurrentSubscriptionPlan } from "@/lib/subscription";
 import type { TrackingItem } from "@/lib/tracking/providers";
+import type { StoreHoursSetting } from "@/lib/store-hours";
 
 export interface SettingsData {
   id: number;
@@ -37,12 +38,17 @@ export type StoreFeatures = { full_ecommerce?: boolean };
 
 export type OnlinePaymentSetting = { enabled?: boolean; payment_method?: number };
 
+// Opening hours (setting-profile `hours`, a sibling of `data`); worked out by src/lib/store-hours.ts.
+export type { StoreHoursSetting };
+
 export type SettingsResponse = {
   data?: SettingsData;
   // Plan features (super admin → Plans); full_ecommerce turns on the premium store mode.
   features?: StoreFeatures;
   social_login?: SocialLoginOption[];
   online_payment?: OnlinePaymentSetting;
+  // Opening hours: {enabled:false} when the store has them off.
+  hours?: StoreHoursSetting;
   // Top-level sibling of `data` in the setting-profile response. Drives the
   // expired-store lockout (see src/lib/subscription.ts + src/middleware.ts).
   current_subscription_plan?: CurrentSubscriptionPlan | null;
@@ -75,6 +81,7 @@ const serverSettingsCache = new Map<
     features: StoreFeatures;
     social_login: SocialLoginOption[];
     online_payment: OnlinePaymentSetting;
+    hours: StoreHoursSetting;
     timestamp: number;
   }
 >();
@@ -155,6 +162,7 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
       features: result.features ?? {},
       social_login: Array.isArray(result.social_login) ? result.social_login : [],
       online_payment: result.online_payment ?? {},
+      hours: result.hours && typeof result.hours === "object" ? result.hours : { enabled: false },
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -195,6 +203,7 @@ export async function fetchSettings(
           features: cached.features,
           social_login: cached.social_login,
           online_payment: cached.online_payment,
+          hours: cached.hours,
           ok: true,
           status: 200,
         };
@@ -242,6 +251,7 @@ export async function fetchSettings(
             features: result.features ?? {},
             social_login: result.social_login ?? [],
             online_payment: result.online_payment ?? {},
+            hours: result.hours ?? { enabled: false },
             timestamp: Date.now(),
           });
         } else {

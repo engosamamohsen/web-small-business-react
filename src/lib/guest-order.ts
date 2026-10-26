@@ -118,6 +118,31 @@ export function stockRefusal(error: any): CartStockCheck | null {
     return { unavailableIds: body.unavailable_product_ids.map(Number), message: body.message ?? null };
 }
 
+/** The store's answer when an order arrives outside its opening hours. */
+export interface ClosedRefusal {
+    code: "store_closed" | "last_orders_closed";
+    message: string | null;
+    nextOpenAt: string | null;
+    closesAt: string | null;
+}
+
+/**
+ * The 422 an order gets outside opening hours (basket/guest-buy, basket/buy,
+ * basket/whatsapp-order), else null. Final: the order must stop there — no WhatsApp
+ * text, no image share — and the cart stays as it is.
+ */
+export function closedRefusal(error: any): ClosedRefusal | null {
+    const body = error?.response?.data;
+    const code = body?.error_code;
+    if (error?.response?.status !== 422 || (code !== "store_closed" && code !== "last_orders_closed")) return null;
+    return {
+        code,
+        message: typeof body.message === "string" && body.message ? body.message : null,
+        nextOpenAt: body.next_open_at ?? null,
+        closesAt: body.closes_at ?? null,
+    };
+}
+
 /**
  * Best-effort extraction of a gateway redirect URL from the guest-buy response
  * (online payment). The exact field name isn't part of a stable contract yet,

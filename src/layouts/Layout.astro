@@ -3,6 +3,7 @@ import SEO from "../components/SEO.astro";
 import Analytics from "../components/Analytics.astro";
 import Tracking from "../components/Tracking/Tracking.astro";
 import MealHelperFab from "../components/MealHelper/MealHelperFab";
+import StoreHoursBanner from "../components/common/StoreHoursBanner";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { resolveTheme, fontsHref, THEME_PREVIEW_PARAM } from "@/themes/registry";
 import { isFoodStore } from "@/lib/shop-type";
@@ -68,11 +69,18 @@ const theme = resolveTheme(Astro.locals.theme);
 const themeFonts = fontsHref(theme);
 const themePreview = Boolean(Astro.locals.themePreview);
 
+// Opening hours ({enabled:false} when off or on prerendered pages without a tenant).
+const storeHours = Astro.locals.hours?.enabled ? Astro.locals.hours : { enabled: false };
+// The closed banner: only when the store has hours on (otherwise nothing is added to the page).
+const showHoursBanner = storeHours.enabled && !Astro.isPrerendered && path !== "/store-unavailable";
+
 // Store mode for the browser (src/lib/store-config.ts), printed before any island hydrates.
 const storeBoot = JSON.stringify({
     plan: Astro.locals.plan === "premium" ? "premium" : "basic",
     socialLogin: Astro.locals.socialLogin ?? [],
     onlinePayment: Boolean(Astro.locals.onlinePayment),
+    // Opening hours: the cart / checkout read them to hold the order buttons while closed.
+    hours: storeHours,
 }).replace(/</g, "\\u003c");
 
 // Classic theme: the store's colours on <html> from the first paint (ColorHandler sets the same
@@ -176,6 +184,7 @@ const showMealHelper =
                 </div>
             )
         }
+        {showHoursBanner && <StoreHoursBanner hours={storeHours} now={new Date().toISOString()} client:load />}
         <slot />
         {showMealHelper && <MealHelperFab lifted={path.startsWith("/product/")} client:idle />}
         <Tracking part="bodyEnd" />

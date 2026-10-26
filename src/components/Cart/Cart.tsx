@@ -27,12 +27,14 @@ import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-total
 import {
   buildGuestOrderItems,
   checkCartStock,
+  closedRefusal,
   stockRefusal,
   submitGuestOrder,
   type CartStockCheck,
 } from "@/lib/guest-order";
 import { captureElementToFile, shareImageFile } from "@/lib/cart-screenshot";
 import { trackWhatsAppOrder } from "@/lib/firebase-tracker";
+import { useStoreHours } from "@/hooks/useStoreHours";
 import { toast } from "react-toastify";
 import PageLoader from "../PageLoader/PageLoader";
 import OrderReceipt from "./OrderReceipt";
@@ -220,6 +222,7 @@ const OrderSummary = ({
   whatsappAvailable = false,
   orderingBlocked = false,
   stockMessage = null,
+  closedMessage = null,
 }: {
   subtotal: number;
   originalSubtotal?: number;
@@ -233,6 +236,8 @@ const OrderSummary = ({
   orderingBlocked?: boolean;
   /** Set when a cart product can't be ordered now: the order button waits until it's removed. */
   stockMessage?: string | null;
+  /** Set while the store is outside its opening hours: the order button waits (add to cart still works). */
+  closedMessage?: string | null;
 }) => {
   const total = subtotal + shipping + tax;
   const hasDiscount = discountAmount > 0;
@@ -272,6 +277,11 @@ const OrderSummary = ({
           </div>
         </div>
       </div>
+      {closedMessage && !orderingBlocked && (
+        <p role="status" className="mb-3 rounded-lg bg-amber-50 px-3 py-3 text-center text-sm font-medium text-amber-800">
+          {closedMessage}
+        </p>
+      )}
       {stockMessage && !orderingBlocked ? (
         <p role="alert" className="rounded-lg bg-red-50 px-3 py-3 text-center text-sm font-medium text-red-700">
           {stockMessage}
@@ -295,10 +305,10 @@ const OrderSummary = ({
           <button
             type="button"
             onClick={onWhatsAppOrder}
-            disabled={processing}
+            disabled={processing || Boolean(closedMessage)}
             className={cn(
               "flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 py-3 text-center font-semibold text-white transition-colors hover:bg-green-600",
-              processing && "cursor-not-allowed opacity-70 hover:bg-green-500",
+              (processing || closedMessage) && "cursor-not-allowed opacity-70 hover:bg-green-500",
             )}
           >
             {processing ? (
@@ -523,6 +533,24 @@ export default function Cart({
   // double submits.
   const [processing, setProcessing] = useState(false);
 
+  // Opening hours: while the store is closed the order button waits (a hint from the
+  // cached settings, re-checked every minute). The server's 422 store_closed /
+  // last_orders_closed is final and is kept here until the next opening it names.
+  const storeHours = useStoreHours();
+  const [serverClosed, setServerClosed] = useState<{ message: string; until: number | null } | null>(null);
+  const serverClosedActive =
+    serverClosed && (serverClosed.until === null || Date.now() < serverClosed.until) ? serverClosed : null;
+  const closedMessage = serverClosedActive?.message || (storeHours.closed ? storeHours.text : "") || null;
+  const refuseClosed = (error: unknown): boolean => {
+    const refused = closedRefusal(error);
+    if (!refused) return false;
+    const message = refused.message || storeHours.text || "المتجر لا يستقبل طلبات الآن";
+    const until = refused.nextOpenAt ? Date.parse(refused.nextOpenAt) : NaN;
+    setServerClosed({ message, until: Number.isFinite(until) ? until : null });
+    toast.error(message, { rtl: true });
+    return true;
+  };
+
   // Products that can't be ordered now (recipe items ran out), checked with the
   // store whenever the cart's products or quantities change.
   const [stock, setStock] = useState<CartStockCheck>({ unavailableIds: [], message: null });
@@ -634,6 +662,12 @@ export default function Cart({
       return;
     }
 
+    // Outside opening hours (the button is already held; this covers a tick mid-flow).
+    if (closedMessage) {
+      toast.error(closedMessage, { rtl: true });
+      return;
+    }
+
     // The store needs the customer's name and phone (and, on Plus, the address).
     // Validate before doing anything irreversible.
     {
@@ -712,6 +746,11 @@ export default function Cart({
               channel: "whatsapp",
             });
           } catch (error: any) {
+            // Outside opening hours: final — no WhatsApp text, the cart stays.
+            if (refuseClosed(error)) {
+              win.close();
+              return;
+            }
             const refused = stockRefusal(error);
             if (refused) {
               win.close();
@@ -745,14 +784,9 @@ export default function Cart({
       // order — the reported "no screenshot" bug. So: capture the PNG, fire the
       // order request (don't await it yet, so it can't block the share), share
       // while the gesture is still valid, then confirm the order landed.
-      const file = await captureElementToFile(
-        receiptRef.current,
-        `order-${Date.now()}.png`,
-      );
-
       // Place the real server order. Kept in flight (mapped so it never rejects)
-      // until after the share so the network round-trip can't cost us the share
-      // activation.
+      // while the image is captured, so the network round-trip can't cost us the
+      // share activation.
       const orderResult = submitGuestOrder({
         items: buildGuestOrderItems(items),
         payment_method: 1, // cash on delivery (online not enabled yet)
@@ -766,6 +800,20 @@ export default function Cart({
         (error: any) => ({ ok: false as const, error }),
       );
 
+      const file = await captureElementToFile(
+        receiptRef.current,
+        `order-${Date.now()}.png`,
+      );
+
+      // Outside opening hours the store refuses the order (422), and then nothing may
+      // be shared. The request usually lands while the image is captured; give it a
+      // short moment more, never long enough to lose the share activation.
+      const early = await Promise.race([
+        orderResult,
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 800)),
+      ]);
+      if (early && !early.ok && refuseClosed(early.error)) return;
+
       // Push the order image straight into WhatsApp (native share sheet) with
       // the greeting as the caption. No download, ever.
       const result = file ? await shareImageFile(file, greeting) : "failed";
@@ -775,6 +823,7 @@ export default function Cart({
       // which the shop still receives in WhatsApp).
       const order = await orderResult;
       if (!order.ok) {
+        if (refuseClosed(order.error)) return;
         const refused = stockRefusal(order.error);
         if (refused) setStock(refused);
         const message =
@@ -818,6 +867,7 @@ export default function Cart({
       }
       finishOrder("تم استلام طلبك");
     } catch (error: any) {
+      if (refuseClosed(error)) return;
       const message =
         error?.response?.data?.message || "تعذر تأكيد الطلب، حاول مرة أخرى";
       toast.error(message, { rtl: true });
@@ -952,6 +1002,7 @@ export default function Cart({
             onWhatsAppOrder={handleWhatsAppOrder}
             orderingBlocked={orderingBlocked}
             stockMessage={stock.unavailableIds.length ? stock.message || "بعض المنتجات غير متاحة حالياً" : null}
+            closedMessage={closedMessage}
             processing={processing}
             whatsappAvailable={whatsappAvailable}
           />

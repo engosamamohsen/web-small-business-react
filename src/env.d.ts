@@ -19,6 +19,8 @@ declare namespace App {
         plan: import("@/lib/store-config").StorePlan;
         socialLogin?: import("@/hooks/fetchSettings").SocialLoginOption[];
         onlinePayment?: boolean;
+        // Opening hours (setting-profile `hours`); {enabled:false} when off. See src/lib/store-hours.ts.
+        hours: import("@/lib/store-hours").StoreHoursSetting;
         // Kind of store (setting-profile data.shop_type); the meal helper is for food stores only.
         shopType?: string | null;
         // The store's own colours (Classic theme), printed on <html> so the first paint already has them.

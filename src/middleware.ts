@@ -138,6 +138,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.plan = "basic";
     context.locals.socialLogin = [];
     context.locals.onlinePayment = false;
+    context.locals.hours = { enabled: false };
     context.locals.shopType = null;
     if (isGet && !isLockoutPage) {
         // Tracking test view (?ct_debug=1, the dashboard's "Test in my browser"):
@@ -154,6 +155,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 context.locals.plan = planFromSettings(settings);
                 context.locals.socialLogin = settings.social_login ?? [];
                 context.locals.onlinePayment = Boolean(settings.online_payment?.enabled);
+                context.locals.hours = settings.hours?.enabled ? settings.hours : { enabled: false };
                 context.locals.shopType = settings.data?.shop_type ?? null;
                 context.locals.storeColors = { font: settings.data?.main_font_color, background: settings.data?.main_bg };
                 if (context.cookies.get(PLAN_COOKIE)?.value !== context.locals.plan) {
