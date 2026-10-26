@@ -1,0 +1,73 @@
+---
+// The store's bookable services grouped by category, server-rendered (no island): each service
+// links to /services/<slug> and has a plain "احجز" link to /book?service=<id>.
+// Used by /services and by a salon's home page (src/components/Booking/SalonHome.astro).
+// Styles: src/styles/booking.css (imported by the page frame that uses it).
+import { effectivePrice, formatDuration, formatMoney, groupByCategory } from "@/lib/booking/totals";
+import { t } from "@/lib/booking/strings";
+import type { BookingCatalog } from "@/lib/booking/types";
+import { encodedServicePath } from "@/lib/booking/seo";
+
+interface Props {
+    catalog: BookingCatalog;
+    /** Heading level of the category names (services are one level below): 2 on /services, 3 under a page section. */
+    headingLevel?: 2 | 3;
+}
+
+const { catalog, headingLevel = 2 } = Astro.props;
+const groups = groupByCategory(catalog.categories, catalog.services);
+// Services sit one level below their category's name; with no category names, at the category level.
+const GroupHeading = `h${headingLevel}` as "h2" | "h3";
+const ServiceHeading = (groups.some((g) => g.name) ? `h${headingLevel + 1}` : GroupHeading) as "h2" | "h3" | "h4";
+const showChips = groups.length > 1 && groups.every((g) => g.name);
+---
+
+{groups.length === 0 && (
+    <div class="ct-bk-card ct-bk-empty">
+        <p>{t.servicesEmpty}</p>
+    </div>
+)}
+{showChips && (
+    <nav class="ct-bk-cats" aria-label={t.servicesTitle}>
+        {groups.map((g) => <a href={`#cat-${g.id ?? "other"}`}>{g.name}</a>)}
+    </nav>
+)}
+{groups.map((g) => (
+    <section class="ct-bk-group" aria-labelledby={g.name ? `cat-${g.id ?? "other"}` : undefined}>
+        {g.name && <GroupHeading id={`cat-${g.id ?? "other"}`}>{g.name}</GroupHeading>}
+        <ul class="ct-bk-grid" role="list">
+            {g.services.map((s) => {
+                const price = effectivePrice(s);
+                return (
+                    <li class="ct-bk-card ct-bk-service">
+                        <ServiceHeading>{s.slug ? <a href={encodedServicePath(s.slug)} class="hover:underline">{s.name}</a> : s.name}</ServiceHeading>
+                        {s.description && <p>{s.description}</p>}
+                        {s.at_home && catalog.settings.home?.offered && <span class="ct-bk-badge" style="align-self: flex-start; font-size: 0.8rem">{t.homeBadge}</span>}
+                        <div class="ct-bk-meta">
+                            <span>{formatDuration(s.duration_minutes)}</span>
+                            <span class="ct-bk-price">
+                                {formatMoney(price)}
+                                {price < s.price && (
+                                    <del>
+                                        <span class="ct-bk-sr">{t.priceWas}: </span>
+                                        {formatMoney(s.price)}
+                                    </del>
+                                )}
+                            </span>
+                        </div>
+                        <div class="ct-bk-actions" style="margin-top: auto">
+                            <a class="ct-bk-btn" href={`/book?service=${s.id}`} aria-label={`${t.book} ${s.name}`}>
+                                {t.book}
+                            </a>
+                            {s.slug && (
+                                <a class="ct-bk-btn ct-bk-btn--ghost" href={encodedServicePath(s.slug)} aria-label={`${t.details}: ${s.name}`}>
+                                    {t.details}
+                                </a>
+                            )}
+                        </div>
+                    </li>
+                );
+            })}
+        </ul>
+    </section>
+))}

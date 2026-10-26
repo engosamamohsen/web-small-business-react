@@ -31,6 +31,10 @@ import { storeConfig } from "@/lib/store-config";
 import ProductFilters from "@/components/products/ProductFilters";
 import { isFoodStore, productsWording } from "@/lib/shop-type";
 import { resizedUrl, storeSrcSet } from "@/lib/responsive-image";
+import SalonHome from "@/components/Booking/SalonHome.astro";
+import { BookingApiError, getCatalog } from "@/lib/booking/api";
+import type { BookingCatalog } from "@/lib/booking/types";
+import { buildSalonBusinessJsonLd, salonHomeMeta, servicesFirstHome, storeHasProducts } from "@/lib/booking/salon-home";
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
@@ -53,16 +57,21 @@ const productsUrl = buildProductsUrl(searchParams);
 // Per-request admin API base URL set by middleware (tenant-aware).
 const apiBase = Astro.locals.apiBase;
 
+// A beauty / service store that takes bookings opens with its services (src/lib/booking/salon-home.ts).
+// Its type and booking switch come from the middleware's settings, so the services load with the rest.
+const salonCandidate = servicesFirstHome(Astro.locals.shopType, Astro.locals.booking?.enabled);
+
 // ============================================
 // PARALLEL API CALLS - settings + banner + categories + products in one round trip
 // Using allSettled to prevent one failure from breaking the entire page
 // ============================================
-const [settingsResult, bannerResult, categoriesResult, productsResult] =
+const [settingsResult, bannerResult, categoriesResult, productsResult, catalogResult] =
     await Promise.allSettled([
         fetchSettings(token, false, apiBase),
         fetchHook({ url: "v1/banner", init: {}, token, baseUrl: apiBase }),
         fetchHook({ url: "v1/categories", init: {}, token, baseUrl: apiBase }),
         fetchHook({ url: productsUrl, init: {}, baseUrl: apiBase }),
+        salonCandidate ? getCatalog(apiBase) : Promise.resolve(null),
     ]);
 
 // Extract settings data (handle rejected promises)
@@ -130,6 +139,16 @@ if (productsResponse?.ok && productsResponse?.data?.data) {
     showProducts = true;
 }
 
+// Salon home: services first. If the API says booking is off after all, the page is the usual one;
+// if the services just failed to load, the salon home still offers the book button.
+const salonCatalog: BookingCatalog | null =
+    catalogResult.status === "fulfilled" ? catalogResult.value : null;
+const salonHome =
+    salonCandidate &&
+    !(catalogResult.status === "rejected" && catalogResult.reason instanceof BookingApiError && catalogResult.reason.kind === "off");
+// The cart, product search and product sections stay on a salon home only when it sells products.
+const showShop = !salonHome || storeHasProducts(allCategories, productsData);
+
 // Website theme (dashboard → Website settings): which hero, category and product
 // layout this page uses. Classic keeps the original components.
 const theme = resolveTheme(Astro.locals.theme);
@@ -138,7 +157,8 @@ const isClassic = theme.key === "classic";
 // A restaurant theme on an online shop says "منتجاتنا", not "المنيو".
 const foodStore = isFoodStore(settingsData?.shop_type);
 const wording = productsWording(settingsData?.shop_type, layout.productsTitle, layout.introCta);
-const showThemedHero = !isClassic && (showBanner ? layout.hero !== "overlay" : layout.intro);
+// A salon home draws its own intro (SalonHome), so there the themed hero only shows banners.
+const showThemedHero = !isClassic && (showBanner ? layout.hero !== "overlay" : layout.intro && !salonHome);
 
 // The first banner is the page's largest image: let the browser start it with the HTML.
 // Same srcset/sizes as the hero <img> (100vw, up to 1600 px), so it is fetched once.
@@ -151,16 +171,21 @@ const preloadImage = firstBanner
     : undefined;
 
 // SEO metadata — all sourced from the tenant's settings API (per request).
-const pageTitle = settingsData?.name || "الرئيسية - منصة الأعمال";
+// A salon home names its services in the title and description.
+const salonServices = salonCatalog?.services ?? [];
+const salonMeta = salonHome ? salonHomeMeta(settingsData?.name, settingsData?.about_us, salonServices) : null;
+const pageTitle = salonMeta?.title || settingsData?.name || "الرئيسية - منصة الأعمال";
 // about_us can carry CRLF line breaks; collapse to one clean line.
 const pageDescription =
+    salonMeta?.description ||
     settingsData?.about_us?.replace(/\s+/g, " ").trim() ||
     "منصة إدارة الأعمال الصغيرة";
-const pageKeywords = normalizeKeywords(settingsData?.keywords, [
-    "أعمال صغيرة",
-    "متجر إلكتروني",
-    "تجارة إلكترونية",
-]);
+const pageKeywords = normalizeKeywords(
+    settingsData?.keywords,
+    salonHome && salonServices.length
+        ? salonServices.slice(0, 10).map((s) => s.name)
+        : ["أعمال صغيرة", "متجر إلكتروني", "تجارة إلكترونية"],
+);
 
 // Organization (built from the tenant's settings — name/logo/about/contact +
 // facebook/instagram via sameAs) + WebSite structured data. Helps Google build
@@ -168,18 +193,25 @@ const pageKeywords = normalizeKeywords(settingsData?.keywords, [
 // resolved from the request inside Layout/SEO.
 const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
 const storeName = settingsData?.name || "المتجر";
+// A salon home adds the store as a BeautySalon / LocalBusiness with its services, and offers no
+// product search box unless it sells products.
 const homeJsonLd = [
     buildStoreOrganization(settingsData, siteOrigin),
+    ...(salonHome ? [buildSalonBusinessJsonLd(settingsData, siteOrigin, salonServices)] : []),
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: storeName,
         url: siteOrigin,
-        potentialAction: {
-            "@type": "SearchAction",
-            target: `${siteOrigin}/?q={search_term_string}`,
-            "query-input": "required name=search_term_string",
-        },
+        ...(showShop
+            ? {
+                  potentialAction: {
+                      "@type": "SearchAction",
+                      target: `${siteOrigin}/?q={search_term_string}`,
+                      "query-input": "required name=search_term_string",
+                  },
+              }
+            : {}),
     },
 ];
 ---
@@ -201,6 +233,7 @@ const homeJsonLd = [
         currentPath={Astro.url.pathname}
         initialIsLoggedIn={isLogin}
         settingsData={settingsData || undefined}
+        hideShop={!showShop}
         client:load
     />
     <ToastContainer position="top-right" rtl={true} client:idle />
@@ -221,7 +254,18 @@ const homeJsonLd = [
         }
 
         {
-            showCategories && !isClassic && layout.categories !== "swiper" && (
+            salonHome && (
+                <SalonHome
+                    storeName={storeName}
+                    about={settingsData?.about_us}
+                    catalog={salonCatalog}
+                    hasBanner={showBanner}
+                />
+            )
+        }
+
+        {
+            showShop && showCategories && !isClassic && layout.categories !== "swiper" && (
                 <CategoryNav
                     categories={categoriesData}
                     variant={layout.categories}
@@ -233,7 +277,7 @@ const homeJsonLd = [
         }
 
         {
-            showCategories && (isClassic || layout.categories === "swiper") && (
+            showShop && showCategories && (isClassic || layout.categories === "swiper") && (
                 <Categories
                     categoriesData={categoriesData}
                     isSuccess={true}
@@ -246,7 +290,7 @@ const homeJsonLd = [
         {showProducts && foodStore && <MealHelperPrompt />}
 
         {/* Search, price and sort (full e-commerce stores only; other stores look exactly as before) */}
-        {storeConfig.isPremium && (
+        {showShop && storeConfig.isPremium && (
             <ProductFilters
                 filters={filtersFromParams(searchParams)}
                 priceRange={productsPriceRange}
@@ -256,7 +300,7 @@ const homeJsonLd = [
         )}
 
         {
-            !isClassic && (
+            showShop && !isClassic && (
                 <section id="products">
                     <ThemedProducts
                         products={showProducts
@@ -271,7 +315,7 @@ const homeJsonLd = [
             )
         }
 
-        {isClassic && <section class="py-10" id="products">
+        {showShop && isClassic && <section class="py-10" id="products">
             <ProductsSection
                 products={showProducts
                     ? {

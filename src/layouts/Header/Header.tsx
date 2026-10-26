@@ -29,9 +29,11 @@ interface HeaderProps {
   currentPath?: string;
   initialIsLoggedIn?: boolean;
   settingsData?: SettingsData;
+  /** A salon's home page with no products (src/lib/booking/salon-home.ts): no cart, no product search. */
+  hideShop?: boolean;
 }
 
-export default function Header({ initialIsLoggedIn = false, settingsData }: HeaderProps) {
+export default function Header({ initialIsLoggedIn = false, settingsData, hideShop = false }: HeaderProps) {
   const { settings: contextSettings, isLogin: contextIsLogin, cartCount: contextCartCount } = useSettings();
 
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
@@ -118,11 +120,13 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
             </Link>
 
             {/* Search */}
-            <div className="hidden flex-1 md:flex md:justify-center">
-              <div className="w-full max-w-md">
-                <SearchBar />
+            {!hideShop && (
+              <div className="hidden flex-1 md:flex md:justify-center">
+                <div className="w-full max-w-md">
+                  <SearchBar />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Right side */}
             <div className="flex items-center gap-3">
@@ -147,19 +151,21 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
                 </Link>
               )}
 
-              <Link
-                href={!storeConfig.canAuthenticate || isLoggedIn ? "/shop/cart" : "#"}
-                className="ct-header__icon relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
-                aria-label="سلة المشتريات"
-                onClick={handleCartClick}
-              >
-                <ShoppingCart className="h-4 w-4 text-[var(--second-font-color)]" />
-                {cartCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[var(--main-color)] px-[3px] text-[10px] font-semibold text-white">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </Link>
+              {!hideShop && (
+                <Link
+                  href={!storeConfig.canAuthenticate || isLoggedIn ? "/shop/cart" : "#"}
+                  className="ct-header__icon relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition hover:shadow-md"
+                  aria-label="سلة المشتريات"
+                  onClick={handleCartClick}
+                >
+                  <ShoppingCart className="h-4 w-4 text-[var(--second-font-color)]" />
+                  {cartCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[var(--main-color)] px-[3px] text-[10px] font-semibold text-white">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               {storeConfig.canAuthenticate && (
                 <LoginButton isLoggedIn={isLoggedIn} onLogout={handleLogout} onOpenAuthDialog={openAuthDialog} />
@@ -168,9 +174,11 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
           </div>
 
           {/* Mobile search */}
-          <div className="pb-3 pt-1 md:hidden">
-            <SearchBar />
-          </div>
+          {!hideShop && (
+            <div className="pb-3 pt-1 md:hidden">
+              <SearchBar />
+            </div>
+          )}
         </div>
       </header>
 

@@ -1,0 +1,52 @@
+---
+// Home page of a salon (a beauty / service store whose booking is on, src/lib/booking/salon-home.ts):
+// the store's intro with a big "احجز موعد" button, then its services by category. Server-rendered
+// so search engines read the services; no island. Every theme draws it with its own tokens
+// (booking.css reads them); Classic gets the store's --main-color and neutral fallbacks.
+import ServicesList from "@/components/Booking/ServicesList.astro";
+import { homeAreas } from "@/lib/booking/home";
+import { t } from "@/lib/booking/strings";
+import type { BookingCatalog } from "@/lib/booking/types";
+import "@/styles/booking.css";
+
+interface Props {
+    storeName: string;
+    about?: string | null;
+    /** null when the services couldn't be loaded (the page still offers the book button). */
+    catalog: BookingCatalog | null;
+    /** The banner above already holds the page's <h1>. */
+    hasBanner?: boolean;
+}
+
+const { storeName, about, catalog, hasBanner = false } = Astro.props;
+const IntroHeading = hasBanner ? "h2" : "h1";
+const aboutText = about?.replace(/\s+/g, " ").trim();
+const homeOffered = Boolean(catalog?.settings.home?.offered && homeAreas(catalog.settings).length > 0);
+---
+
+<div class="ct-bk ct-bk-home">
+    <section class="ct-bk-home__intro" aria-labelledby="ct-bk-home-title">
+        <div class="ct-bk-home__inner">
+            <IntroHeading class="ct-bk-home__title" id="ct-bk-home-title">{storeName}</IntroHeading>
+            <p class="ct-bk-home__lead">{aboutText || t.servicesIntro}</p>
+            {homeOffered && <p class="ct-bk-badge ct-bk-home__badge">{t.homeBadge}</p>}
+            <div class="ct-bk-home__actions">
+                <a class="ct-bk-btn ct-bk-home__book" href="/book">{t.navBook}</a>
+                <a class="ct-bk-btn ct-bk-btn--ghost" href="#services">{t.servicesTitle}</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="ct-bk-wrap ct-bk-home__services" id="services" aria-labelledby="ct-bk-home-services">
+        <h2 class="ct-bk-title" id="ct-bk-home-services">{t.servicesTitle}</h2>
+        {aboutText && <p class="ct-bk-lead">{t.servicesIntro}</p>}
+        {catalog ? (
+            <ServicesList catalog={catalog} headingLevel={3} />
+        ) : (
+            <div class="ct-bk-card ct-bk-empty" role="alert">
+                <p>{t.loadFailed}</p>
+                <a class="ct-bk-btn" href="/services">{t.backToServices}</a>
+            </div>
+        )}
+    </section>
+</div>
