@@ -12,6 +12,8 @@ export interface SavedBooking {
   saved_at: number;
   /** The store's WhatsApp link from the booking answer (POST 201 `whatsapp.url`), when there was one. */
   whatsapp_url?: string;
+  /** Cancelled (seen on its status page): left out of "my bookings" on the booking page. */
+  cancelled?: boolean;
 }
 
 type StorageLike = Pick<Storage, "getItem" | "setItem">;
@@ -39,7 +41,7 @@ export function readMyBookings(store: StorageLike | null = storage()): SavedBook
 
 /** Adds (or moves to the top) a booking; keeps the newest MAX_SAVED. */
 export function saveMyBooking(
-  booking: { token: string; starts_at: string; whatsapp_url?: string | null },
+  booking: { token: string; starts_at: string; whatsapp_url?: string | null; status?: string },
   store: StorageLike | null = storage(),
   now = Date.now(),
 ): SavedBooking[] {
@@ -49,6 +51,7 @@ export function saveMyBooking(
   const whatsapp_url = booking.whatsapp_url || current.find((b) => b.token === booking.token)?.whatsapp_url;
   const entry: SavedBooking = { token: booking.token, starts_at: booking.starts_at, saved_at: now };
   if (whatsapp_url) entry.whatsapp_url = whatsapp_url;
+  if (booking.status === "cancelled") entry.cancelled = true;
   const list = [entry, ...current.filter((b) => b.token !== booking.token)].slice(0, MAX_SAVED);
   try {
     store.setItem(MY_BOOKINGS_KEY, JSON.stringify(list));
@@ -56,6 +59,11 @@ export function saveMyBooking(
     // storage full or blocked: the booking still works through its link
   }
   return list;
+}
+
+/** Bookings still to come and not cancelled, newest first (the booking page's "my bookings"). */
+export function upcomingMyBookings(store: StorageLike | null = storage(), now = Date.now()): SavedBooking[] {
+  return readMyBookings(store).filter((b) => !b.cancelled && Date.parse(b.starts_at) > now);
 }
 
 export function findMyBooking(token: string, store: StorageLike | null = storage()): SavedBooking | null {

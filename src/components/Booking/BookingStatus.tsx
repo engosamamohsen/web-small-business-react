@@ -148,7 +148,7 @@ export default function BookingStatus({
         <p className="ct-bk-hint mt-3" role="status">{t.whatsappHint}</p>
       )}
       <div className="ct-bk-actions">
-        {whatsapp && (
+        {whatsapp && booking.status !== "cancelled" && (
           <a className="ct-bk-btn ct-bk-btn--wa" href={whatsapp} target="_blank" rel="noopener noreferrer">
             <i className="pi pi-whatsapp" aria-hidden="true" /> {t.whatsapp}
           </a>

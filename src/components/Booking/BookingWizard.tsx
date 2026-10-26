@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent 
 import { getApiUrl } from "@/lib/config";
 import { BookingApiError, createBooking, getSlots } from "@/lib/booking/api";
 import { buildDateStrip, formatAppointmentWhen, formatTime12, splitByPeriod, type StripDay } from "@/lib/booking/dates";
-import { readMyBookings, saveMyBooking, type SavedBooking } from "@/lib/booking/my-bookings";
+import { saveMyBooking, upcomingMyBookings, type SavedBooking } from "@/lib/booking/my-bookings";
 import { homeAreas, homeChoiceOffered, homeFee, locationErrors, locationPayload, MAX_ADDRESS_LENGTH } from "@/lib/booking/home";
 import { isLikelyPhone, normalizePhone } from "@/lib/booking/phone";
 import { t } from "@/lib/booking/strings";
@@ -92,7 +92,7 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
 
   // "My bookings on this device" (browser only, after hydration).
   useEffect(() => {
-    const upcoming = readMyBookings().filter((b) => Date.parse(b.starts_at) > Date.now());
+    const upcoming = upcomingMyBookings();
     setMine(upcoming.slice(0, 3));
   }, []);
 

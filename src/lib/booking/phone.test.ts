@@ -79,4 +79,15 @@ describe("saved WhatsApp link", () => {
     expect(findMyBooking(token, store)?.whatsapp_url).toBe("https://api.whatsapp.com/send?phone=1");
     expect(findMyBooking("d".repeat(32), store)).toBeNull();
   });
+
+  it("leaves cancelled and past bookings out of my bookings", async () => {
+    const { upcomingMyBookings } = await import("./my-bookings");
+    const data = new Map<string, string>();
+    const store = { getItem: (k: string) => data.get(k) ?? null, setItem: (k: string, v: string) => void data.set(k, v) };
+    const now = Date.parse("2026-10-30T10:00:00+02:00");
+    saveMyBooking({ token: "e".repeat(32), starts_at: "2026-11-01T10:00:00+02:00" }, store, now);
+    saveMyBooking({ token: "f".repeat(32), starts_at: "2026-11-02T10:00:00+02:00", status: "cancelled" }, store, now);
+    saveMyBooking({ token: "a".repeat(32), starts_at: "2026-10-29T10:00:00+02:00" }, store, now);
+    expect(upcomingMyBookings(store, now).map((b) => b.token)).toEqual(["e".repeat(32)]);
+  });
 });
