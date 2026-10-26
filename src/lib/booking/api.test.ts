@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BookingApiError, createBooking, getSlots, isBookingToken, parseBookingError } from "./api";
+import { BookingApiError, bookingPayload, createBooking, getSlots, isBookingToken, parseBookingError } from "./api";
 import { bookingFromSettings } from "./enabled";
 
 describe("parseBookingError", () => {
@@ -68,7 +68,7 @@ describe("requests", () => {
       new Response(JSON.stringify({ status: true, data: { date: "2026-11-02", times: ["10:00"] } }), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
-    const result = await getSlots("http://admin-x.localhost:8000/api/", { serviceIds: [1, 2], date: "2026-11-02", staffId: null });
+    const result = await getSlots("http://admin-x.localhost:8000/api/", { serviceIds: [1, 2], date: "2026-11-02" });
     expect(result.times).toEqual(["10:00"]);
     const url = new URL(fetchMock.mock.calls[0][0]);
     expect(url.pathname).toBe("/api/v1/booking/slots");
@@ -96,6 +96,27 @@ describe("requests", () => {
     expect(error).toBeInstanceOf(BookingApiError);
     expect(error.kind).toBe("slot_taken");
     expect(error.nextFree).toEqual(["12:00"]);
+  });
+
+  it("never sends staff_id: the store assigns the specialist", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ status: true, data: { token: "c".repeat(32) } }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    // Even if an old caller slips one in, it is dropped.
+    const request = {
+      service_ids: [1],
+      branch_id: 2,
+      date: "2026-11-02",
+      time: "11:00",
+      customer_name: "Mona",
+      customer_phone: "01012345678",
+      website: "",
+      staff_id: 93,
+    } as Parameters<typeof createBooking>[1];
+    await createBooking("http://x/api/", request);
+    const sent = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(sent).not.toHaveProperty("staff_id");
+    expect(sent).toMatchObject({ service_ids: [1], branch_id: 2, time: "11:00" });
+    expect(JSON.parse(bookingPayload(request))).not.toHaveProperty("staff_id");
   });
 
   it("turns a failed fetch into a network error", async () => {

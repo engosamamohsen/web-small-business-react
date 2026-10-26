@@ -1,7 +1,9 @@
 ---
 // /book — book an appointment (docs/talent-booking.md 5, phase D4). The catalogue is loaded
-// here on the server; staff and free times are loaded by the island as the customer chooses.
-// ?service=1,2 (or repeated) pre-selects services; ?staff= ?branch= ?date= restore a choice.
+// here on the server; free times are loaded by the island as the customer chooses. Customers
+// never pick a staff member: the store assigns one.
+// ?service=1,2 (or repeated) pre-selects services; ?branch= ?date= restore a choice (an old
+// ?staff= is ignored).
 import BookingShell from "@/components/Booking/BookingShell.astro";
 import BookingUnavailable from "@/components/Booking/BookingUnavailable.astro";
 import BookingWizard from "@/components/Booking/BookingWizard";
@@ -81,7 +83,6 @@ const initialDate = query.get("date");
                 client:load
                 catalog={catalog}
                 initialServiceIds={initialServiceIds}
-                initialStaffId={toInt(query.get("staff"))}
                 initialBranchId={initialBranch && catalog.settings.branches.some((b) => b.id === initialBranch) ? initialBranch : null}
                 initialDate={isIsoDate(initialDate) ? initialDate : null}
                 now={new Date().toISOString()}

@@ -1,4 +1,4 @@
-// /booking/<token> — the customer's booking: status, time (Cairo), staff, services, total,
+// /booking/<token> — the customer's booking: status, time (Cairo), services, total,
 // cancel (with a confirm dialog) while the store allows it, and WhatsApp to the store.
 
 import { useEffect, useRef, useState } from "react";
@@ -102,8 +102,6 @@ export default function BookingStatus({
           {isHome ? t.homeVisit : t.atSalon}
           {isHome && booking.address && <span className="ct-bk-choice__sub" style={{ whiteSpace: "pre-line" }}>{booking.address}</span>}
         </dd>
-        <dt>{t.staff}</dt>
-        <dd>{booking.staff || t.anyStaff}</dd>
         {booking.customer_name && (
           <>
             <dt>{t.customer}</dt>

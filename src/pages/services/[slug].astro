@@ -105,22 +105,7 @@ const jsonLd = service ? buildServiceJsonLd(service, settingsData, siteOrigin) :
                     </dd>
                 </dl>
                 <a class="ct-bk-btn ct-bk-btn--block" href={`/book?service=${service.id}`}>{t.bookNow}</a>
-                {service.staff.length > 0 && (
-                    <section class="mt-6" aria-labelledby="bk-staff-title">
-                        <h2 class="ct-bk-h2" id="bk-staff-title">{t.whoDoesIt}</h2>
-                        <ul class="ct-bk-lines">
-                            {service.staff.map((s) => (
-                                <li>
-                                    <span>
-                                        <strong>{s.name}</strong>
-                                        {s.bio && <span class="ct-bk-choice__sub">{s.bio}</span>}
-                                    </span>
-                                    <a class="underline" href={`/book?service=${service!.id}&staff=${s.id}`} aria-label={`${t.book} ${s.name}`}>{t.book}</a>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-                )}
+                <p class="ct-bk-hint mt-2">{t.assignNote}</p>
                 <p class="mt-4"><a href={SERVICES_PATH} class="underline">{t.backToServices}</a></p>
             </article>
         )}

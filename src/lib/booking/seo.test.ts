@@ -21,7 +21,6 @@ const service: BookingServiceDetail = {
   sale_price: 180,
   duration_minutes: 45,
   branch_ids: [],
-  staff: [{ id: 93, name: "Mona", bio: null }],
 };
 
 describe("paths and slugs", () => {

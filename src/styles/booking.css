@@ -212,7 +212,7 @@ fieldset.ct-bk-section {
   outline-offset: 2px;
 }
 
-/* ── Choices: services, staff, branch, day, time (native inputs, styled labels) ── */
+/* ── Choices: services, where, branch, day, time (native inputs, styled labels) ── */
 .ct-bk-list {
   display: grid;
   gap: 0.5rem;

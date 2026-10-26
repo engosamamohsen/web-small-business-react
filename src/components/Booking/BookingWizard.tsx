@@ -1,24 +1,24 @@
 // /book — one page, top to bottom: services → where (salon / home, only when offered) →
-// branch (only with several) → staff → day → time → name and phone → confirm. Staff and times come from the booking API and are fetched
+// branch (only with several) → day → time → name and phone → confirm. Customers never pick a
+// staff member: the store assigns one. Free times come from the booking API and are fetched
 // again whenever a choice above them changes. Totals are display only; the server decides.
 // Styles: src/styles/booking.css. Strings: src/lib/booking/strings.ts.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 import { getApiUrl } from "@/lib/config";
-import { BookingApiError, createBooking, getSlots, getStaff } from "@/lib/booking/api";
+import { BookingApiError, createBooking, getSlots } from "@/lib/booking/api";
 import { buildDateStrip, formatAppointmentWhen, formatTime12, splitByPeriod, type StripDay } from "@/lib/booking/dates";
 import { readMyBookings, saveMyBooking, type SavedBooking } from "@/lib/booking/my-bookings";
 import { homeAreas, homeChoiceOffered, homeFee, locationErrors, locationPayload, MAX_ADDRESS_LENGTH } from "@/lib/booking/home";
 import { isLikelyPhone, normalizePhone } from "@/lib/booking/phone";
 import { t } from "@/lib/booking/strings";
 import { bookingTotals, effectivePrice, formatDuration, formatMoney, groupByCategory } from "@/lib/booking/totals";
-import type { BookingCatalog, BookingLocation, BookingStaff } from "@/lib/booking/types";
+import type { BookingCatalog, BookingLocation } from "@/lib/booking/types";
 
 export interface BookingWizardProps {
   catalog: BookingCatalog;
   /** Pre-selected from ?service= (already checked against the catalogue). */
   initialServiceIds: number[];
-  initialStaffId: number | null;
   initialBranchId: number | null;
   initialDate: string | null;
   /** Server time (ISO), so the date strip is the same on the server and in the browser. */
@@ -33,19 +33,17 @@ const Check = () => (
   </svg>
 );
 
-export default function BookingWizard({ catalog, initialServiceIds, initialStaffId, initialBranchId, initialDate, now }: BookingWizardProps) {
+export default function BookingWizard({ catalog, initialServiceIds, initialBranchId, initialDate, now }: BookingWizardProps) {
   const { services, settings } = catalog;
   const groups = useMemo(() => groupByCategory(catalog.categories, services), [catalog.categories, services]);
   const days = useMemo(() => buildDateStrip(new Date(now), settings.max_days_ahead), [now, settings.max_days_ahead]);
 
   const [selected, setSelected] = useState<number[]>(initialServiceIds);
   const [branchId, setBranchId] = useState<number | null>(initialBranchId);
-  const [staffId, setStaffId] = useState<number | null>(initialStaffId);
   const [date, setDate] = useState<string>(
     initialDate && days.some((d) => d.date === initialDate) ? initialDate : days[0]?.date ?? "",
   );
   const [time, setTime] = useState<string | null>(null);
-  const [staff, setStaff] = useState<Load<BookingStaff[]>>({ state: "idle", data: [] });
   const [slots, setSlots] = useState<Load<string[]>>({ state: "idle", data: [] });
   const [suggested, setSuggested] = useState<string[]>([]);
   const [slotsKey, setSlotsKey] = useState(0);
@@ -102,37 +100,16 @@ export default function BookingWizard({ catalog, initialServiceIds, initialStaff
   useEffect(() => {
     const params = new URLSearchParams();
     if (selected.length) params.set("service", selected.join(","));
-    if (staffId) params.set("staff", String(staffId));
     if (effectiveBranch) params.set("branch", String(effectiveBranch));
     if (date) params.set("date", date);
     const query = params.toString();
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
-  }, [selected, staffId, effectiveBranch, date]);
+  }, [selected, effectiveBranch, date]);
 
   // Selected day in view on first paint.
   useEffect(() => {
     daysRef.current?.querySelector<HTMLElement>("label:has(input:checked)")?.scrollIntoView?.({ block: "nearest", inline: "center" });
   }, []);
-
-  // Staff who can do all the chosen services.
-  useEffect(() => {
-    if (!ready) {
-      setStaff({ state: "idle", data: [] });
-      return;
-    }
-    const controller = new AbortController();
-    setStaff((prev) => ({ state: "loading", data: prev.data }));
-    getStaff(getApiUrl(), selected, effectiveBranch, { signal: controller.signal })
-      .then((list) => {
-        setStaff({ state: "done", data: list });
-        setStaffId((current) => (current && !list.some((s) => s.id === current) ? null : current));
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return;
-        setStaff({ state: "error", data: [], message: error instanceof BookingApiError ? error.message : t.errUnknown });
-      });
-    return () => controller.abort();
-  }, [ready, selected, effectiveBranch]);
 
   // Free times for the day (re-fetched on any change, and after a 409).
   useEffect(() => {
@@ -142,7 +119,7 @@ export default function BookingWizard({ catalog, initialServiceIds, initialStaff
     }
     const controller = new AbortController();
     setSlots((prev) => ({ state: "loading", data: prev.data }));
-    getSlots(getApiUrl(), { serviceIds: selected, date, staffId, branchId: effectiveBranch, location }, { signal: controller.signal })
+    getSlots(getApiUrl(), { serviceIds: selected, date, branchId: effectiveBranch, location }, { signal: controller.signal })
       .then((result) => {
         const times = Array.isArray(result?.times) ? result.times : [];
         setSlots({ state: "done", data: times });
@@ -153,7 +130,7 @@ export default function BookingWizard({ catalog, initialServiceIds, initialStaff
         setSlots({ state: "error", data: [], message: error instanceof BookingApiError ? error.message : t.errUnknown });
       });
     return () => controller.abort();
-  }, [ready, selected, date, staffId, effectiveBranch, location, slotsKey]);
+  }, [ready, selected, date, effectiveBranch, location, slotsKey]);
 
   const toggleService = (id: number) => {
     setSelected((list) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]));
@@ -212,7 +189,6 @@ export default function BookingWizard({ catalog, initialServiceIds, initialStaff
     try {
       const { booking, whatsapp } = await createBooking(getApiUrl(), {
         service_ids: selected,
-        staff_id: staffId,
         branch_id: effectiveBranch,
         date,
         time,
@@ -448,35 +424,6 @@ export default function BookingWizard({ catalog, initialServiceIds, initialStaff
           </fieldset>
         )}
 
-        {/* Staff */}
-        <fieldset className="ct-bk-card ct-bk-section" disabled={!ready}>
-          <legend className="ct-bk-sr">{t.stepStaff}</legend>
-          <p className="ct-bk-h2" aria-hidden="true">{stepNo()}{t.stepStaff}</p>
-          <div className="ct-bk-list ct-bk-list--two">
-            <label className="ct-bk-choice">
-              <input className="ct-bk-sr" type="radio" name="staff" checked={staffId === null} onChange={() => setStaffId(null)} />
-              <span className="ct-bk-tick ct-bk-tick--round"><Check /></span>
-              <span className="ct-bk-choice__body">
-                <span className="ct-bk-choice__title">{t.anyone}</span>
-                <span className="ct-bk-choice__sub">{t.anyoneHint}</span>
-              </span>
-            </label>
-            {staff.data.map((s) => (
-              <label key={s.id} className="ct-bk-choice">
-                <input className="ct-bk-sr" type="radio" name="staff" checked={staffId === s.id} onChange={() => setStaffId(s.id)} />
-                <span className="ct-bk-tick ct-bk-tick--round"><Check /></span>
-                <span className="ct-bk-choice__body">
-                  <span className="ct-bk-choice__title">{s.name}</span>
-                  {s.bio && <span className="ct-bk-choice__sub">{s.bio}</span>}
-                </span>
-              </label>
-            ))}
-          </div>
-          <p className="ct-bk-status-line" aria-live="polite">
-            {staff.state === "error" ? staff.message : staff.state === "done" && staff.data.length === 0 ? t.noStaff : ""}
-          </p>
-        </fieldset>
-
         {/* Day */}
         <fieldset className="ct-bk-card ct-bk-section">
           <legend className="ct-bk-sr">{t.stepDate}</legend>
@@ -608,7 +555,7 @@ export default function BookingWizard({ catalog, initialServiceIds, initialStaff
             {selectedDay.dayName} {selectedDay.day} {selectedDay.month} · {formatTime12(time)}
           </p>
         )}
-        <p className="ct-bk-summary__note">{t.totalNote}</p>
+        <p className="ct-bk-summary__note">{t.assignNote} {t.totalNote}</p>
         <div aria-live="assertive">{formError && <p className="ct-bk-alert" role="alert">{formError}</p>}</div>
         <button type="submit" className="ct-bk-btn ct-bk-btn--block" disabled={sending} aria-disabled={sending}>
           {sending ? t.sending : t.confirm}

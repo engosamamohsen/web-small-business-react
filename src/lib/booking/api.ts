@@ -9,7 +9,6 @@ import type {
   BookingCatalog,
   BookingRequest,
   BookingServiceDetail,
-  BookingStaff,
   BookingWhatsApp,
   SlotsResult,
 } from "./types";
@@ -129,18 +128,13 @@ export function getService(base: string, slug: string, init?: RequestInit): Prom
   return request<BookingServiceDetail>(withLang(base, `v1/booking/services/${encodeURIComponent(slug)}`), init);
 }
 
-export function getStaff(base: string, serviceIds: number[], branchId?: number | null, init?: RequestInit): Promise<BookingStaff[]> {
-  return request<BookingStaff[]>(withLang(base, "v1/booking/staff", idsParams(serviceIds, { branch_id: branchId })), init);
-}
-
 export function getSlots(
   base: string,
-  query: { serviceIds: number[]; date: string; staffId?: number | null; branchId?: number | null; location?: "salon" | "home" },
+  query: { serviceIds: number[]; date: string; branchId?: number | null; location?: "salon" | "home" },
   init?: RequestInit,
 ): Promise<SlotsResult> {
   const params = idsParams(query.serviceIds, {
     date: query.date,
-    staff_id: query.staffId,
     branch_id: query.branchId,
     // Home visits have fewer times (road time is blocked); the salon is the default.
     location: query.location === "home" ? "home" : null,
@@ -170,13 +164,22 @@ export function parseBookingWhatsApp(value: unknown): BookingWhatsApp | null {
   };
 }
 
+/**
+ * The JSON body of POST v1/booking. Customers never pick a staff member (the store assigns
+ * one), so a stray `staff_id` is always dropped.
+ */
+export function bookingPayload(body: BookingRequest): string {
+  const { staff_id: _dropped, ...rest } = body as BookingRequest & { staff_id?: unknown };
+  return JSON.stringify(rest);
+}
+
 export async function createBooking(
   base: string,
   body: BookingRequest,
 ): Promise<{ booking: AppointmentView; whatsapp: BookingWhatsApp | null }> {
   const res = await requestBody<{ data: AppointmentView; whatsapp?: unknown }>(withLang(base, "v1/booking"), {
     method: "POST",
-    body: JSON.stringify(body),
+    body: bookingPayload(body),
   });
   return { booking: res.data, whatsapp: parseBookingWhatsApp(res.whatsapp) };
 }

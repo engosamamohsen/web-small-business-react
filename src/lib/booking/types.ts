@@ -46,7 +46,6 @@ export interface BookingServiceDetail {
   sale_price: number | null;
   duration_minutes: number;
   branch_ids: number[];
-  staff: { id: number; name: string; bio?: string | null }[];
   updated_at?: string | null;
   at_home?: boolean;
 }
@@ -72,13 +71,6 @@ export interface BookingCatalog {
   settings: BookingPublicSettings;
 }
 
-export interface BookingStaff {
-  id: number;
-  name: string;
-  bio?: string | null;
-  branch_id: number | null;
-}
-
 export interface SlotsResult {
   date: string;
   times: string[];
@@ -92,7 +84,6 @@ export interface AppointmentView {
   status_label?: string;
   starts_at: string;
   ends_at: string;
-  staff: string | null;
   branch_id: number | null;
   customer_name: string;
   services: { name: string; price: number; duration_minutes: number }[];
@@ -106,7 +97,6 @@ export interface AppointmentView {
 
 export interface BookingRequest {
   service_ids: number[];
-  staff_id?: number | null;
   branch_id?: number | null;
   date: string;
   time: string;
