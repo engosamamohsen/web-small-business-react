@@ -1,0 +1,41 @@
+---
+// Page frame of the booking pages (/services, /book, /booking/<token>): the store's layout,
+// header and footer, like the other storefront pages. Styles: src/styles/booking.css.
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/layouts/Header/Header";
+import Footer from "@/layouts/Footer";
+import ColorHandler from "@/layouts/ColorHandler";
+import FaviconHandler from "@/layouts/FaviconHandler";
+import { SettingsProvider } from "@/providers";
+import type { SettingsData } from "@/hooks/fetchSettings";
+import packageJson from "../../../package.json";
+import "@/styles/booking.css";
+
+interface Props {
+    title: string;
+    description?: string;
+    settingsData: SettingsData | null;
+    isLogin?: boolean;
+    cartCount?: number;
+    token?: string;
+    noindex?: boolean;
+    /** Absolute canonical URL (tenant origin) and JSON-LD, passed to Layout's SEO. */
+    canonical?: string;
+    jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+    keywords?: string[];
+}
+
+const { title, description, settingsData, isLogin = false, cartCount = 0, token, noindex = false, canonical, jsonLd, keywords } = Astro.props;
+---
+
+<Layout title={title} description={description} favicon={settingsData?.logo} noindex={noindex} canonical={canonical} jsonLd={jsonLd} keywords={keywords}>
+    <SettingsProvider initialSettings={settingsData} isLogin={isLogin} cartCount={cartCount} token={token} client:only="react">
+        <ColorHandler client:only="react" />
+        <FaviconHandler client:load />
+        <Header client:load />
+        <main class="ct-bk min-h-screen" id="main">
+            <slot />
+        </main>
+        <Footer settingsData={settingsData} appVersion={packageJson.version} client:load />
+    </SettingsProvider>
+</Layout>

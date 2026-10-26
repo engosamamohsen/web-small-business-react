@@ -1,0 +1,126 @@
+---
+// /services — the store's bookable services by category (docs/talent-booking.md 5, phase D4).
+// Server-rendered, no island: each "احجز" is a plain link to /book?service=<id>.
+// When the store doesn't take bookings the page says so and makes no booking call.
+import BookingShell from "@/components/Booking/BookingShell.astro";
+import BookingUnavailable from "@/components/Booking/BookingUnavailable.astro";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { BookingApiError, getCatalog } from "@/lib/booking/api";
+import { effectivePrice, formatDuration, formatMoney, groupByCategory } from "@/lib/booking/totals";
+import { t } from "@/lib/booking/strings";
+import type { BookingCatalog } from "@/lib/booking/types";
+import { SERVICES_PATH, encodedServicePath } from "@/lib/booking/seo";
+import { getSiteOrigin } from "@/lib/site-origin";
+
+export const prerender = false;
+
+const token = Astro.cookies.get("app_token")?.value;
+const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase);
+const settingsData = settingsResponse?.data ?? null;
+const storeName = settingsData?.name || "المتجر";
+
+let enabled = Boolean(Astro.locals.booking?.enabled);
+let catalog: BookingCatalog | null = null;
+let failed = false;
+if (enabled) {
+    try {
+        catalog = await getCatalog(Astro.locals.apiBase);
+    } catch (error) {
+        if (error instanceof BookingApiError && error.kind === "off") enabled = false;
+        else failed = true;
+    }
+}
+if (!enabled) Astro.response.status = 404;
+
+const groups = catalog ? groupByCategory(catalog.categories, catalog.services) : [];
+const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
+const canonical = `${siteOrigin}${SERVICES_PATH}`;
+// The list for search engines: each service links to its own page.
+const jsonLd = catalog?.services.some((s) => s.slug)
+    ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: catalog.services
+              .filter((s) => s.slug)
+              .map((s, i) => ({ "@type": "ListItem", position: i + 1, name: s.name, url: `${siteOrigin}${encodedServicePath(s.slug!)}` })),
+      }
+    : undefined;
+const showChips = groups.length > 1 && groups.every((g) => g.name);
+---
+
+<BookingShell
+    title={`${t.servicesTitle} - ${storeName}`}
+    description={`${t.servicesIntro} ${storeName}`}
+    settingsData={settingsData}
+    isLogin={Boolean(settingsResponse?.is_login)}
+    cartCount={settingsResponse?.cart_count ?? 0}
+    token={token}
+    noindex={!enabled}
+    canonical={canonical}
+    jsonLd={jsonLd}
+>
+    <div class="ct-bk-wrap">
+        {!enabled && <BookingUnavailable />}
+        {enabled && failed && (
+            <div class="ct-bk-card ct-bk-empty" role="alert">
+                <p>{t.loadFailed}</p>
+                <a class="ct-bk-btn" href="/services">{t.retry}</a>
+            </div>
+        )}
+        {enabled && catalog && (
+            <>
+                <h1 class="ct-bk-title">{t.servicesTitle}</h1>
+                <p class="ct-bk-lead">{t.servicesIntro}</p>
+                {groups.length === 0 && (
+                    <div class="ct-bk-card ct-bk-empty">
+                        <p>{t.servicesEmpty}</p>
+                    </div>
+                )}
+                {showChips && (
+                    <nav class="ct-bk-cats" aria-label={t.servicesTitle}>
+                        {groups.map((g) => <a href={`#cat-${g.id ?? "other"}`}>{g.name}</a>)}
+                    </nav>
+                )}
+                {groups.map((g) => (
+                    <section class="ct-bk-group" aria-labelledby={g.name ? `cat-${g.id ?? "other"}` : undefined}>
+                        {g.name && <h2 id={`cat-${g.id ?? "other"}`}>{g.name}</h2>}
+                        <ul class="ct-bk-grid" role="list">
+                            {g.services.map((s) => {
+                                const price = effectivePrice(s);
+                                return (
+                                    <li class="ct-bk-card ct-bk-service">
+                                        <h3>{s.slug ? <a href={encodedServicePath(s.slug)} class="hover:underline">{s.name}</a> : s.name}</h3>
+                                        {s.description && <p>{s.description}</p>}
+                                        {s.at_home && catalog?.settings.home?.offered && <span class="ct-bk-badge" style="align-self: flex-start; font-size: 0.8rem">{t.homeBadge}</span>}
+                                        <div class="ct-bk-meta">
+                                            <span>{formatDuration(s.duration_minutes)}</span>
+                                            <span class="ct-bk-price">
+                                                {formatMoney(price)}
+                                                {price < s.price && (
+                                                    <del>
+                                                        <span class="ct-bk-sr">{t.priceWas}: </span>
+                                                        {formatMoney(s.price)}
+                                                    </del>
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div class="ct-bk-actions" style="margin-top: auto">
+                                            <a class="ct-bk-btn" href={`/book?service=${s.id}`} aria-label={`${t.book} ${s.name}`}>
+                                                {t.book}
+                                            </a>
+                                            {s.slug && (
+                                                <a class="ct-bk-btn ct-bk-btn--ghost" href={encodedServicePath(s.slug)} aria-label={`${t.details}: ${s.name}`}>
+                                                    {t.details}
+                                                </a>
+                                            )}
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </section>
+                ))}
+            </>
+        )}
+    </div>
+</BookingShell>

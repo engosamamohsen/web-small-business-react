@@ -1,0 +1,61 @@
+---
+// /booking/<token> — a customer's booking (docs/talent-booking.md 5, phase D4). The link is the
+// customer's key to it, so the page is never indexed and is never cached by the browser.
+import BookingShell from "@/components/Booking/BookingShell.astro";
+import BookingUnavailable from "@/components/Booking/BookingUnavailable.astro";
+import BookingStatus from "@/components/Booking/BookingStatus";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { BookingApiError, getBooking, isBookingToken } from "@/lib/booking/api";
+import { t } from "@/lib/booking/strings";
+import type { AppointmentView } from "@/lib/booking/types";
+
+export const prerender = false;
+
+const bookingToken = Astro.params.token;
+const token = Astro.cookies.get("app_token")?.value;
+const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase);
+const settingsData = settingsResponse?.data ?? null;
+const storeName = settingsData?.name || "المتجر";
+
+let enabled = Boolean(Astro.locals.booking?.enabled);
+let booking: AppointmentView | null = null;
+let problem: string | null = null;
+if (enabled) {
+    if (!isBookingToken(bookingToken)) {
+        problem = t.notFound;
+    } else {
+        try {
+            booking = await getBooking(Astro.locals.apiBase, bookingToken);
+        } catch (error) {
+            if (error instanceof BookingApiError && error.kind === "off") enabled = false;
+            else problem = error instanceof BookingApiError && error.kind === "not_found" ? t.notFound : t.loadFailed;
+        }
+    }
+}
+if (!enabled || (problem === t.notFound)) Astro.response.status = 404;
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Referrer-Policy", "no-referrer");
+
+const contact = settingsData ? { whatsapp_phone: settingsData.whatsapp_phone ?? null, phone: settingsData.phone ?? null } : null;
+---
+
+<BookingShell
+    title={`${t.statusTitle} - ${storeName}`}
+    settingsData={settingsData}
+    isLogin={Boolean(settingsResponse?.is_login)}
+    cartCount={settingsResponse?.cart_count ?? 0}
+    token={token}
+    noindex
+>
+    <div class="ct-bk-wrap" style="max-width: 40rem">
+        {!enabled && <BookingUnavailable />}
+        {enabled && problem && (
+            <div class="ct-bk-card ct-bk-empty" role="alert">
+                <h1 class="ct-bk-title">{t.statusTitle}</h1>
+                <p>{problem}</p>
+                <a class="ct-bk-btn" href="/book">{t.bookAnother}</a>
+            </div>
+        )}
+        {enabled && booking && <BookingStatus client:load initial={booking} contact={contact} promptWhatsApp={Astro.url.searchParams.get("wa") === "1"} />}
+    </div>
+</BookingShell>

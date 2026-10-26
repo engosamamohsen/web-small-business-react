@@ -10,6 +10,9 @@ import { DEFAULT_THEME, THEME_PREVIEW_COOKIE, THEME_PREVIEW_PARAM, isThemeKey } 
 // See src/lib/store-config.ts.
 const planContext = new AsyncLocalStorage<StorePlan>();
 (globalThis as unknown as { __ctPlanStore?: AsyncLocalStorage<StorePlan> }).__ctPlanStore = planContext;
+// Whether this store takes bookings, read by bookingEnabled() on the server (src/lib/booking/enabled.ts).
+const bookingContext = new AsyncLocalStorage<boolean>();
+(globalThis as unknown as { __ctBookingStore?: AsyncLocalStorage<boolean> }).__ctBookingStore = bookingContext;
 
 // Lockout screen shown when the tenant's subscription has expired.
 const STORE_UNAVAILABLE_PATH = "/store-unavailable";
@@ -139,6 +142,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.socialLogin = [];
     context.locals.onlinePayment = false;
     context.locals.hours = { enabled: false };
+    context.locals.booking = { enabled: false };
     context.locals.shopType = null;
     if (isGet && !isLockoutPage) {
         // Tracking test view (?ct_debug=1, the dashboard's "Test in my browser"):
@@ -156,6 +160,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 context.locals.socialLogin = settings.social_login ?? [];
                 context.locals.onlinePayment = Boolean(settings.online_payment?.enabled);
                 context.locals.hours = settings.hours?.enabled ? settings.hours : { enabled: false };
+                context.locals.booking = { enabled: Boolean(settings.booking?.enabled) };
                 context.locals.shopType = settings.data?.shop_type ?? null;
                 context.locals.storeColors = { font: settings.data?.main_font_color, background: settings.data?.main_bg };
                 if (context.cookies.get(PLAN_COOKIE)?.value !== context.locals.plan) {
@@ -174,5 +179,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
 
     // Render the page inside this store's mode, so storeConfig answers for this store only.
-    return planContext.run(context.locals.plan, () => next());
+    return planContext.run(context.locals.plan, () =>
+        bookingContext.run(Boolean(context.locals.booking?.enabled), () => next()),
+    );
 });

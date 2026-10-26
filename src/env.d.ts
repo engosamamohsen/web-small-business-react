@@ -21,6 +21,8 @@ declare namespace App {
         onlinePayment?: boolean;
         // Opening hours (setting-profile `hours`); {enabled:false} when off. See src/lib/store-hours.ts.
         hours: import("@/lib/store-hours").StoreHoursSetting;
+        // Online booking (setting-profile `booking`); {enabled:false} when off. See src/lib/booking/.
+        booking: import("@/lib/booking/types").BookingSetting;
         // Kind of store (setting-profile data.shop_type); the meal helper is for food stores only.
         shopType?: string | null;
         // The store's own colours (Classic theme), printed on <html> so the first paint already has them.

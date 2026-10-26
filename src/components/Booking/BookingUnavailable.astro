@@ -1,0 +1,11 @@
+---
+// "Booking isn't available right now" — shown by every booking page when the store doesn't
+// take bookings (setting-profile booking.enabled false, or the API answered booking_off).
+import { t } from "@/lib/booking/strings";
+---
+
+<div class="ct-bk-card ct-bk-empty" role="status">
+    <h1 class="ct-bk-title">{t.unavailableTitle}</h1>
+    <p class="ct-bk-lead">{t.unavailableBody}</p>
+    <a class="ct-bk-btn" href="/">{t.backHome}</a>
+</div>

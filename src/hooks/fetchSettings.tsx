@@ -3,6 +3,8 @@ import { getApiUrl } from "@/lib/config";
 import type { CurrentSubscriptionPlan } from "@/lib/subscription";
 import type { TrackingItem } from "@/lib/tracking/providers";
 import type { StoreHoursSetting } from "@/lib/store-hours";
+import type { BookingSetting } from "@/lib/booking/types";
+import { bookingFromSettings } from "@/lib/booking/enabled";
 
 export interface SettingsData {
   id: number;
@@ -49,6 +51,8 @@ export type SettingsResponse = {
   online_payment?: OnlinePaymentSetting;
   // Opening hours: {enabled:false} when the store has them off.
   hours?: StoreHoursSetting;
+  // Online booking (salons / services): {enabled:false} when off. See src/lib/booking/.
+  booking?: BookingSetting;
   // Top-level sibling of `data` in the setting-profile response. Drives the
   // expired-store lockout (see src/lib/subscription.ts + src/middleware.ts).
   current_subscription_plan?: CurrentSubscriptionPlan | null;
@@ -82,6 +86,7 @@ const serverSettingsCache = new Map<
     social_login: SocialLoginOption[];
     online_payment: OnlinePaymentSetting;
     hours: StoreHoursSetting;
+    booking: BookingSetting;
     timestamp: number;
   }
 >();
@@ -163,6 +168,7 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
       social_login: Array.isArray(result.social_login) ? result.social_login : [],
       online_payment: result.online_payment ?? {},
       hours: result.hours && typeof result.hours === "object" ? result.hours : { enabled: false },
+      booking: bookingFromSettings(result.booking),
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -204,6 +210,7 @@ export async function fetchSettings(
           social_login: cached.social_login,
           online_payment: cached.online_payment,
           hours: cached.hours,
+          booking: cached.booking,
           ok: true,
           status: 200,
         };
@@ -252,6 +259,7 @@ export async function fetchSettings(
             social_login: result.social_login ?? [],
             online_payment: result.online_payment ?? {},
             hours: result.hours ?? { enabled: false },
+            booking: result.booking ?? { enabled: false },
             timestamp: Date.now(),
           });
         } else {

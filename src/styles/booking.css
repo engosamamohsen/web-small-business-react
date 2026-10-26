@@ -1,0 +1,551 @@
+/*
+ * Booking pages (/services, /book, /booking/<token>), docs/talent-booking.md 5.
+ * Loaded only by those pages (src/components/Booking/BookingShell.astro), so no existing page
+ * changes. Every value reads the theme tokens of src/styles/themes.css with a neutral
+ * fallback, which is what Classic (no tokens) gets; the accent is the store's --main-color.
+ */
+
+.ct-bk {
+  --bk-surface: var(--t-surface, #ffffff);
+  --bk-ink: var(--t-ink, #1f2328);
+  --bk-muted: var(--t-muted, #5f6670);
+  --bk-line: var(--t-line, #e3e6ea);
+  --bk-accent: var(--main-color, #0d7a73);
+  --bk-accent-ink: var(--t-accent-ink, #ffffff);
+  --bk-soft: color-mix(in srgb, var(--bk-accent) 10%, var(--bk-surface));
+  --bk-radius: var(--t-radius, 12px);
+  --bk-radius-lg: var(--t-radius-lg, 16px);
+  --bk-danger: #b42318;
+  color: var(--bk-ink);
+  font-family: var(--t-font, "Cairo"), sans-serif;
+}
+
+.ct-bk-wrap {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2.5rem;
+}
+
+.ct-bk-title {
+  font: 800 1.5rem/1.3 var(--t-display, "Cairo"), sans-serif;
+  margin: 0 0 0.25rem;
+}
+.ct-bk-lead {
+  color: var(--bk-muted);
+  margin: 0 0 1.25rem;
+}
+
+.ct-bk-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Cards and sections ──────────────────────────────────────────────────────── */
+.ct-bk-card {
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-line);
+  border-radius: var(--bk-radius-lg);
+  padding: 1rem;
+}
+.ct-bk-section + .ct-bk-section {
+  margin-top: 1rem;
+}
+.ct-bk-section > legend,
+.ct-bk-h2 {
+  font: 700 1.05rem/1.4 var(--t-display, "Cairo"), sans-serif;
+  margin: 0 0 0.25rem;
+  padding: 0;
+}
+fieldset.ct-bk-section {
+  min-width: 0;
+}
+.ct-bk-hint {
+  color: var(--bk-muted);
+  font-size: 0.875rem;
+  margin: 0 0 0.75rem;
+}
+.ct-bk-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-inline-end: 0.5rem;
+  border-radius: 999px;
+  background: var(--bk-soft);
+  color: var(--bk-ink);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* ── Services list (/services) ───────────────────────────────────────────────── */
+.ct-bk-cats {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-bottom: 1rem;
+  scrollbar-width: thin;
+}
+.ct-bk-cats a {
+  flex-shrink: 0;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--bk-line);
+  border-radius: 999px;
+  background: var(--bk-surface);
+  color: var(--bk-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.ct-bk-group + .ct-bk-group {
+  margin-top: 1.5rem;
+}
+.ct-bk-group > h2 {
+  font: 700 1.15rem/1.4 var(--t-display, "Cairo"), sans-serif;
+  margin: 0 0 0.75rem;
+  scroll-margin-top: 5rem;
+}
+.ct-bk-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .ct-bk-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .ct-bk-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.ct-bk-service {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ct-bk-service h3 {
+  font: 700 1rem/1.4 var(--t-font, "Cairo"), sans-serif;
+  margin: 0;
+}
+.ct-bk-service p {
+  color: var(--bk-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+.ct-bk-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  color: var(--bk-muted);
+  font-size: 0.875rem;
+}
+.ct-bk-price {
+  color: var(--bk-ink);
+  font-weight: 800;
+}
+.ct-bk-price del {
+  color: var(--bk-muted);
+  font-weight: 500;
+  margin-inline-start: 0.35rem;
+}
+.ct-bk-service .ct-bk-btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────────── */
+.ct-bk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: var(--bk-radius);
+  background: var(--bk-accent);
+  color: var(--bk-accent-ink);
+  font: 700 1rem/1.2 var(--t-font, "Cairo"), sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+.ct-bk-btn:hover {
+  filter: brightness(0.94);
+}
+.ct-bk-btn[disabled],
+.ct-bk-btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: none;
+}
+.ct-bk-btn--ghost {
+  background: transparent;
+  color: var(--bk-ink);
+  border: 1px solid var(--bk-line);
+}
+.ct-bk-btn--danger {
+  background: transparent;
+  color: var(--bk-danger);
+  border: 1px solid currentColor;
+}
+.ct-bk-btn--wa {
+  background: #1f8f4e;
+  color: #ffffff;
+}
+.ct-bk-btn--block {
+  width: 100%;
+}
+.ct-bk :is(a, button, input, textarea, select):focus-visible,
+.ct-bk-choice:has(input:focus-visible) {
+  outline: 3px solid color-mix(in srgb, var(--bk-accent) 55%, #000);
+  outline-offset: 2px;
+}
+
+/* ── Choices: services, staff, branch, day, time (native inputs, styled labels) ── */
+.ct-bk-list {
+  display: grid;
+  gap: 0.5rem;
+}
+@media (min-width: 640px) {
+  .ct-bk-list--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.ct-bk-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--bk-line);
+  border-radius: var(--bk-radius);
+  background: var(--bk-surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.ct-bk-choice:hover {
+  border-color: color-mix(in srgb, var(--bk-accent) 50%, var(--bk-line));
+}
+.ct-bk-choice:has(input:checked) {
+  border-color: var(--bk-accent);
+  background: var(--bk-soft);
+  box-shadow: inset 0 0 0 1px var(--bk-accent);
+}
+.ct-bk-choice:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ct-bk-choice__body {
+  flex: 1;
+  min-width: 0;
+}
+.ct-bk-choice__title {
+  display: block;
+  font-weight: 700;
+}
+.ct-bk-choice__sub {
+  display: block;
+  color: var(--bk-muted);
+  font-size: 0.8125rem;
+}
+.ct-bk-tick {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--bk-line);
+  border-radius: 0.35rem;
+  display: grid;
+  place-items: center;
+  color: var(--bk-accent-ink);
+}
+.ct-bk-tick--round {
+  border-radius: 999px;
+}
+.ct-bk-choice:has(input:checked) .ct-bk-tick {
+  background: var(--bk-accent);
+  border-color: var(--bk-accent);
+}
+.ct-bk-tick svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  opacity: 0;
+}
+.ct-bk-choice:has(input:checked) .ct-bk-tick svg {
+  opacity: 1;
+}
+
+/* Date strip: a horizontal row of day cards (scrolls in reading direction) */
+.ct-bk-days {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem 0.125rem 0.5rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.ct-bk-day {
+  flex: 0 0 4.5rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.5rem 0.25rem;
+  text-align: center;
+  scroll-snap-align: start;
+}
+.ct-bk-day__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ct-bk-day__num {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.ct-bk-day__month {
+  font-size: 0.7rem;
+  color: var(--bk-muted);
+}
+.ct-bk-week {
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  writing-mode: vertical-rl;
+  font-size: 0.7rem;
+  color: var(--bk-muted);
+  border-inline-start: 1px dashed var(--bk-line);
+  padding-inline-start: 0.35rem;
+}
+
+.ct-bk-times {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: 0.5rem;
+}
+.ct-bk-time {
+  justify-content: center;
+  padding: 0.5rem;
+  font-weight: 700;
+  direction: ltr;
+}
+.ct-bk-time--hint {
+  border-style: dashed;
+  border-color: var(--bk-accent);
+}
+.ct-bk-period {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--bk-muted);
+  margin: 0.75rem 0 0.4rem;
+}
+.ct-bk-period:first-child {
+  margin-top: 0;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────────────────── */
+.ct-bk-field + .ct-bk-field {
+  margin-top: 0.85rem;
+}
+.ct-bk-field label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+.ct-bk-field :is(input, textarea, select) {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--bk-line);
+  border-radius: var(--bk-radius);
+  background: var(--bk-surface);
+  color: var(--bk-ink);
+  font: inherit;
+  font-size: 1rem;
+}
+.ct-bk-field input[type="tel"] {
+  direction: ltr;
+  text-align: right;
+}
+.ct-bk-field [aria-invalid="true"] {
+  border-color: var(--bk-danger);
+}
+.ct-bk-error {
+  color: var(--bk-danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0.3rem 0 0;
+}
+.ct-bk-alert {
+  border: 1px solid color-mix(in srgb, var(--bk-danger) 40%, transparent);
+  background: color-mix(in srgb, var(--bk-danger) 7%, var(--bk-surface));
+  color: var(--bk-danger);
+  border-radius: var(--bk-radius);
+  padding: 0.65rem 0.85rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+.ct-bk-status-line {
+  color: var(--bk-muted);
+  font-size: 0.9rem;
+  min-height: 1.4em;
+  margin: 0 0 0.5rem;
+}
+
+/* ── Wizard layout + summary (sticky bottom on phones, side column on desktop) ── */
+.ct-bk-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.ct-bk-summary {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--bk-surface);
+  border: 1px solid var(--bk-line);
+  border-radius: var(--bk-radius-lg) var(--bk-radius-lg) 0 0;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -8px 24px -16px rgba(0, 0, 0, 0.35);
+}
+.ct-bk-summary__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.ct-bk-summary__total {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.ct-bk-summary__note {
+  color: var(--bk-muted);
+  font-size: 0.75rem;
+  margin: 0.25rem 0 0.5rem;
+}
+.ct-bk-summary__list {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .ct-bk-layout {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    align-items: start;
+  }
+  .ct-bk-summary {
+    top: 6rem;
+    bottom: auto;
+    border-radius: var(--bk-radius-lg);
+    box-shadow: none;
+    padding: 1rem;
+  }
+  .ct-bk-summary__list {
+    display: block;
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0.75rem;
+    font-size: 0.875rem;
+  }
+  .ct-bk-summary__list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px dashed var(--bk-line);
+  }
+}
+
+/* ── Status page ─────────────────────────────────────────────────────────────── */
+.ct-bk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  background: var(--bk-soft);
+  color: var(--bk-ink);
+}
+.ct-bk-badge--confirmed {
+  background: #e3f4ea;
+  color: #14532d;
+}
+.ct-bk-badge--pending {
+  background: #fff4df;
+  color: #6b4500;
+}
+.ct-bk-badge--cancelled,
+.ct-bk-badge--no_show {
+  background: #fdecea;
+  color: #8a1c12;
+}
+.ct-bk-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+.ct-bk-dl dt {
+  color: var(--bk-muted);
+  font-weight: 600;
+}
+.ct-bk-dl dd {
+  margin: 0;
+  font-weight: 700;
+}
+.ct-bk-lines {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ct-bk-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--bk-line);
+}
+.ct-bk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.ct-bk-dialog {
+  border: 1px solid var(--bk-line);
+  border-radius: var(--bk-radius-lg);
+  background: var(--bk-surface);
+  color: var(--bk-ink);
+  padding: 1.25rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+.ct-bk-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+.ct-bk-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+.ct-bk-empty .ct-bk-btn {
+  margin-top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-bk * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

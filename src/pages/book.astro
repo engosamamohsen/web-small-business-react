@@ -1,0 +1,91 @@
+---
+// /book — book an appointment (docs/talent-booking.md 5, phase D4). The catalogue is loaded
+// here on the server; staff and free times are loaded by the island as the customer chooses.
+// ?service=1,2 (or repeated) pre-selects services; ?staff= ?branch= ?date= restore a choice.
+import BookingShell from "@/components/Booking/BookingShell.astro";
+import BookingUnavailable from "@/components/Booking/BookingUnavailable.astro";
+import BookingWizard from "@/components/Booking/BookingWizard";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { BookingApiError, getCatalog } from "@/lib/booking/api";
+import { isIsoDate } from "@/lib/booking/dates";
+import { t } from "@/lib/booking/strings";
+import type { BookingCatalog } from "@/lib/booking/types";
+import { SERVICES_PATH } from "@/lib/booking/seo";
+import { getSiteOrigin } from "@/lib/site-origin";
+
+export const prerender = false;
+
+const token = Astro.cookies.get("app_token")?.value;
+const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase);
+const settingsData = settingsResponse?.data ?? null;
+const storeName = settingsData?.name || "المتجر";
+
+let enabled = Boolean(Astro.locals.booking?.enabled);
+let catalog: BookingCatalog | null = null;
+let failed = false;
+if (enabled) {
+    try {
+        catalog = await getCatalog(Astro.locals.apiBase);
+    } catch (error) {
+        if (error instanceof BookingApiError && error.kind === "off") enabled = false;
+        else failed = true;
+    }
+}
+if (!enabled) Astro.response.status = 404;
+
+const query = Astro.url.searchParams;
+const toInt = (value: string | null) => {
+    const n = Number.parseInt(String(value ?? ""), 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+};
+const knownIds = new Set(catalog?.services.map((s) => s.id) ?? []);
+const initialServiceIds = [
+    ...new Set(
+        query
+            .getAll("service")
+            .flatMap((v) => v.split(","))
+            .map(toInt)
+            .filter((id): id is number => id !== null && knownIds.has(id)),
+    ),
+].slice(0, 10);
+const initialBranch = toInt(query.get("branch"));
+const initialDate = query.get("date");
+---
+
+<BookingShell
+    title={`${t.bookTitle} - ${storeName}`}
+    description={`${t.servicesIntro} ${storeName}`}
+    settingsData={settingsData}
+    isLogin={Boolean(settingsResponse?.is_login)}
+    cartCount={settingsResponse?.cart_count ?? 0}
+    token={token}
+    noindex
+    canonical={`${getSiteOrigin(Astro.request, Astro.url)}${SERVICES_PATH}`}
+>
+    <div class="ct-bk-wrap">
+        {!enabled && <BookingUnavailable />}
+        {enabled && failed && (
+            <div class="ct-bk-card ct-bk-empty" role="alert">
+                <p>{t.loadFailed}</p>
+                <a class="ct-bk-btn" href={Astro.url.pathname + Astro.url.search}>{t.retry}</a>
+            </div>
+        )}
+        {enabled && catalog && catalog.services.length === 0 && (
+            <div class="ct-bk-card ct-bk-empty">
+                <h1 class="ct-bk-title">{t.bookTitle}</h1>
+                <p>{t.servicesEmpty}</p>
+            </div>
+        )}
+        {enabled && catalog && catalog.services.length > 0 && (
+            <BookingWizard
+                client:load
+                catalog={catalog}
+                initialServiceIds={initialServiceIds}
+                initialStaffId={toInt(query.get("staff"))}
+                initialBranchId={initialBranch && catalog.settings.branches.some((b) => b.id === initialBranch) ? initialBranch : null}
+                initialDate={isIsoDate(initialDate) ? initialDate : null}
+                now={new Date().toISOString()}
+            />
+        )}
+    </div>
+</BookingShell>

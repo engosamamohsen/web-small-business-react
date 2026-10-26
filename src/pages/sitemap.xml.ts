@@ -3,6 +3,8 @@ import { fetchHook } from "@/hooks/fetch-hook";
 import { buildProductPath } from "@/lib/product-url";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { slugify } from "@/utils/utils";
+import { getCatalog } from "@/lib/booking/api";
+import { SERVICES_PATH, servicePath } from "@/lib/booking/seo";
 
 // Rendered on demand: the sitemap is per-tenant. Each storefront
 // (roka.cashierthru.com, asly.cashierthru.com, …) resolves its own admin API
@@ -100,9 +102,11 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
 
     // Fail soft: a flaky products/categories call should still yield a valid
     // sitemap (at minimum the homepage) rather than a 500.
-    const [products, categories] = await Promise.all([
+    const [products, categories, bookingCatalog] = await Promise.all([
         fetchAllProducts(apiBase).catch(() => []),
         fetchCategories(apiBase).catch(() => []),
+        // Booking stores (salons / services): the services list and each service page.
+        locals.booking?.enabled ? getCatalog(apiBase).catch(() => null) : Promise.resolve(null),
     ]);
 
     const seen = new Set<string>();
@@ -129,6 +133,13 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
     for (const product of products) {
         if (product?.id == null) continue;
         add({ path: buildProductPath(product), changefreq: "daily", priority: "0.8" });
+    }
+
+    if (bookingCatalog) {
+        add({ path: SERVICES_PATH, changefreq: "weekly", priority: "0.7" });
+        for (const service of bookingCatalog.services) {
+            if (service?.slug) add({ path: servicePath(service.slug), changefreq: "weekly", priority: "0.8" });
+        }
     }
 
     const body =

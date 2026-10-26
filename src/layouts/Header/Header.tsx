@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, ClipboardList } from "lucide-react";
+import { ShoppingCart, ClipboardList, CalendarDays } from "lucide-react";
 import Link from "@/components/common/Link";
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { useRouter } from "@/lib/navigation";
@@ -14,6 +14,8 @@ import CircleLogo from "@/global/CircleLogo";
 import { storeConfig } from "@/lib/store-config";
 import { localCartCount, LOCAL_CART_EVENT } from "@/lib/cart/local-cart";
 import { loadPrimeTheme } from "@/styles/primereact-theme-lazy";
+import { bookingEnabled } from "@/lib/booking/enabled";
+import { t as bookingText } from "@/lib/booking/strings";
 
 // Lazy-loaded: AuthDialog pulls in the Firebase SDK (~287 KB). Loading it only
 // when the user actually opens the login dialog keeps it out of every page's
@@ -69,6 +71,8 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
   }, []);
 
   const cartCount = storeConfig.usesLocalCart ? localCount : contextCartCount;
+  // Online booking (salons / services): same answer on the server and in the browser.
+  const showBooking = bookingEnabled();
 
   const handleLogout = useCallback(() => {
     Cookies.remove("app_token");
@@ -122,6 +126,17 @@ export default function Header({ initialIsLoggedIn = false, settingsData }: Head
 
             {/* Right side */}
             <div className="flex items-center gap-3">
+              {showBooking && (
+                <Link
+                  href="/book"
+                  className="ct-header__icon ct-header__book relative flex h-9 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-semibold text-[var(--second-font-color)] shadow-sm transition hover:shadow-md"
+                  aria-label={bookingText.navBook}
+                >
+                  <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="sm:hidden" aria-hidden="true">{bookingText.navBookShort}</span>
+                  <span className="hidden sm:inline" aria-hidden="true">{bookingText.navBook}</span>
+                </Link>
+              )}
               {isLoggedIn && (
                 <Link
                   href="/user/orders"

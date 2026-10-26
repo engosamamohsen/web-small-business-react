@@ -81,6 +81,8 @@ const storeBoot = JSON.stringify({
     onlinePayment: Boolean(Astro.locals.onlinePayment),
     // Opening hours: the cart / checkout read them to hold the order buttons while closed.
     hours: storeHours,
+    // Online booking: the header shows "احجز موعد" when on (src/lib/booking/enabled.ts).
+    booking: { enabled: Boolean(Astro.locals.booking?.enabled) },
 }).replace(/</g, "\\u003c");
 
 // Classic theme: the store's colours on <html> from the first paint (ColorHandler sets the same

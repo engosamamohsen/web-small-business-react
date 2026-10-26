@@ -1,0 +1,128 @@
+---
+// /services/<slug> — one service's own page, for search engines and shared links
+// (docs/talent-booking.md 5). Server-rendered, no island. A renamed service (or an id-only
+// link) 301s to its current slug, like the product pages.
+import BookingShell from "@/components/Booking/BookingShell.astro";
+import BookingUnavailable from "@/components/Booking/BookingUnavailable.astro";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { BookingApiError, getService } from "@/lib/booking/api";
+import {
+    SERVICES_PATH,
+    buildServiceJsonLd,
+    canonicalServiceRedirect,
+    encodedServicePath,
+    serviceIdFromSlug,
+    serviceMetaDescription,
+    serviceTitle,
+} from "@/lib/booking/seo";
+import { t } from "@/lib/booking/strings";
+import { effectivePrice, formatDuration, formatMoney } from "@/lib/booking/totals";
+import type { BookingServiceDetail } from "@/lib/booking/types";
+import { getSiteOrigin } from "@/lib/site-origin";
+
+export const prerender = false;
+
+const slug = Astro.params.slug ?? "";
+const token = Astro.cookies.get("app_token")?.value;
+const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase);
+const settingsData = settingsResponse?.data ?? null;
+const storeName = settingsData?.name || "المتجر";
+
+let enabled = Boolean(Astro.locals.booking?.enabled);
+let service: BookingServiceDetail | null = null;
+let failed = false;
+if (enabled && serviceIdFromSlug(slug) !== null) {
+    try {
+        service = await getService(Astro.locals.apiBase, slug);
+    } catch (error) {
+        if (error instanceof BookingApiError && error.kind === "off") enabled = false;
+        else if (!(error instanceof BookingApiError && (error.kind === "not_found" || error.kind === "invalid"))) failed = true;
+    }
+}
+
+if (service?.slug) {
+    const redirect = canonicalServiceRedirect(Astro.url.pathname, service.slug, Astro.url.search);
+    if (redirect) return Astro.redirect(redirect, 301);
+}
+if (!service && !failed) Astro.response.status = 404;
+if (failed) Astro.response.status = 503;
+
+const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
+const canonical = service ? `${siteOrigin}${encodedServicePath(service.slug)}` : undefined;
+const price = service ? effectivePrice(service) : 0;
+const jsonLd = service ? buildServiceJsonLd(service, settingsData, siteOrigin) : undefined;
+---
+
+<BookingShell
+    title={service ? serviceTitle(service.name, settingsData?.name) : `${t.servicesTitle} - ${storeName}`}
+    description={service ? serviceMetaDescription(service) : undefined}
+    keywords={service ? [service.name, service.category, storeName].filter((k): k is string => Boolean(k)) : undefined}
+    settingsData={settingsData}
+    isLogin={Boolean(settingsResponse?.is_login)}
+    cartCount={settingsResponse?.cart_count ?? 0}
+    token={token}
+    canonical={canonical}
+    jsonLd={jsonLd}
+    noindex={!service}
+>
+    <div class="ct-bk-wrap" style="max-width: 44rem">
+        {!enabled && <BookingUnavailable />}
+        {enabled && failed && (
+            <div class="ct-bk-card ct-bk-empty" role="alert">
+                <p>{t.loadFailed}</p>
+                <a class="ct-bk-btn" href={Astro.url.pathname}>{t.retry}</a>
+            </div>
+        )}
+        {enabled && !failed && !service && (
+            <div class="ct-bk-card ct-bk-empty" role="status">
+                <h1 class="ct-bk-title">{t.servicesTitle}</h1>
+                <p>{t.serviceNotFound}</p>
+                <a class="ct-bk-btn" href={SERVICES_PATH}>{t.backToServices}</a>
+            </div>
+        )}
+        {service && (
+            <article class="ct-bk-card">
+                <nav class="ct-bk-hint" aria-label="مسار الصفحة">
+                    <a href="/" class="underline">{storeName}</a> ›
+                    <a href={SERVICES_PATH} class="underline">{t.servicesTitle}</a>
+                    {service.category && <> › <span>{service.category}</span></>}
+                </nav>
+                <h1 class="ct-bk-title">{service.name}</h1>
+                {service.at_home && <p class="mb-3"><span class="ct-bk-badge">{t.homeBadge}</span></p>}
+                {service.description && <p class="ct-bk-lead" style="white-space: pre-line">{service.description}</p>}
+                <dl class="ct-bk-dl">
+                    <dt>{t.duration}</dt>
+                    <dd>{formatDuration(service.duration_minutes)}</dd>
+                    <dt>{t.price}</dt>
+                    <dd class="ct-bk-price">
+                        {formatMoney(price)}
+                        {price < service.price && (
+                            <del>
+                                <span class="ct-bk-sr">{t.priceWas}: </span>
+                                {formatMoney(service.price)}
+                            </del>
+                        )}
+                    </dd>
+                </dl>
+                <a class="ct-bk-btn ct-bk-btn--block" href={`/book?service=${service.id}`}>{t.bookNow}</a>
+                {service.staff.length > 0 && (
+                    <section class="mt-6" aria-labelledby="bk-staff-title">
+                        <h2 class="ct-bk-h2" id="bk-staff-title">{t.whoDoesIt}</h2>
+                        <ul class="ct-bk-lines">
+                            {service.staff.map((s) => (
+                                <li>
+                                    <span>
+                                        <strong>{s.name}</strong>
+                                        {s.bio && <span class="ct-bk-choice__sub">{s.bio}</span>}
+                                    </span>
+                                    <a class="underline" href={`/book?service=${service!.id}&staff=${s.id}`} aria-label={`${t.book} ${s.name}`}>{t.book}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+                <p class="mt-4"><a href={SERVICES_PATH} class="underline">{t.backToServices}</a></p>
+            </article>
+        )}
+    </div>
+</BookingShell>
