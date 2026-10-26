@@ -35,6 +35,8 @@ import SalonHome from "@/components/Booking/SalonHome.astro";
 import { BookingApiError, getCatalog } from "@/lib/booking/api";
 import type { BookingCatalog } from "@/lib/booking/types";
 import { buildSalonBusinessJsonLd, salonHomeMeta, servicesFirstHome, storeHasProducts } from "@/lib/booking/salon-home";
+import SalonThemeHome from "@/components/Themed/Salon/SalonThemeHome.astro";
+import { parseBranches, parseGallery } from "@/lib/showcase";
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
@@ -60,18 +62,23 @@ const apiBase = Astro.locals.apiBase;
 // A beauty / service store that takes bookings opens with its services (src/lib/booking/salon-home.ts).
 // Its type and booking switch come from the middleware's settings, so the services load with the rest.
 const salonCandidate = servicesFirstHome(Astro.locals.shopType, Astro.locals.booking?.enabled);
+// The Salon theme draws its own home page (gallery, branches, and the services when booking is on).
+const salonTheme = resolveTheme(Astro.locals.theme).layout.hero === "salon";
+const wantsCatalog = salonCandidate || (salonTheme && Astro.locals.booking?.enabled === true);
 
 // ============================================
 // PARALLEL API CALLS - settings + banner + categories + products in one round trip
 // Using allSettled to prevent one failure from breaking the entire page
 // ============================================
-const [settingsResult, bannerResult, categoriesResult, productsResult, catalogResult] =
+const [settingsResult, bannerResult, categoriesResult, productsResult, catalogResult, galleryResult, branchesResult] =
     await Promise.allSettled([
         fetchSettings(token, false, apiBase),
         fetchHook({ url: "v1/banner", init: {}, token, baseUrl: apiBase }),
         fetchHook({ url: "v1/categories", init: {}, token, baseUrl: apiBase }),
         fetchHook({ url: productsUrl, init: {}, baseUrl: apiBase }),
-        salonCandidate ? getCatalog(apiBase) : Promise.resolve(null),
+        wantsCatalog ? getCatalog(apiBase) : Promise.resolve(null),
+        salonTheme ? fetchHook({ url: "v1/gallery", init: {}, baseUrl: apiBase }) : Promise.resolve(null),
+        salonTheme ? fetchHook({ url: "v1/store-branches", init: {}, baseUrl: apiBase }) : Promise.resolve(null),
     ]);
 
 // Extract settings data (handle rejected promises)
@@ -144,10 +151,15 @@ if (productsResponse?.ok && productsResponse?.data?.data) {
 const salonCatalog: BookingCatalog | null =
     catalogResult.status === "fulfilled" ? catalogResult.value : null;
 const salonHome =
-    salonCandidate &&
+    wantsCatalog &&
     !(catalogResult.status === "rejected" && catalogResult.reason instanceof BookingApiError && catalogResult.reason.kind === "off");
 // The cart, product search and product sections stay on a salon home only when it sells products.
-const showShop = !salonHome || storeHasProducts(allCategories, productsData);
+const storeSells = storeHasProducts(allCategories, productsData);
+const showShop = !salonHome || storeSells;
+// Salon theme: its gallery and branches (empty when the API is missing or fails).
+const okBody = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" && r.value?.ok ? r.value.data : null);
+const salonGallery = salonTheme ? parseGallery(okBody(galleryResult)) : [];
+const salonBranches = salonTheme ? parseBranches(okBody(branchesResult)) : [];
 
 // Website theme (dashboard → Website settings): which hero, category and product
 // layout this page uses. Classic keeps the original components.
@@ -158,16 +170,22 @@ const isClassic = theme.key === "classic";
 const foodStore = isFoodStore(settingsData?.shop_type);
 const wording = productsWording(settingsData?.shop_type, layout.productsTitle, layout.introCta);
 // A salon home draws its own intro (SalonHome), so there the themed hero only shows banners.
-const showThemedHero = !isClassic && (showBanner ? layout.hero !== "overlay" : layout.intro && !salonHome);
+const showThemedHero = !isClassic && !salonTheme && (showBanner ? layout.hero !== "overlay" : layout.intro && !salonHome);
 
 // The first banner is the page's largest image: let the browser start it with the HTML.
 // Same srcset/sizes as the hero <img> (100vw, up to 1600 px), so it is fetched once.
 const firstBanner: string | undefined = showBanner ? bannerData[0]?.image : undefined;
 const bannerSrcSet = storeSrcSet(firstBanner, 1600);
+// The Salon theme shows it in an arch about 460 px wide (SalonThemeHome), not across the page.
+const salonHeroSrcSet = salonTheme ? storeSrcSet(firstBanner, 520) : undefined;
 const preloadImage = firstBanner
-    ? bannerSrcSet
-        ? { href: resizedUrl(firstBanner, 640), srcset: bannerSrcSet, sizes: "100vw" }
-        : { href: firstBanner }
+    ? salonTheme
+        ? salonHeroSrcSet
+            ? { href: resizedUrl(firstBanner, 520), srcset: salonHeroSrcSet, sizes: "(min-width: 900px) 460px, 78vw" }
+            : { href: firstBanner }
+        : bannerSrcSet
+          ? { href: resizedUrl(firstBanner, 640), srcset: bannerSrcSet, sizes: "100vw" }
+          : { href: firstBanner }
     : undefined;
 
 // SEO metadata — all sourced from the tenant's settings API (per request).
@@ -239,6 +257,52 @@ const homeJsonLd = [
     <ToastContainer position="top-right" rtl={true} client:idle />
 
     <main class="min-h-screen">
+        {
+            salonTheme && (
+                <SalonThemeHome
+                    settings={settingsData}
+                    storeName={storeName}
+                    banners={bannerData}
+                    gallery={salonGallery}
+                    branches={salonBranches}
+                    booking={Boolean(salonHome)}
+                    catalog={salonCatalog}
+                    hasProducts={storeSells}
+                >
+                    {showShop && showCategories && layout.categories !== "swiper" && (
+                        <CategoryNav
+                            categories={categoriesData}
+                            variant={layout.categories}
+                            title={layout.categoriesTitle}
+                            initialCategory={categoryParam ?? null}
+                            client:visible
+                        />
+                    )}
+                    {showShop && storeConfig.isPremium && (
+                        <ProductFilters
+                            filters={filtersFromParams(searchParams)}
+                            priceRange={productsPriceRange}
+                            total={productsPagination?.total ?? null}
+                            client:load
+                        />
+                    )}
+                    {showShop && (
+                        <section id="products">
+                            <ThemedProducts
+                                products={showProducts
+                                    ? { data: productsData, pagination: productsPagination }
+                                    : { data: [] }}
+                                defaultImage={settingsData?.product_default_image}
+                                layout={layout.products}
+                                title={wording.title}
+                                client:visible
+                            />
+                        </section>
+                    )}
+                </SalonThemeHome>
+            )
+        }
+        {!salonTheme && <Fragment>
         {showBanner && !showThemedHero && <Hero bannerData={bannerData} client:load />}
         {
             showThemedHero && (
@@ -328,6 +392,7 @@ const homeJsonLd = [
                 client:visible
             />
         </section>}
+        </Fragment>}
     </main>
 
     <WhatsAppButton phone={resolveWhatsappNumber(settingsData)} client:idle />

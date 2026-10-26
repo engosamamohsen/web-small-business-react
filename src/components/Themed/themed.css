@@ -648,3 +648,17 @@ html[data-theme="fashion"] h3.ct-card__name { font-family: var(--t-font); font-w
   .ct-hero__text > *,
   .ct-hero__media img { animation: none !important; }
 }
+
+/* ── Salon: soft rounded cards, portrait photos, rosewood prices ─────────────── */
+[data-theme="salon"] .ct-products__title { font-size: clamp(2rem, 6.5vw, 3rem); font-weight: 600; }
+[data-theme="salon"] .ct-card {
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: var(--t-surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-ink) 9%, transparent);
+}
+[data-theme="salon"] .ct-card__img { aspect-ratio: 4 / 5; }
+[data-theme="salon"] .ct-card__name { font-family: var(--t-display); font-size: 1.25rem; font-weight: 600; }
+[data-theme="salon"] .ct-price__now { color: var(--main-color); font-weight: 600; }
+[data-theme="salon"] .ct-badge { background: var(--t-highlight); color: var(--t-ink); border-radius: 999px; }
+[data-theme="salon"] .ct-add > button { border-radius: 999px !important; }

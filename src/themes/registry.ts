@@ -13,19 +13,23 @@
 // Adding a store type later (e.g. real estate): add its themes here and in the backend,
 // plus any new layout variants its pages need. Existing themes are unaffected.
 
-export const THEME_KEYS = ["classic", "studio", "souq", "fashion", "furniture", "bistro", "street"] as const;
+export const THEME_KEYS = ["classic", "salon", "studio", "souq", "fashion", "furniture", "bistro", "street"] as const;
 export type ThemeKey = (typeof THEME_KEYS)[number];
 
 export const DEFAULT_THEME: ThemeKey = "classic";
 
 export interface ThemeLayout {
-  /** How banners are drawn: text over the photo, photo beside a text panel, or a loud poster. */
-  hero: "overlay" | "split" | "poster";
+  /**
+   * How banners are drawn: text over the photo, photo beside a text panel, or a loud poster.
+   * "salon": the theme draws its whole home page itself (src/components/Themed/Salon/SalonThemeHome.astro):
+   * hero, services, gallery, about, branches and contact, then the products if the store sells any.
+   */
+  hero: "overlay" | "split" | "poster" | "salon";
   /** Category navigation: the original swiper, photo tiles, round photos, or a sticky chip bar. */
   categories: "swiper" | "tiles" | "rounds" | "chips";
   /** Products as a card grid or as menu rows. */
   products: "grid" | "menu";
-  card: "classic" | "studio" | "souq" | "fashion" | "furniture" | "street" | "menu";
+  card: "classic" | "studio" | "souq" | "fashion" | "furniture" | "street" | "salon" | "menu";
   /** Heading above the categories (null: the chip bar needs none). */
   categoriesTitle: string | null;
   productsTitle: string;
@@ -67,6 +71,22 @@ export const THEMES: Record<ThemeKey, ThemeDefinition> = {
       productsTitle: "أحدث المنتجات",
       intro: false,
       introCta: "تسوّق الآن",
+    },
+  },
+  salon: {
+    key: "salon",
+    name: "صالون",
+    fonts: "family=Markazi+Text:wght@500;600;700&family=Alexandria:wght@300;400;500;600",
+    motion: "rise",
+    layout: {
+      hero: "salon",
+      categories: "chips",
+      products: "grid",
+      card: "salon",
+      categoriesTitle: null,
+      productsTitle: "منتجاتنا",
+      intro: true,
+      introCta: "احجز موعد",
     },
   },
   studio: {

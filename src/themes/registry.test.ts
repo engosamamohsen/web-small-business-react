@@ -4,7 +4,7 @@ import { DEFAULT_THEME, THEMES, THEME_KEYS, fontsHref, isThemeKey, resolveTheme 
 describe("storefront themes", () => {
   it("matches the dashboard's theme keys", () => {
     // Keep in sync with App\Support\Storefront\StorefrontThemes in the Laravel repo.
-    expect([...THEME_KEYS]).toEqual(["classic", "studio", "souq", "fashion", "furniture", "bistro", "street"]);
+    expect([...THEME_KEYS]).toEqual(["classic", "salon", "studio", "souq", "fashion", "furniture", "bistro", "street"]);
     for (const key of THEME_KEYS) expect(THEMES[key].key).toBe(key);
   });
 
@@ -29,6 +29,13 @@ describe("storefront themes", () => {
   it("loads each theme's fonts from Google Fonts", () => {
     expect(fontsHref(THEMES.souq)).toBe(
       "https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap",
+    );
+  });
+
+  it("salon draws its own home page with an elegant serif and a sans body", () => {
+    expect(THEMES.salon.layout).toMatchObject({ hero: "salon", products: "grid", card: "salon", intro: true });
+    expect(fontsHref(THEMES.salon)).toBe(
+      "https://fonts.googleapis.com/css2?family=Markazi+Text:wght@500;600;700&family=Alexandria:wght@300;400;500;600&display=swap",
     );
   });
 

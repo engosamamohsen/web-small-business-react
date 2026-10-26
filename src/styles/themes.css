@@ -17,6 +17,28 @@
  *   --t-radius / --t-radius-lg
  */
 
+/* ── Salon: editorial beauty salon / barber, ivory, espresso and rosewood ────── */
+[data-theme="salon"] {
+  --main-color: #8e3b46;
+  --second-color: #8e3b46;
+  --main-background: #2b1e1c;
+  --t-bg: #f6f0ea;
+  --t-surface: #fffcf8;
+  --t-ink: #2b1e1c;
+  --t-muted: #6f605a;
+  --t-line: #e7dcd2;
+  --t-accent-ink: #ffffff;
+  --t-highlight: #c9a27e;
+  --t-header-bg: #f6f0ea;
+  --t-header-ink: #2b1e1c;
+  --t-footer-bg: #2b1e1c;
+  --t-footer-ink: #eadfd5;
+  --t-font: "Alexandria", "Cairo", sans-serif;
+  --t-display: "Markazi Text", "Amiri", serif;
+  --t-radius: 999px;
+  --t-radius-lg: 20px;
+}
+
 /* ── Studio: calm catalogue, product photos lead ─────────────────────────────── */
 [data-theme="studio"] {
   --main-color: #2f5bea;
@@ -234,6 +256,41 @@
 [data-theme="street"] .ct-header__name {
   font-size: 1.5rem;
   letter-spacing: 0.01em;
+}
+
+/* Salon: a soft ivory header with a hairline, serif name, round icons; paper grain on the page */
+[data-theme="salon"] .ct-header {
+  background: color-mix(in srgb, var(--t-header-bg) 88%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--t-ink) 10%, transparent);
+  box-shadow: none;
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+}
+[data-theme="salon"] .ct-header__icon {
+  border-radius: 999px;
+  box-shadow: none;
+  background: var(--t-surface);
+  border: 1px solid color-mix(in srgb, var(--t-ink) 10%, transparent);
+}
+[data-theme="salon"] .ct-header__name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+[data-theme="salon"] body {
+  -webkit-font-smoothing: antialiased;
+}
+[data-theme="salon"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-theme="salon"] .ct-footer {
+  margin-top: 0;
 }
 
 /* Visible keyboard focus in every theme */
