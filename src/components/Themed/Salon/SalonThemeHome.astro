@@ -91,7 +91,7 @@ const aboutPhotos = gallery.filter((g) => g.url !== heroPhoto && g.url !== heroA
 // Left out when the hero already shows all of it (a one-sentence about).
 const showAbout = Boolean(about) && about !== lead;
 
-const eyebrow = settings?.shop_type === "beauty" ? "صالون · عناية وجمال" : settings?.shop_type === "service" ? "خدمات بالحجز" : "أهلاً بيك";
+const eyebrow = settings?.shop_type === "beauty" || settings?.shop_type === "salon" ? "صالون · عناية وجمال" : settings?.shop_type === "service" ? "خدمات بالحجز" : "أهلاً بيك";
 
 // Buttons: booking first; without booking, the products, WhatsApp or the gallery.
 const primary = booking

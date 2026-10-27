@@ -9,8 +9,8 @@ import { t } from "./strings";
 import { effectivePrice } from "./totals";
 import type { BookingService } from "./types";
 
-/** Store types whose home page can open with services (Tenant::SHOP_TYPE_BEAUTY / SERVICE). */
-export const SERVICE_SHOP_TYPES = ["beauty", "service"] as const;
+/** Store types whose home page can open with services (Tenant::SHOP_TYPE_SALON / BEAUTY / SERVICE). */
+export const SERVICE_SHOP_TYPES = ["salon", "beauty", "service"] as const;
 
 export function isServiceShopType(shopType: string | null | undefined): boolean {
   return (SERVICE_SHOP_TYPES as readonly string[]).includes(shopType ?? "");

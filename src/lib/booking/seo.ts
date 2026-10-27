@@ -70,9 +70,9 @@ export function serviceTitle(serviceName: string, storeName: string | null | und
   return storeName ? `${serviceName} | ${storeName}` : serviceName;
 }
 
-/** Schema.org type of the store: a beauty salon for beauty stores, else a local business. */
+/** Schema.org type of the store: a beauty salon for salon and beauty stores, else a local business. */
 export function providerType(shopType: string | null | undefined): "BeautySalon" | "LocalBusiness" {
-  return shopType === "beauty" ? "BeautySalon" : "LocalBusiness";
+  return shopType === "salon" || shopType === "beauty" ? "BeautySalon" : "LocalBusiness";
 }
 
 /** The store as the service's provider. */

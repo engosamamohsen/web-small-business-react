@@ -22,6 +22,7 @@ const service = (id: number, name: string, extra: Partial<BookingService> = {}):
 describe("which stores open with services", () => {
   it("is beauty and service stores with booking on only", () => {
     expect(isServiceShopType("beauty")).toBe(true);
+    expect(isServiceShopType("salon")).toBe(true);
     expect(isServiceShopType("service")).toBe(true);
     expect(isServiceShopType("restaurant")).toBe(false);
     expect(isServiceShopType("fashion")).toBe(false);

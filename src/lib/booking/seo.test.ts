@@ -77,6 +77,7 @@ describe("meta", () => {
 
   it("calls beauty stores a BeautySalon", () => {
     expect(providerType("beauty")).toBe("BeautySalon");
+    expect(providerType("salon")).toBe("BeautySalon");
     expect(providerType("service")).toBe("LocalBusiness");
     expect(providerType(null)).toBe("LocalBusiness");
   });
