@@ -1,7 +1,8 @@
 // Kind of store (dashboard → registration / settings: setting-profile `data.shop_type`).
 // Same rule as the dashboard's Tenant::usesRestaurantTools(): food and drink stores (keep this
 // list equal to Tenant::FOOD_SHOP_TYPES) and stores with no type are food stores; every other
-// type (ecommerce, fashion, electronics, home, beauty, grocery, …, service) is an online shop.
+// type (ecommerce, fashion, electronics, home, salon, grocery, …, service) is an online shop.
+// ("beauty" was merged into "salon" in Laravel; old values may still arrive and are shops too.)
 
 export const FOOD_SHOP_TYPES = ["restaurant", "cafe", "bakery"] as const;
 

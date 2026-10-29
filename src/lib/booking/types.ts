@@ -18,6 +18,17 @@ export interface BookingService {
   slug?: string | null;
   /** Can be done at the customer's home (home visits). */
   at_home?: boolean;
+  /** Only when settings.staff_choice is on: ids of the staff (catalog.staff) who do this service. */
+  staff_ids?: number[];
+}
+
+/** catalog.staff (only when settings.staff_choice is on): who customers may choose. Never a phone. */
+export interface BookingStaffMember {
+  id: number;
+  name: string;
+  bio: string | null;
+  /** null: works at every branch. */
+  branch_id: number | null;
 }
 
 export type BookingLocation = "salon" | "home";
@@ -61,6 +72,8 @@ export interface BookingPublicSettings {
   min_notice_minutes: number;
   cancel_until_minutes: number;
   auto_confirm: boolean;
+  /** The store lets customers choose who serves them (off by default); then catalog.staff is sent. */
+  staff_choice?: boolean;
   branches: BookingBranch[];
   home?: HomeVisitSettings;
 }
@@ -69,6 +82,8 @@ export interface BookingCatalog {
   categories: BookingCategory[];
   services: BookingService[];
   settings: BookingPublicSettings;
+  /** Only when settings.staff_choice is on. */
+  staff?: BookingStaffMember[];
 }
 
 export interface SlotsResult {
@@ -93,6 +108,8 @@ export interface AppointmentView {
   location?: BookingLocation | string;
   address?: string | null;
   home_fee?: number;
+  /** Who the customer chose (null when they left it to the store, or staff choice is off). */
+  staff_name?: string | null;
 }
 
 export interface BookingRequest {
@@ -107,6 +124,8 @@ export interface BookingRequest {
   /** Home visits only: one of settings.home.areas, and the address. */
   city_id?: number | null;
   address?: string;
+  /** The staff member the customer chose (staff choice on); left out for "anyone available". */
+  staff_id?: number | null;
   /** Honeypot: always empty from a person. */
   website: string;
 }

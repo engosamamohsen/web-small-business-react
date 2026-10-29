@@ -98,11 +98,10 @@ describe("requests", () => {
     expect(error.nextFree).toEqual(["12:00"]);
   });
 
-  it("never sends staff_id: the store assigns the specialist", async () => {
+  it("sends staff_id only when a staff member was chosen", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ status: true, data: { token: "c".repeat(32) } }), { status: 201 }));
     vi.stubGlobal("fetch", fetchMock);
-    // Even if an old caller slips one in, it is dropped.
-    const request = {
+    const base = {
       service_ids: [1],
       branch_id: 2,
       date: "2026-11-02",
@@ -110,13 +109,28 @@ describe("requests", () => {
       customer_name: "Mona",
       customer_phone: "01012345678",
       website: "",
-      staff_id: 93,
-    } as Parameters<typeof createBooking>[1];
-    await createBooking("http://x/api/", request);
+    };
+    await createBooking("http://x/api/", { ...base, staff_id: 93 });
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body as string);
-    expect(sent).not.toHaveProperty("staff_id");
-    expect(sent).toMatchObject({ service_ids: [1], branch_id: 2, time: "11:00" });
-    expect(JSON.parse(bookingPayload(request))).not.toHaveProperty("staff_id");
+    expect(sent).toMatchObject({ service_ids: [1], branch_id: 2, time: "11:00", staff_id: 93 });
+    // "Anyone available" and junk leave it out (the store assigns someone).
+    for (const staff_id of [null, undefined, 0, -4, 2.5, Number.NaN, "93"]) {
+      const request = { ...base, staff_id } as unknown as Parameters<typeof createBooking>[1];
+      expect(JSON.parse(bookingPayload(request))).not.toHaveProperty("staff_id");
+    }
+    expect(JSON.parse(bookingPayload(base))).not.toHaveProperty("staff_id");
+  });
+
+  it("asks for the chosen staff member's free times only when one is chosen", async () => {
+    const fetchMock = vi.fn().mockImplementation(
+      async () => new Response(JSON.stringify({ status: true, data: { date: "2026-11-02", times: [] } }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await getSlots("http://x/api/", { serviceIds: [1], date: "2026-11-02", branchId: 3, staffId: 7 });
+    await getSlots("http://x/api/", { serviceIds: [1], date: "2026-11-02", staffId: null });
+    expect(new URL(fetchMock.mock.calls[0][0]).searchParams.get("staff_id")).toBe("7");
+    expect(new URL(fetchMock.mock.calls[0][0]).searchParams.get("branch_id")).toBe("3");
+    expect(new URL(fetchMock.mock.calls[1][0]).searchParams.has("staff_id")).toBe(false);
   });
 
   it("turns a failed fetch into a network error", async () => {

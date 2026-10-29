@@ -1,5 +1,6 @@
 // /booking/<token> — the customer's booking: status, time (Cairo), services, total,
 // cancel (with a confirm dialog) while the store allows it, and WhatsApp to the store.
+// "مع: <name>" when the customer chose who serves them (staff choice on; staff_name from the API).
 
 import { useEffect, useRef, useState } from "react";
 import { getApiUrl } from "@/lib/config";
@@ -102,6 +103,12 @@ export default function BookingStatus({
           {isHome ? t.homeVisit : t.atSalon}
           {isHome && booking.address && <span className="ct-bk-choice__sub" style={{ whiteSpace: "pre-line" }}>{booking.address}</span>}
         </dd>
+        {booking.staff_name && (
+          <>
+            <dt>{t.staffWith}</dt>
+            <dd>{booking.staff_name}</dd>
+          </>
+        )}
         {booking.customer_name && (
           <>
             <dt>{t.customer}</dt>

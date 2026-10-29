@@ -1,7 +1,11 @@
 // /book — one page, top to bottom: services → where (salon / home, only when offered) →
-// branch (only with several) → day → time → name and phone → confirm. Customers never pick a
-// staff member: the store assigns one. Free times come from the booking API and are fetched
-// again whenever a choice above them changes. Totals are display only; the server decides.
+// branch (only with several) → who serves you (only when the store allows it) → day → time →
+// name and phone → confirm. By default customers never pick a staff member: the store assigns
+// one. When the store turns on "customers choose who serves them" (catalog settings.staff_choice),
+// a step offers "anyone available" (the default, no staff_id) and then whoever does every chosen
+// service at the chosen branch (src/lib/booking/staff.ts); a choice that stops qualifying goes
+// back to "anyone". Free times come from the booking API (for the chosen person, if any) and are
+// fetched again whenever a choice above them changes. Totals are display only; the server decides.
 // Styles: src/styles/booking.css. Strings: src/lib/booking/strings.ts.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
@@ -11,6 +15,7 @@ import { buildDateStrip, formatAppointmentWhen, formatTime12, splitByPeriod, typ
 import { saveMyBooking, upcomingMyBookings, type SavedBooking } from "@/lib/booking/my-bookings";
 import { homeAreas, homeChoiceOffered, homeFee, locationErrors, locationPayload, MAX_ADDRESS_LENGTH } from "@/lib/booking/home";
 import { isLikelyPhone, normalizePhone } from "@/lib/booking/phone";
+import { eligibleStaff, keepChosenStaff, staffChoiceOn, staffInitials } from "@/lib/booking/staff";
 import { t } from "@/lib/booking/strings";
 import { bookingTotals, effectivePrice, formatDuration, formatMoney, groupByCategory } from "@/lib/booking/totals";
 import type { BookingCatalog, BookingLocation } from "@/lib/booking/types";
@@ -47,6 +52,8 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
   const [slots, setSlots] = useState<Load<string[]>>({ state: "idle", data: [] });
   const [suggested, setSuggested] = useState<string[]>([]);
   const [slotsKey, setSlotsKey] = useState(0);
+  // Who serves them (staff choice on only); null = anyone available.
+  const [staffId, setStaffId] = useState<number | null>(null);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -82,6 +89,19 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
     if (!askBranch) return;
     if (branchId === null || !branches.some((b) => b.id === branchId)) setBranchId(branches[0]?.id ?? null);
   }, [askBranch, branches, branchId]);
+
+  // "Who serves you?": whoever does every chosen service at the chosen branch.
+  const staffChoice = staffChoiceOn(catalog);
+  const eligible = useMemo(
+    () => (staffChoice ? eligibleStaff(catalog.staff, services, selected, effectiveBranch) : []),
+    [staffChoice, catalog.staff, services, selected, effectiveBranch],
+  );
+  const chosenStaff = staffChoice ? keepChosenStaff(eligible, staffId) : null;
+  const chosenStaffId = chosenStaff?.id ?? null;
+
+  useEffect(() => {
+    if (staffId !== null && chosenStaffId === null) setStaffId(null);
+  }, [staffId, chosenStaffId]);
 
   const areas = useMemo(() => homeAreas(settings), [settings]);
   const askWhere = homeChoiceOffered(settings, services, selected);
@@ -119,7 +139,7 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
     }
     const controller = new AbortController();
     setSlots((prev) => ({ state: "loading", data: prev.data }));
-    getSlots(getApiUrl(), { serviceIds: selected, date, branchId: effectiveBranch, location }, { signal: controller.signal })
+    getSlots(getApiUrl(), { serviceIds: selected, date, branchId: effectiveBranch, location, staffId: chosenStaffId }, { signal: controller.signal })
       .then((result) => {
         const times = Array.isArray(result?.times) ? result.times : [];
         setSlots({ state: "done", data: times });
@@ -130,12 +150,18 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
         setSlots({ state: "error", data: [], message: error instanceof BookingApiError ? error.message : t.errUnknown });
       });
     return () => controller.abort();
-  }, [ready, selected, date, effectiveBranch, location, slotsKey]);
+  }, [ready, selected, date, effectiveBranch, location, chosenStaffId, slotsKey]);
 
   const toggleService = (id: number) => {
     setSelected((list) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]));
     setSuggested([]);
     setErrors((e) => ({ ...e, services: undefined }));
+  };
+
+  const pickStaff = (id: number | null) => {
+    setStaffId(id);
+    setSuggested([]);
+    setFormError(null);
   };
 
   const pickDay = (day: StripDay) => {
@@ -196,6 +222,7 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
         customer_phone: normalizePhone(phone),
         notes: notes.trim() || undefined,
         ...locationPayload({ location, cityId, address }),
+        ...(chosenStaffId !== null ? { staff_id: chosenStaffId } : {}),
         website,
       });
       saveMyBooking({ ...booking, whatsapp_url: whatsapp?.url ?? null });
@@ -424,6 +451,41 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
           </fieldset>
         )}
 
+        {/* Who serves you (only when the store lets customers choose) */}
+        {staffChoice && (
+          <fieldset className="ct-bk-card ct-bk-section">
+            <legend className="ct-bk-sr">{t.stepStaff}</legend>
+            <p className="ct-bk-h2" aria-hidden="true">{stepNo()}{t.stepStaff}</p>
+            <div className="ct-bk-list ct-bk-list--two">
+              <label className="ct-bk-choice ct-bk-staff">
+                <input className="ct-bk-sr" type="radio" name="staff" checked={chosenStaffId === null} onChange={() => pickStaff(null)} />
+                <span className="ct-bk-avatar ct-bk-avatar--any" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="9" cy="8" r="3.2" />
+                    <path d="M3.5 19a5.5 5.5 0 0111 0" />
+                    <path d="M16 5.2a3.2 3.2 0 010 5.6M17.5 13.6A5.5 5.5 0 0120.5 19" />
+                  </svg>
+                </span>
+                <span className="ct-bk-choice__body">
+                  <span className="ct-bk-choice__title">{t.staffAny}</span>
+                  <span className="ct-bk-choice__sub">{t.staffAnyHint}</span>
+                </span>
+              </label>
+              {eligible.map((member) => (
+                <label key={member.id} className="ct-bk-choice ct-bk-staff">
+                  <input className="ct-bk-sr" type="radio" name="staff" checked={chosenStaffId === member.id} onChange={() => pickStaff(member.id)} />
+                  <span className="ct-bk-avatar" aria-hidden="true">{staffInitials(member.name)}</span>
+                  <span className="ct-bk-choice__body">
+                    <span className="ct-bk-choice__title">{member.name}</span>
+                    {member.bio && <span className="ct-bk-choice__sub ct-bk-staff__bio">{member.bio}</span>}
+                  </span>
+                </label>
+              ))}
+            </div>
+            {selected.length > 1 && eligible.length === 0 && <p className="ct-bk-hint mt-2">{t.staffNoneFits}</p>}
+          </fieldset>
+        )}
+
         {/* Day */}
         <fieldset className="ct-bk-card ct-bk-section">
           <legend className="ct-bk-sr">{t.stepDate}</legend>
@@ -550,12 +612,18 @@ export default function BookingWizard({ catalog, initialServiceIds, initialBranc
             {t.homeVisit} · {t.homeFee}: {fee > 0 ? formatMoney(fee) : t.free}
           </p>
         )}
+        {chosenStaff && (
+          <p className="ct-bk-hint" style={{ margin: "0.25rem 0 0" }}>
+            {t.staffWith}: {chosenStaff.name}
+          </p>
+        )}
         {time && selectedDay && (
           <p className="ct-bk-hint" style={{ margin: "0.25rem 0 0" }}>
             {selectedDay.dayName} {selectedDay.day} {selectedDay.month} · {formatTime12(time)}
           </p>
         )}
-        <p className="ct-bk-summary__note">{t.assignNote} {t.totalNote}</p>
+        {/* "The store picks someone" only when the customer didn't (or can't) choose */}
+        <p className="ct-bk-summary__note">{chosenStaff ? t.totalNote : <>{t.assignNote} {t.totalNote}</>}</p>
         <div aria-live="assertive">{formError && <p className="ct-bk-alert" role="alert">{formError}</p>}</div>
         <button type="submit" className="ct-bk-btn ct-bk-btn--block" disabled={sending} aria-disabled={sending}>
           {sending ? t.sending : t.confirm}

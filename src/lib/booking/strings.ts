@@ -52,6 +52,12 @@ const ar = {
   stepServices: "اختار الخدمة",
   stepServicesHint: "تقدر تختار أكتر من خدمة.",
   stepBranch: "اختار الفرع",
+  // "Who serves you?" (only when the store lets customers choose)
+  stepStaff: "مين يخدمك؟",
+  staffAny: "أي حد متاح",
+  staffAnyHint: "المحل يختارلك أنسب حد فاضي في ميعادك",
+  staffNoneFits: "مفيش حد واحد بيعمل كل الخدمات دي مع بعض، فالمحل هيختارلك أنسب حد.",
+  staffWith: "مع",
   stepDate: "اختار اليوم",
   today: "النهارده",
   tomorrow: "بكرة",
@@ -74,6 +80,7 @@ const ar = {
   duration: "المدة",
   servicesCount: (n: number) => (n === 1 ? "خدمة واحدة" : n === 2 ? "خدمتين" : `${n} خدمات`),
   totalNote: "السعر حسب الخدمات اللي اخترتها.",
+  /** Shown only when the customer didn't choose who serves them (or the store doesn't offer it). */
   assignNote: "المحل هيختار الشخص المناسب لخدمتك.",
   confirm: "تأكيد الحجز",
   sending: "جاري الحجز…",

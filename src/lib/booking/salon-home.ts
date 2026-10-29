@@ -9,7 +9,11 @@ import { t } from "./strings";
 import { effectivePrice } from "./totals";
 import type { BookingService } from "./types";
 
-/** Store types whose home page can open with services (Tenant::SHOP_TYPE_SALON / BEAUTY / SERVICE). */
+/**
+ * Store types whose home page can open with services (Tenant::SHOP_TYPE_SALON / SERVICE). "salon"
+ * covers salons, beauty centres and barbers; "beauty" was merged into it in Laravel and stays here
+ * only so a store still carrying the old value keeps working.
+ */
 export const SERVICE_SHOP_TYPES = ["salon", "beauty", "service"] as const;
 
 export function isServiceShopType(shopType: string | null | undefined): boolean {

@@ -130,7 +130,7 @@ export function getService(base: string, slug: string, init?: RequestInit): Prom
 
 export function getSlots(
   base: string,
-  query: { serviceIds: number[]; date: string; branchId?: number | null; location?: "salon" | "home" },
+  query: { serviceIds: number[]; date: string; branchId?: number | null; location?: "salon" | "home"; staffId?: number | null },
   init?: RequestInit,
 ): Promise<SlotsResult> {
   const params = idsParams(query.serviceIds, {
@@ -138,6 +138,8 @@ export function getSlots(
     branch_id: query.branchId,
     // Home visits have fewer times (road time is blocked); the salon is the default.
     location: query.location === "home" ? "home" : null,
+    // The customer's chosen staff member (staff choice on): that person's free times only.
+    staff_id: validStaffId(query.staffId),
   });
   return request<SlotsResult>(withLang(base, "v1/booking/slots", params), init);
 }
@@ -164,13 +166,20 @@ export function parseBookingWhatsApp(value: unknown): BookingWhatsApp | null {
   };
 }
 
+/** A staff id worth sending: a positive whole number, else null. */
+function validStaffId(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
+}
+
 /**
- * The JSON body of POST v1/booking. Customers never pick a staff member (the store assigns
- * one), so a stray `staff_id` is always dropped.
+ * The JSON body of POST v1/booking. By default the store assigns the staff member; when it lets
+ * customers choose (settings.staff_choice), the wizard passes the chosen `staff_id`. Only a
+ * positive whole number is sent: "anyone available" (null), 0 or junk leaves the field out.
  */
 export function bookingPayload(body: BookingRequest): string {
-  const { staff_id: _dropped, ...rest } = body as BookingRequest & { staff_id?: unknown };
-  return JSON.stringify(rest);
+  const { staff_id: staffId, ...rest } = body as BookingRequest & { staff_id?: unknown };
+  const id = validStaffId(staffId);
+  return JSON.stringify(id === null ? rest : { ...rest, staff_id: id });
 }
 
 export async function createBooking(
