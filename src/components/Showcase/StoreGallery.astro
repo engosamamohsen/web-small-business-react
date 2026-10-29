@@ -1,0 +1,149 @@
+---
+// The store's photo gallery (dashboard → gallery, GET v1/gallery, images only) on the home page of
+// every theme except Salon, which draws its own (SalonThemeHome.astro). index.astro renders it
+// after the products, and only when the store has at least one photo.
+//
+// Self-contained on purpose: Classic must look exactly like the original storefront, so nothing
+// here touches the existing components or CSS. The styles and the lightbox script are inline and
+// sit inside the section, so a store without photos gets no extra byte of HTML, CSS or JS.
+// Colours read the theme tokens (src/styles/themes.css) with neutral fallbacks for Classic.
+// Lightbox: native <dialog>; tap a photo, then arrows (RTL), swipe, Esc or the close button;
+// focus goes back to the photo that opened it.
+import { galleryOpenLabel, galleryPhotoAlt, type GalleryPhoto } from "@/lib/showcase";
+import { isResizable, resizedUrl, storeImageProps } from "@/lib/responsive-image";
+
+interface Props {
+    photos: GalleryPhoto[];
+    storeName: string;
+}
+
+const { photos, storeName } = Astro.props;
+const total = photos.length;
+const img = (src: string) => {
+    // 2 columns on phones, 3 from 640 px, 4 from 1024 px (max 1280 px wide).
+    const p = storeImageProps(src, "(min-width: 1024px) 300px, (min-width: 640px) 33vw, 50vw", 320);
+    return { src: p.src, srcset: p.srcSet, sizes: p.sizes, "data-orig": p["data-orig"] };
+};
+const full = (src: string) => (isResizable(src) ? resizedUrl(src, 1600) : src);
+
+// Inline (not a scoped <style> / bundled <script>), so they exist only when the section renders.
+const css = `
+.ct-sg { padding-block: 2.5rem; color: var(--t-ink, #1f2328); }
+.ct-sg__wrap { max-width: 1280px; margin-inline: auto; padding-inline: 1rem; }
+@media (min-width: 640px) { .ct-sg__wrap { padding-inline: 1.5rem; } }
+.ct-sg__title { margin: 0 0 1.25rem; font-family: var(--t-display, inherit); font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 700; line-height: 1.3; color: var(--t-ink, #1f2328); }
+.ct-sg__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .ct-sg__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .ct-sg__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; } }
+.ct-sg__open { display: block; width: 100%; padding: 0; border: 1px solid var(--t-line, #e3e6ea); border-radius: var(--t-radius-lg, 12px); overflow: hidden; background: var(--t-surface, #f3f4f6); cursor: zoom-in; aspect-ratio: 1 / 1; }
+.ct-sg__open img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+.ct-sg__open:hover img { transform: scale(1.03); }
+.ct-sg__open:focus-visible { outline: 3px solid var(--main-color, #0d7a73); outline-offset: 2px; }
+.ct-sg-box { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; padding: 0; border: 0; background: transparent; color: #fff; }
+.ct-sg-box::backdrop { background: rgba(10, 10, 12, 0.92); }
+.ct-sg-box__frame { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; width: 100%; height: 100%; padding: 3.5rem 1rem 1.5rem; box-sizing: border-box; }
+.ct-sg-box__img { max-width: 100%; max-height: calc(100% - 2.5rem); object-fit: contain; border-radius: 6px; }
+.ct-sg-box__count { margin: 0; font-size: 0.9rem; color: #e5e7eb; }
+.ct-sg-box__btn { position: absolute; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 999px; background: rgba(0, 0, 0, 0.45); color: #fff; cursor: pointer; }
+.ct-sg-box__btn:hover { background: rgba(0, 0, 0, 0.7); }
+.ct-sg-box__btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.ct-sg-box__close { top: 0.75rem; inset-inline-end: 0.75rem; }
+.ct-sg-box__prev, .ct-sg-box__next { top: 50%; transform: translateY(-50%); }
+.ct-sg-box__prev { inset-inline-start: 0.75rem; }
+.ct-sg-box__next { inset-inline-end: 0.75rem; }
+@media (prefers-reduced-motion: reduce) { .ct-sg__open img { transition: none; } .ct-sg__open:hover img { transform: none; } }
+`;
+const script = `
+(function () {
+    var section = document.getElementById("store-gallery");
+    var dialog = section && section.querySelector(".ct-sg-box");
+    if (!dialog || dialog.dataset.ready) return;
+    dialog.dataset.ready = "1";
+    var buttons = Array.prototype.slice.call(section.querySelectorAll("[data-sg-photo]"));
+    var image = dialog.querySelector(".ct-sg-box__img");
+    var count = dialog.querySelector(".ct-sg-box__count");
+    var index = 0;
+    var opener = null;
+    function show(i) {
+        index = (i + buttons.length) % buttons.length;
+        var button = buttons[index];
+        var thumb = button.querySelector("img");
+        image.src = button.dataset.full || "";
+        image.alt = thumb ? thumb.alt : "";
+        count.textContent = (index + 1) + " / " + buttons.length;
+    }
+    buttons.forEach(function (button, i) {
+        button.addEventListener("click", function () {
+            opener = button;
+            show(i);
+            if (typeof dialog.showModal === "function") dialog.showModal();
+            else window.open(button.dataset.full, "_blank", "noopener");
+        });
+    });
+    dialog.querySelectorAll("[data-sg-step]").forEach(function (b) {
+        b.addEventListener("click", function () { show(index + Number(b.dataset.sgStep)); });
+    });
+    dialog.querySelector("[data-sg-close]").addEventListener("click", function () { dialog.close(); });
+    dialog.addEventListener("click", function (e) {
+        if (e.target === dialog || e.target.classList.contains("ct-sg-box__frame")) dialog.close();
+    });
+    dialog.addEventListener("close", function () {
+        image.removeAttribute("src");
+        if (opener) opener.focus();
+    });
+    dialog.addEventListener("keydown", function (e) {
+        if (buttons.length < 2) return;
+        if (e.key === "ArrowLeft") { e.preventDefault(); show(index + 1); }
+        if (e.key === "ArrowRight") { e.preventDefault(); show(index - 1); }
+    });
+    var startX = null;
+    dialog.addEventListener("touchstart", function (e) { startX = e.touches[0] ? e.touches[0].clientX : null; }, { passive: true });
+    dialog.addEventListener("touchend", function (e) {
+        var endX = e.changedTouches[0] ? e.changedTouches[0].clientX : undefined;
+        if (startX === null || endX === undefined || Math.abs(endX - startX) < 40 || buttons.length < 2) return;
+        show(index + (endX > startX ? 1 : -1));
+        startX = null;
+    });
+})();
+`;
+---
+
+{total > 0 && (
+    <section class="ct-sg" id="store-gallery" aria-labelledby="ct-sg-title">
+        <style is:inline set:html={css} />
+        <div class="ct-sg__wrap">
+            <h2 class="ct-sg__title" id="ct-sg-title">معرض الصور</h2>
+            <ul class="ct-sg__grid" role="list">
+                {photos.map((photo, i) => (
+                    <li>
+                        <button type="button" class="ct-sg__open" data-sg-photo={i} data-full={full(photo.url)} aria-label={galleryOpenLabel(i, total)}>
+                            <img {...img(photo.url)} alt={galleryPhotoAlt(storeName, i, total)} loading="lazy" decoding="async" width="320" height="320" />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </div>
+
+        <dialog class="ct-sg-box" aria-label="معرض الصور">
+            <div class="ct-sg-box__frame">
+                <img class="ct-sg-box__img" alt="" />
+                <p class="ct-sg-box__count" aria-live="polite"></p>
+            </div>
+            <button type="button" class="ct-sg-box__btn ct-sg-box__close" data-sg-close aria-label="إغلاق">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+            </button>
+            {total > 1 && (
+                <>
+                    <button type="button" class="ct-sg-box__btn ct-sg-box__prev" data-sg-step="-1" aria-label="الصورة السابقة">
+                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </button>
+                    <button type="button" class="ct-sg-box__btn ct-sg-box__next" data-sg-step="1" aria-label="الصورة التالية">
+                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </button>
+                </>
+            )}
+        </dialog>
+
+        <script is:inline set:html={script} />
+    </section>
+)}

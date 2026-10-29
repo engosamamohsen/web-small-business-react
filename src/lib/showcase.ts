@@ -1,6 +1,7 @@
 // What a store's website shows about the place itself: its photo gallery and its branches
 // (Laravel API\V1\StorefrontShowcaseController: GET v1/gallery, GET v1/store-branches).
-// Drawn by the Salon theme's home page (src/components/Themed/Salon/SalonThemeHome.astro).
+// Drawn by the Salon theme's home page (src/components/Themed/Salon/SalonThemeHome.astro); every
+// other theme shows the gallery after the products (src/components/Showcase/StoreGallery.astro).
 // Everything here is pure, so the parsing and the links are unit-tested.
 
 import { buildWhatsAppLink } from "@/lib/whatsapp-order";
@@ -47,6 +48,18 @@ export function parseGallery(body: unknown): GalleryPhoto[] {
     if (photos.length === GALLERY_MAX) break;
   }
   return photos;
+}
+
+/** Alt text of a gallery photo: "صالون منى: صورة 2 من 6" ("صورة 2 من 6" without a store name). */
+export function galleryPhotoAlt(storeName: string | null | undefined, index: number, total: number): string {
+  const name = (storeName ?? "").replace(/\s+/g, " ").trim();
+  const photo = `صورة ${index + 1} من ${total}`;
+  return name ? `${name}: ${photo}` : photo;
+}
+
+/** Label of the button that enlarges a gallery photo: "كبّر صورة 2 من 6". */
+export function galleryOpenLabel(index: number, total: number): string {
+  return `كبّر صورة ${index + 1} من ${total}`;
 }
 
 function coordinate(value: unknown, limit: number): number | null {

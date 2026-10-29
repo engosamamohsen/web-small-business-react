@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GALLERY_MAX, mapsLink, parseBranches, parseGallery, socialLinks } from "./showcase";
+import { GALLERY_MAX, galleryOpenLabel, galleryPhotoAlt, mapsLink, parseBranches, parseGallery, socialLinks } from "./showcase";
 
 describe("parseGallery", () => {
   it("keeps photos with a usable address, in order, without repeats", () => {
@@ -29,6 +29,15 @@ describe("parseGallery", () => {
   it("shows at most the gallery limit", () => {
     const data = Array.from({ length: 40 }, (_, i) => ({ id: i, image_url: `https://x.test/${i}.jpg` }));
     expect(parseGallery({ data })).toHaveLength(GALLERY_MAX);
+  });
+});
+
+describe("gallery labels", () => {
+  it("numbers each photo out of the total, with the store name when there is one", () => {
+    expect(galleryPhotoAlt("صالون  منى ", 0, 6)).toBe("صالون منى: صورة 1 من 6");
+    expect(galleryPhotoAlt("", 1, 2)).toBe("صورة 2 من 2");
+    expect(galleryPhotoAlt(null, 2, 3)).toBe("صورة 3 من 3");
+    expect(galleryOpenLabel(4, 9)).toBe("كبّر صورة 5 من 9");
   });
 });
 
