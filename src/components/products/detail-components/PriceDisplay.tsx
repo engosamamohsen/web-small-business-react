@@ -1,14 +1,17 @@
 import { currency } from "@/constants/constansts";
 import { ProductType } from "@/lib/types";
 import { memo, useMemo } from "react";
-import { getDiscountedPrice, getEffectiveDiscount } from "@/lib/pricing-utils";
+import { getEffectiveDiscount, getLinePrices } from "@/lib/pricing-utils";
 
 interface PriceDisplayProps {
     product: ProductType;
+    /** Pre-discount total per piece: base + selected extras. */
     currentPrice: number;
+    /** The selected paid extras inside currentPrice (never discounted). */
+    extras?: number;
 }
 
-export const PriceDisplay = memo(({ product, currentPrice }: PriceDisplayProps) => {
+export const PriceDisplay = memo(({ product, currentPrice, extras = 0 }: PriceDisplayProps) => {
     // Discount derived from `discount` OR from price→price_after, so it still
     // shows when the API only sent a reduced price_after.
     const discount = getEffectiveDiscount(
@@ -17,11 +20,13 @@ export const PriceDisplay = memo(({ product, currentPrice }: PriceDisplayProps) 
         product.price_after,
     );
 
-    // currentPrice is the full PRE-discount total (base + additions); the
-    // discount applies to all of it.
-    const priceDiscount = useMemo(() => {
-        return discount > 0 ? getDiscountedPrice(currentPrice, discount) : 0;
-    }, [currentPrice, discount]);
+    // Server rule: the discount applies to the base only; extras at full price.
+    // price 100, +10 extra, 10% off -> 90 + 10 = 100.
+    const prices = useMemo(
+        () => getLinePrices(currentPrice - extras, discount, extras),
+        [currentPrice, extras, discount],
+    );
+    const priceDiscount = prices.final;
 
     if (discount > 0) {
         return (
@@ -46,7 +51,7 @@ export const PriceDisplay = memo(({ product, currentPrice }: PriceDisplayProps) 
                         <span> : </span>
                     </div>
                     <span className="ml-1">
-                        {currentPrice - priceDiscount} {currency}
+                        {prices.saving} {currency}
                     </span>
                     <span className="ml-2 rounded bg-green-100 px-2 py-1 text-sm font-medium text-green-600">
                         {discount}% خصم

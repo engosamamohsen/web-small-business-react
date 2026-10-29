@@ -6,6 +6,7 @@
 // so Cart.tsx renders either backend unchanged.
 
 import type { CartItemType, CartResponseType } from "@/types/types";
+import { cartLineKey, cartVariationsExtra } from "@/lib/product/variations";
 
 const STORAGE_KEY = "local_cart_v1";
 /** Fired on every mutation so headers/badges can resync. */
@@ -63,15 +64,18 @@ export function localCartCount(): number {
 /** Resolve the final per-unit price from an addToCart payload. */
 function resolveUnitPrice(product: any): number {
     // local_unit_price is set by CartActions and is ALREADY discounted and
-    // includes variation extras; everything else falls back to base price.
+    // includes variation extras; otherwise discounted base + extras.
     if (product?.local_unit_price != null)
         return Number(product.local_unit_price) || 0;
-    if (product?.price_after != null) return Number(product.price_after) || 0;
+    // Like the server: the discount applies to the base only; the selected extras
+    // are added at full price, once per piece.
+    const extras = cartVariationsExtra(product?.variations);
+    if (product?.price_after != null)
+        return Math.round(((Number(product.price_after) || 0) + extras) * 100) / 100;
     const base = Number(product?.price) || 0;
     const discount = parseFloat(String(product?.discount ?? 0)) || 0;
-    return discount > 0
-        ? Math.round(base * (1 - discount / 100) * 100) / 100
-        : base;
+    const discounted = discount > 0 ? base * (1 - discount / 100) : base;
+    return Math.round((discounted + extras) * 100) / 100;
 }
 
 /**
@@ -86,32 +90,15 @@ function resolveOriginalUnitPrice(product: any, finalUnitPrice: number): number 
 
     const base = Number(product?.price);
     if (Number.isFinite(base) && base > 0) {
-        const extras = Array.isArray(product?.variations)
-            ? product.variations.reduce(
-                  (sum: number, v: any) =>
-                      sum +
-                      (v?.choices ?? []).reduce(
-                          (s: number, c: any) => s + (Number(c?.price) || 0),
-                          0,
-                      ),
-                  0,
-              )
-            : 0;
-        return Math.round((base + extras) * 100) / 100;
+        return Math.round((base + cartVariationsExtra(product?.variations)) * 100) / 100;
     }
 
     return finalUnitPrice;
 }
 
-/** Two payloads are the same cart line if product + options + note match. */
+/** Two payloads are the same cart line if product + choice ids + size/colour + note match. */
 function lineKey(product: any): string {
-    return JSON.stringify([
-        product?.id,
-        product?.variations ?? null,
-        product?.currentSize?.id ?? null,
-        product?.currentColor?.id ?? null,
-        product?.product_note || null,
-    ]);
+    return cartLineKey(product);
 }
 
 /**

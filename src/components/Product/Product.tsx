@@ -7,6 +7,7 @@ import { Flame } from "lucide-react";
 import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "./ButtonAddToCart";
 import { buildProductPath } from "@/lib/product-url";
+import { autoSelectedExtra } from "@/lib/product/variations";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -256,15 +257,20 @@ export function Product({ product, defaultImage }: ProductProps) {
 // ─── Price ────────────────────────────────────────────────────────────────────
 
 function PriceContent({ product }: { product: ProductType }) {
-  const basePrice = Number(product?.price) || 0;
+  // + the extra of any choice that is picked for the customer (a required option group
+  // with one available choice), so the card shows what the cart will charge. Like the
+  // server: the discount applies to the product price only, the extra at full price.
+  const extra = autoSelectedExtra(product?.variations);
+  const productPrice = Number(product?.price) || 0;
+  const basePrice = productPrice + extra;
   const rawDiscount = product?.discount ?? 0;
   const discountValue =
     typeof rawDiscount === "number"
       ? rawDiscount
       : parseFloat(String(rawDiscount)) || 0;
-  const hasDiscount = basePrice > 0 && discountValue > 0;
+  const hasDiscount = productPrice > 0 && discountValue > 0;
   const finalPrice = hasDiscount
-    ? getDiscountedPrice(basePrice, discountValue)
+    ? parseFloat((getDiscountedPrice(productPrice, discountValue) + extra).toFixed(2))
     : basePrice;
   const saving = hasDiscount ? basePrice - finalPrice : 0;
 

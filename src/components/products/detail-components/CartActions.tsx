@@ -2,7 +2,6 @@ import { useState, memo, useCallback, lazy, Suspense } from "react";
 import { useCartHook } from "@/hooks/cart/cart";
 import { ProductType, SizeOption, ColorOption } from "@/lib/types";
 import Cookies from "js-cookie";
-import { useUpdateEffect } from "react-use";
 import { cn } from "@/utils/utils";
 import { InputTextarea } from "primereact/inputtextarea";
 import "@/styles/primereact-theme";
@@ -10,28 +9,27 @@ import { toast } from "react-toastify";
 import { ShoppingCart, Zap, Plus, Minus } from "lucide-react";
 import { useSettings } from "@/providers";
 import { storeConfig } from "@/lib/store-config";
-import { getDiscountedPrice, getEffectiveDiscount } from "@/lib/pricing-utils";
+import { getEffectiveDiscount, getLinePrices } from "@/lib/pricing-utils";
+import type { CartVariation, SelectionCheck } from "@/lib/product/variations";
 
 // Lazy-load AuthDialog — only needed when user is not logged in
 const AuthDialog = lazy(() => import("@/components/auth/AuthDialog"));
 
-interface FormattedVariation {
-    main_variation_id: string;
-    main_variation_name: string;
-    choices: { id: string; name: string; price: number }[];
-}
-
 interface FormattedVariations {
-    variations: FormattedVariation[];
+    variations: CartVariation[];
 }
 
 interface CartActionsProps {
     product: ProductType;
-    totalPrice: number;
+    /** Per-piece base price before discount (product price, or the size's own price). */
+    basePrice: number;
+    /** Per-piece selected paid extras (never discounted). */
+    extrasPrice: number;
     currentColor: ColorOption | null;
     currentSize: SizeOption | null;
     selectedVariations: FormattedVariations;
-    productVariations: { is_required?: boolean; id?: string }[];
+    /** Can the current option selection be added (src/lib/product/variations.ts → validateSelection). */
+    selectionCheck: SelectionCheck;
     onAddedToCart?: () => void;
     settings?: Record<string, any> | null;
 }
@@ -41,14 +39,18 @@ export const CartActions = memo(({
     currentColor,
     currentSize,
     selectedVariations,
-    productVariations,
-    totalPrice,
+    selectionCheck,
+    basePrice,
+    extrasPrice,
     onAddedToCart,
     settings: settingsProp,
 }: CartActionsProps) => {
     const [count, setCount] = useState(1);
     const [productNote, setProductNote] = useState("");
-    const [isAvailable, setIsAvailable] = useState(true);
+    // Options: a required group with no available choice blocks the product; a required
+    // group not picked yet blocks adding until the customer picks (message on click).
+    const optionsBlocked = !selectionCheck.ok && selectionCheck.reason === "no_choice_available";
+    const [showOptionsHint, setShowOptionsHint] = useState(false);
     // false = made from a recipe and an item ran out (API `in_stock`); older APIs don't send it.
     const inStock = product?.in_stock !== false;
     const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -60,20 +62,23 @@ export const CartActions = memo(({
     // Fall back to context (works when rendered inside a shared SettingsProvider)
     const { settings: contextSettings } = useSettings();
     const settings = settingsProp ?? contextSettings;
-    // Discount derived from `discount` OR from price→price_after (mirrors
-    // PriceDisplay). totalPrice is the full PRE-discount total (base + additions),
-    // so the discount applies to the additions too — price 100, +10 addition,
-    // 10% off → 99, not 90 + 10 = 100.
+    // Discount derived from `discount` OR from price->price_after (mirrors
+    // PriceDisplay). Server rule (OrderCalculationService): the discount applies to
+    // the BASE only, extras are added at full price once per piece -
+    // price 100, +10 extra, 10% off -> 90 + 10 = 100.
     const discount = getEffectiveDiscount(
         product.price,
         product.discount,
         product.price_after,
     );
 
-    const finalPrice = getDiscountedPrice(totalPrice * count, discount);
-    // Final per-unit price (variations + discount included) — the local cart
+    const linePrices = getLinePrices(basePrice, discount, extrasPrice);
+    // Final per-unit price (extras + discount included) - the local cart
     // stores this so BASIC-plan prices match what the user saw.
-    const finalUnitPrice = getDiscountedPrice(totalPrice, discount);
+    const finalUnitPrice = linePrices.final;
+    // Pre-discount per-unit price (extras included), for before-vs-after in the cart.
+    const totalPrice = linePrices.original;
+    const finalPrice = Math.round(finalUnitPrice * count * 100) / 100;
 
     // ── Core cart add (called directly or after login) ──────────────────────
     const doAddToCart = useCallback(async () => {
@@ -124,6 +129,14 @@ export const CartActions = memo(({
         }
     }, [selectedVariations, addToCart, product, count, currentColor, currentSize, productNote, finalUnitPrice, totalPrice]);
 
+    // ── Options guard ─────────────────────────────────────────────────────────
+    const checkOptions = useCallback(() => {
+        if (selectionCheck.ok) return true;
+        setShowOptionsHint(true);
+        toast.error(selectionCheck.message, { position: "top-right", autoClose: 3000, rtl: true });
+        return false;
+    }, [selectionCheck]);
+
     // ── Auth guard ────────────────────────────────────────────────────────────
     const requireAuth = useCallback((action: "cart" | "buynow") => {
         // BASIC plan: cart is local — never ask the user to authenticate
@@ -139,14 +152,16 @@ export const CartActions = memo(({
     }, []);
 
     const handleAddToCart = useCallback(async () => {
+        if (!checkOptions()) return;
         if (!requireAuth("cart")) return;
         await doAddToCart();
-    }, [requireAuth, doAddToCart]);
+    }, [checkOptions, requireAuth, doAddToCart]);
 
     const handleBuyNow = useCallback(async () => {
+        if (!checkOptions()) return;
         if (!requireAuth("buynow")) return;
         await doBuyNow();
-    }, [requireAuth, doBuyNow]);
+    }, [checkOptions, requireAuth, doBuyNow]);
 
     // ── Called by AuthDialog after successful login ───────────────────────────
     const handleLoginSuccess = useCallback(async () => {
@@ -158,15 +173,6 @@ export const CartActions = memo(({
         }
         setPendingAction(null);
     }, [pendingAction, doAddToCart, doBuyNow]);
-
-    useUpdateEffect(() => {
-        if (!productVariations.length) return;
-        const requiredVariations = productVariations.filter((v) => v.is_required);
-        const available = requiredVariations.every((main) =>
-            selectedVariations.variations.some((v) => v.main_variation_id == main.id)
-        );
-        setIsAvailable(available);
-    }, [productVariations, selectedVariations]);
 
     return (
         <>
@@ -192,6 +198,12 @@ export const CartActions = memo(({
                 {!inStock && (
                     <p role="status" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                         غير متاح حالياً — نفد أحد مكوناته
+                    </p>
+                )}
+
+                {!selectionCheck.ok && (optionsBlocked || showOptionsHint) && (
+                    <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                        {selectionCheck.message}
                     </p>
                 )}
 
@@ -232,12 +244,12 @@ export const CartActions = memo(({
                 >
                     {/* Add to Cart — outlined */}
                     <button
-                        disabled={loading || !isAvailable || !inStock}
+                        disabled={loading || optionsBlocked || !inStock}
                         onClick={handleAddToCart}
                         className={cn(
                             "flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-[var(--main-color)] px-5 py-3.5 text-sm font-bold text-[var(--main-color)] transition-all duration-200",
                             "hover:bg-[var(--main-color)]/8 active:scale-[0.98]",
-                            (loading || !isAvailable || !inStock) && "cursor-not-allowed border-gray-300 text-gray-400"
+                            (loading || optionsBlocked || !inStock) && "cursor-not-allowed border-gray-300 text-gray-400"
                         )}
                     >
                         {loading ? (
@@ -251,12 +263,12 @@ export const CartActions = memo(({
 
                     {/* Buy Now — filled → goes to /shop/cart */}
                     <button
-                        disabled={loading || !isAvailable || !inStock}
+                        disabled={loading || optionsBlocked || !inStock}
                         onClick={handleBuyNow}
                         className={cn(
                             "flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--main-color)] px-5 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200",
                             "hover:opacity-90 active:scale-[0.98]",
-                            (loading || !isAvailable || !inStock) && "cursor-not-allowed bg-gray-300"
+                            (loading || optionsBlocked || !inStock) && "cursor-not-allowed bg-gray-300"
                         )}
                     >
                         <Zap size={16} />

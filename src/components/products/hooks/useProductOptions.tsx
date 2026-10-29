@@ -1,80 +1,88 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { ProductType, Choice, SizeOption, ColorOption } from "@/lib/types";
+import {
+    clearChoice,
+    initialSelection,
+    selectChoice,
+    selectionExtra,
+    validateSelection,
+} from "@/lib/product/variations";
 
 export type FormattedVariations = Record<string, Choice>;
 
 export function useProductOptions(product: ProductType) {
-    const [selectedSize, setSelectedSize] = useState<SizeOption | null>(null);
-    const [selectedColor, setSelectedColor] = useState<ColorOption | null>(null);
-    const [selectedVariations, setSelectedVariations] = useState<FormattedVariations>({});
+    // Defaults. Option groups follow src/lib/product/variations.ts: only a required
+    // group with exactly one available choice is pre-selected; everything else waits
+    // for the customer (no defaults, never a paid optional extra). They are the
+    // INITIAL state, so the server-rendered HTML already shows them ticked and the
+    // price includes them: no flash before hydration, no hydration mismatch.
+    const [selectedSize, setSelectedSize] = useState<SizeOption | null>(() => product?.sizes?.[0] ?? null);
+    const [selectedColor, setSelectedColor] = useState<ColorOption | null>(() => product?.colors?.[0] ?? null);
+    const [selectedVariations, setSelectedVariations] = useState<FormattedVariations>(() =>
+        product ? initialSelection(product.variations) : {},
+    );
 
-    // Initialize defaults
+    // A different product (client-side change): reset to its defaults. The first
+    // product is already covered by the initial state above.
+    const initialProduct = useRef(product);
     useEffect(() => {
+        if (product === initialProduct.current) return;
+        initialProduct.current = product;
         if (product) {
             if (product.sizes?.length) setSelectedSize(product.sizes[0]);
             if (product.colors?.length) setSelectedColor(product.colors[0]);
-
-            // Initialize variations with default selections if any
-            const initialVariations: FormattedVariations = {};
-            if (product.variations) {
-                product.variations.forEach(variation => {
-                    const defaultChoice = variation.choices.find(c => c.enable);
-                    if (defaultChoice) {
-                        initialVariations[variation.id] = defaultChoice;
-                    }
-                });
-                setSelectedVariations(initialVariations);
-            }
+            setSelectedVariations(initialSelection(product.variations));
         }
     }, [product]);
 
+    // Required groups: pick (replaces the group's previous pick). Unavailable choices are ignored.
     const handleRadioChange = (variationId: string, choice: Choice) => {
-        setSelectedVariations(prev => ({
-            ...prev,
-            [variationId]: choice
-        }));
+        setSelectedVariations(prev => selectChoice(product.variations, prev, variationId, choice));
     };
 
-    const handleCheckboxChange = (variationId: string, choice: Choice, checked: boolean) => {
-        // For checkboxes, we might want to handle multiple selections differently
-        // This implementation assumes single choice per variation for simplicity
-        // or you might want to adapt based on your specific needs
-        if (checked) {
-            handleRadioChange(variationId, choice);
-        } else {
-            const newVariations = { ...selectedVariations };
-            delete newVariations[variationId];
-            setSelectedVariations(newVariations);
-        }
+    // Optional groups: single-select like required ones (at most one choice per group,
+    // the server refuses more). `null` is the «بدون» radio: it empties the group.
+    const handleOptionalChange = (variationId: string, choice: Choice | null) => {
+        setSelectedVariations(prev =>
+            choice
+                ? selectChoice(product.variations, prev, variationId, choice)
+                : clearChoice(product.variations, prev, variationId),
+        );
     };
 
     const isChoiceSelected = (variationId: string, choiceId: string) => {
-        return selectedVariations[variationId]?.id === choiceId;
+        return String(selectedVariations[variationId]?.id) === String(choiceId);
     };
 
-    // Dynamic PRE-discount subtotal based on selections.
-    // Start from the original `price` (NOT `price_after`) and add the selected
-    // additions/variations. The discount is applied once, downstream
-    // (PriceDisplay / CartActions), to this full total — so an addition is
-    // discounted too: e.g. price 100, +10 addition, 10% off → (110)*0.9 = 99,
-    // not 90 + 10 = 100. Using `price_after` here would discount only the base
-    // and leave the addition at full price.
-    const currentPrice = useMemo(() => {
-        let price = product.price;
+    // Whether the current selection can be added, and why not (Arabic message).
+    const selectionCheck = useMemo(
+        () => validateSelection(product?.variations, selectedVariations),
+        [product, selectedVariations],
+    );
 
-        // Add variations price
-        Object.values(selectedVariations).forEach(choice => {
-            if (choice.price) price += choice.price;
-        });
-
-        // Add size price diff if applicable
+    // Per-piece prices, the way the server prices the order (OrderCalculationService):
+    //   basePrice    - product price (or the selected size's own price), BEFORE discount
+    //   optionsExtra - the selected paid extras, each choice once
+    //   currentPrice - basePrice + optionsExtra (the pre-discount total)
+    // The product discount applies to the BASE only; extras are added at full price,
+    // once per piece: price 100, +10 extra, 10% off -> 90 + 10 = 100 (not 110 x 0.9 = 99).
+    // PriceDisplay / CartActions do that with getLinePrices (src/lib/pricing-utils.ts).
+    const basePrice = useMemo(() => {
+        let price = Number(product.price) || 0;
+        // A size with its own price replaces the base price (not the extras)
         if (selectedSize?.price) {
             const sizePrice = typeof selectedSize.price === 'string' ? parseFloat(selectedSize.price) : selectedSize.price;
             if (!isNaN(sizePrice)) price = sizePrice;
         }
-
         return price;
-    }, [product, selectedVariations, selectedSize]);
+    }, [product, selectedSize]);
+
+    const optionsExtra = useMemo(
+        () => selectionExtra(product.variations, selectedVariations),
+        [product, selectedVariations],
+    );
+
+    const currentPrice = Math.round((basePrice + optionsExtra) * 100) / 100;
 
     return {
         selectedSize,
@@ -83,8 +91,11 @@ export function useProductOptions(product: ProductType) {
         setSelectedColor,
         selectedVariations,
         handleRadioChange,
-        handleCheckboxChange,
+        handleOptionalChange,
         isChoiceSelected,
+        selectionCheck,
+        basePrice,
+        optionsExtra,
         currentPrice
     };
 }

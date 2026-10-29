@@ -3,6 +3,7 @@
 import { useProductsFilter } from "@/hooks/useProductsFilter";
 import { ProductType } from "@/lib/types";
 import { buildProductPath } from "@/lib/product-url";
+import { autoSelectedExtra } from "@/lib/product/variations";
 import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "@/components/Product/ButtonAddToCart";
 import { revealProps } from "@/components/motion/scroll-reveal";
@@ -18,11 +19,15 @@ function discountOf(product: ProductType): number {
 }
 
 function prices(product: ProductType) {
-  const base = Number(product?.price) || 0;
+  // + the extra of a choice picked for the customer (required group, one available choice).
+  // Like the server: the discount applies to the product price only, the extra at full price.
+  const price = Number(product?.price) || 0;
+  const extra = autoSelectedExtra(product?.variations);
+  const base = price + extra;
   const discount = discountOf(product);
-  const hasDiscount = base > 0 && discount > 0;
+  const hasDiscount = price > 0 && discount > 0;
   const now = hasDiscount
-    ? parseFloat((base - (base * discount) / 100).toFixed(2))
+    ? parseFloat((price - (price * discount) / 100 + extra).toFixed(2))
     : base;
   return { base, now, discount, hasDiscount };
 }

@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "@/components/common/Image";
 import Link from "@/components/common/Link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -26,6 +26,9 @@ import PageLoader from "../PageLoader/PageLoader";
 import SelectInput from "../SelectInput/SelectInput";
 import { useStoreHours } from "@/hooks/useStoreHours";
 import { closedRefusal } from "@/lib/guest-order";
+import { useSettings } from "@/providers";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { computeOrderTotals } from "@/lib/cart/order-totals";
 
 export default function CheckoutPage() {
   const { loading: cartLoading, data: cartResponse } = useCartServices();
@@ -66,6 +69,26 @@ export default function CheckoutPage() {
     (serverClosed && (serverClosed.until === null || Date.now() < serverClosed.until) ? serverClosed.message : "") ||
     (storeHours.closed ? storeHours.text : "") ||
     null;
+
+  // VAT (settings.vat %) the server adds to the order (BasketController::buy):
+  // total = sub-total + the address's shipping fee + VAT.
+  const { settings: contextSettings } = useSettings();
+  const [vatSetting, setVatSetting] = useState<unknown>(contextSettings?.vat);
+  useEffect(() => {
+    if (contextSettings?.vat !== undefined) {
+      setVatSetting(contextSettings.vat);
+      return;
+    }
+    let cancelled = false;
+    fetchSettings()
+      .then((res) => {
+        if (!cancelled && res.ok && res.data) setVatSetting(res.data.vat);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [contextSettings?.vat]);
 
   const { createOrder } = useCheckout();
   const onSubmit = async (inputs: any) => {
@@ -109,6 +132,7 @@ export default function CheckoutPage() {
   }
 
   const total = cartResponse?.total_price || 0;
+  const totals = computeOrderTotals({ subtotal: total, vatRate: vatSetting as any, shipping: shippingFees });
 
   return (
     <>
@@ -142,6 +166,9 @@ export default function CheckoutPage() {
           <OrderSummary
             items={items}
             total={total}
+            vat={totals.vat}
+            vatRate={totals.vatRate}
+            grandTotal={totals.total}
             shippingFees={shippingFees}
             shippingKnown={!!selectedAddress?.id}
           />
@@ -354,12 +381,17 @@ const BillingForm = ({
 type OrderSummaryProps = {
   items: CartItemType[];
   total: number;
+  /** VAT the server adds (0 → no line). */
+  vat: number;
+  vatRate: number;
+  /** sub-total + shipping + VAT, as the server stores it. */
+  grandTotal: number;
   shippingFees: number;
   /** An address is chosen, so its shipping fee is known. */
   shippingKnown: boolean;
 };
 
-const OrderSummary = ({ items, total, shippingFees, shippingKnown }: OrderSummaryProps) => (
+const OrderSummary = ({ items, total, vat, vatRate, grandTotal, shippingFees, shippingKnown }: OrderSummaryProps) => (
   <div className="h-fit w-full flex-1 rounded-lg bg-gray-100 p-6">
     <h2 className="mb-4 text-xl font-bold">ملخص الطلب</h2>
     <div className="max-h-[500px] space-y-4 overflow-y-auto bg-gray-50 px-10 pb-10">
@@ -448,9 +480,15 @@ const OrderSummary = ({ items, total, shippingFees, shippingKnown }: OrderSummar
           <span className="font-normal text-slate-500">يُحدد بعد اختيار العنوان</span>
         )}
       </div>
+      {vat > 0 && (
+        <div className="flex justify-between text-sm">
+          <span>الضريبة{vatRate > 0 ? ` (${vatRate}%)` : ""}</span>
+          <span>{vat.toFixed(2)} ج.م</span>
+        </div>
+      )}
       <div className="text-md flex justify-between border-t pt-2">
         <span>{shippingKnown ? "الإجمالي النهائي" : "الإجمالي بدون الشحن"}</span>
-        <span>{(total + shippingFees).toFixed(2)} ج.م</span>
+        <span>{grandTotal.toFixed(2)} ج.م</span>
       </div>
     </div>
   </div>

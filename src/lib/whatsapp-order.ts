@@ -166,6 +166,8 @@ export function buildWhatsAppOrderMessage(
     shopName?: string | null,
     shopType?: string | null,
     customer?: WhatsAppCustomerInfo | null,
+    /** VAT the server adds (settings.vat): shown as its own line before the total. */
+    tax?: { rate: number; amount: number } | null,
 ): string {
     const currency = "ج.م";
     const lines: string[] = [];
@@ -240,6 +242,11 @@ export function buildWhatsAppOrderMessage(
         lines.push(`🎁 الخصم: -${formatPrice(discountAmount)} ${currency}`);
     }
 
+    if (tax && tax.amount > 0) {
+        lines.push(
+            `🧾 الضريبة${tax.rate > 0 ? ` (${formatPrice(tax.rate)}%)` : ""}: ${formatPrice(tax.amount)} ${currency}`,
+        );
+    }
     lines.push(`💰 *الإجمالي: ${formatPrice(totalPrice)} ${currency}*`);
     lines.push("");
     lines.push("شكراً لطلبكم 🙏");
@@ -259,6 +266,7 @@ export function buildWhatsAppOrderUrl(
         shop_type?: string | null;
     }) | null,
     customer?: WhatsAppCustomerInfo | null,
+    tax?: { rate: number; amount: number } | null,
 ): string | null {
     // Only ever use the shop's REAL number from the settings API. Never fall
     // back to the placeholder/default — orders must not go to a fake line.
@@ -271,6 +279,7 @@ export function buildWhatsAppOrderUrl(
         settings?.name,
         settings?.shop_type,
         customer,
+        tax,
     );
     // Not wa.me: its redirect turns every emoji in the message into "�" (checked 2026-10-06).
     return `https://api.whatsapp.com/send?phone=${number}&text=${encodeURIComponent(message)}`;

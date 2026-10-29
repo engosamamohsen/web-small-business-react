@@ -15,6 +15,7 @@ import {
   removeLocalCartItem,
   localCartCount,
 } from "@/lib/cart/local-cart";
+import { toApiVariations } from "@/lib/product/variations";
 
 /**
  * Hook for fetching cart data.
@@ -225,15 +226,12 @@ function transformData(product: any) {
     data.color_id = product.currentColor.id;
   }
 
-  if (product?.variations?.length > 0) {
-    // The selection now carries names/prices for the local cart + WhatsApp message;
-    // the basket API only wants {main_variation_id, choices:[id]}, so normalize here.
-    data.variations = product.variations.map((variation: any) => ({
-      main_variation_id: variation.main_variation_id,
-      choices: (variation.choices ?? []).map((choice: any) =>
-        choice && typeof choice === "object" ? choice.id : choice
-      ),
-    }));
+  // The selection carries names/prices for the local cart + WhatsApp message;
+  // the basket API only wants choice ids — {main_variation_id, choices:[id]} — and
+  // prices them itself (src/lib/product/variations.ts).
+  const variations = toApiVariations(product?.variations);
+  if (variations.length > 0) {
+    data.variations = variations;
   }
 
   return data;

@@ -14,6 +14,25 @@ export function getDiscountedPrice(price: number, discount: number): number {
 }
 
 /**
+ * Per-piece prices of a product with paid extras (option choices), the way the
+ * server prices the order (OrderCalculationService / BasketController): the
+ * product discount applies to the BASE price only, and the extras are added at
+ * full price, once per piece.
+ *   price 100, +10 extra, 10% off → original 110, final 90 + 10 = 100.
+ */
+export function getLinePrices(
+  basePrice: number,
+  discount: number,
+  extras: number = 0,
+): { original: number; final: number; saving: number } {
+  const base = Number(basePrice) || 0;
+  const extra = Number(extras) || 0;
+  const original = parseFloat((base + extra).toFixed(2));
+  const final = parseFloat(((discount > 0 ? base - (base * discount) / 100 : base) + extra).toFixed(2));
+  return { original, final, saving: parseFloat((original - final).toFixed(2)) };
+}
+
+/**
  * Calculate the amount saved with a discount
  * @param price - The original price
  * @param discount - The discount percentage

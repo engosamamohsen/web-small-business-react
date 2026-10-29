@@ -6,6 +6,7 @@ import { useMemo, useState, lazy, Suspense } from "react";
 import { useSettingsData } from "@/providers/SettingsProvider";
 import type { SettingsData } from "@/providers/SettingsProvider";
 import { buildWhatsAppLink, resolveWhatsappNumber } from "@/lib/whatsapp-order";
+import { toCartVariations } from "@/lib/product/variations";
 
 // Detail sub-components
 import {
@@ -46,25 +47,19 @@ export default function DetailPage({
         setSelectedColor,
         selectedVariations,
         handleRadioChange,
-        handleCheckboxChange,
+        handleOptionalChange,
         isChoiceSelected,
+        selectionCheck,
+        basePrice,
+        optionsExtra,
         currentPrice,
     } = useProductOptions(product);
 
     const formattedVariations = useMemo(() => {
         // Carry the human-readable variation/choice names + prices so the local
         // (BASIC-plan) cart and the WhatsApp order message can show the selection.
-        // The premium API path normalizes this back to {main_variation_id, choices:[id]}
-        // in cart.ts → transformData().
-        const variations = Object.entries(selectedVariations).map(([variationId, choice]) => {
-            const def = product.variations?.find((v) => v.id === variationId);
-            return {
-                main_variation_id: variationId,
-                main_variation_name: def?.name ?? "",
-                choices: [{ id: choice.id, name: choice.name, price: Number(choice.price) || 0 }],
-            };
-        });
-        return { variations };
+        // The API paths send choice ids only (src/lib/product/variations.ts → toApiVariations).
+        return { variations: toCartVariations(product.variations, selectedVariations) };
     }, [selectedVariations, product.variations]);
 
     const parsedDescription = useMemo(() => {
@@ -117,7 +112,7 @@ export default function DetailPage({
                         )}
 
                         {/* Price */}
-                        <PriceDisplay product={product} currentPrice={currentPrice} />
+                        <PriceDisplay product={product} currentPrice={currentPrice} extras={optionsExtra} />
 
                         {/* Description */}
                         {product?.description && (
@@ -148,7 +143,7 @@ export default function DetailPage({
                             <VariationsSelector
                                 variations={product.variations}
                                 handleRadioChange={handleRadioChange}
-                                handleCheckboxChange={handleCheckboxChange}
+                                handleOptionalChange={handleOptionalChange}
                                 isChoiceSelected={isChoiceSelected}
                             />
                         )}
@@ -166,8 +161,9 @@ export default function DetailPage({
                         {/* Cart actions (two buttons) */}
                         <CartActions
                             product={product}
-                            productVariations={product?.variations || []}
-                            totalPrice={currentPrice}
+                            selectionCheck={selectionCheck}
+                            basePrice={basePrice}
+                            extrasPrice={optionsExtra}
                             currentColor={selectedColor}
                             currentSize={selectedSize}
                             selectedVariations={formattedVariations}

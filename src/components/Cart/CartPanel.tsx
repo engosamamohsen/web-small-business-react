@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, ShoppingCart, ArrowLeft } from "lucide-react";
 import Link from "@/components/common/Link";
 import Image from "@/components/common/Image";
 import { useCartServices } from "@/hooks/cart/cart";
 import { cn } from "@/utils/utils";
 import { CartItemType } from "@/types/types";
+import { useSettings } from "@/providers";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { computeOrderTotals } from "@/lib/cart/order-totals";
 
 interface CartPanelProps {
     isOpen: boolean;
@@ -64,12 +67,25 @@ const MiniCartItem = ({ item }: { item: CartItemType }) => {
 // ─── Shared props for sub-panels ──────────────────────────────────────────────
 interface PanelContentProps extends CartPanelProps {
     items: CartItemType[];
+    /** Payable total, as the server stores it (VAT included). */
     total: number;
+    /** VAT the server adds (0 → no line). */
+    vat: number;
+    vatRate: number;
     loading: boolean;
 }
 
+/** The VAT line above the total, only when the store charges VAT. */
+const VatRow = ({ vat, vatRate, className }: { vat: number; vatRate: number; className?: string }) =>
+    vat > 0 ? (
+        <div className={cn("flex items-center justify-between text-right", className)}>
+            <span>{vat.toFixed(2)} ج.م</span>
+            <span>الضريبة{vatRate > 0 ? ` (${vatRate}%)` : ""}</span>
+        </div>
+    ) : null;
+
 // ─── Mobile Bottom Sheet ──────────────────────────────────────────────────────
-const MobileBottomSheet = ({ isOpen, onClose, items, total, loading }: PanelContentProps) => {
+const MobileBottomSheet = ({ isOpen, onClose, items, total, vat, vatRate, loading }: PanelContentProps) => {
     return (
         <>
             {/* Backdrop */}
@@ -114,6 +130,7 @@ const MobileBottomSheet = ({ isOpen, onClose, items, total, loading }: PanelCont
                             {items.map((item) => (
                                 <MiniCartItem key={item.cart_item_id} item={item} />
                             ))}
+                            <VatRow vat={vat} vatRate={vatRate} className="mt-2 border-t border-slate-200 pt-2 text-xs text-slate-500" />
                             <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-sm font-bold">
                                 <span className="text-orange-500">{total.toFixed(2)} ج.م</span>
                                 <span className="text-slate-700">الإجمالي</span>
@@ -145,7 +162,7 @@ const MobileBottomSheet = ({ isOpen, onClose, items, total, loading }: PanelCont
 };
 
 // ─── Desktop Sidebar (slides in from the RIGHT) ────────────────────────────────
-const DesktopSidebar = ({ isOpen, onClose, items, total, loading }: PanelContentProps) => {
+const DesktopSidebar = ({ isOpen, onClose, items, total, vat, vatRate, loading }: PanelContentProps) => {
     const sidebarRef = useRef<HTMLDivElement>(null);
 
     // Close on Escape key
@@ -216,6 +233,7 @@ const DesktopSidebar = ({ isOpen, onClose, items, total, loading }: PanelContent
                 {/* Footer */}
                 {items.length > 0 && (
                     <div className="border-t border-slate-100 px-6 py-5 space-y-4">
+                        <VatRow vat={vat} vatRate={vatRate} className="text-sm text-slate-500" />
                         <div className="flex items-center justify-between text-right">
                             <span className="text-xl font-bold text-slate-800">{total.toFixed(2)} ج.م</span>
                             <span className="text-sm font-medium text-slate-500">الإجمالي</span>
@@ -245,7 +263,27 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
     const { data: cartResponse, loading, retry } = useCartServices();
 
     const items: CartItemType[] = cartResponse?.cart_items ?? [];
-    const total: number = cartResponse?.total_price ?? 0;
+    // Payable total as the server stores it: sub-total + VAT (settings.vat) on every plan.
+    const { settings: contextSettings } = useSettings();
+    const [vatSetting, setVatSetting] = useState<unknown>(contextSettings?.vat);
+    useEffect(() => {
+        if (contextSettings?.vat !== undefined) {
+            setVatSetting(contextSettings.vat);
+            return;
+        }
+        // Context doesn't cross Astro islands: read the (cached) settings instead.
+        let cancelled = false;
+        fetchSettings()
+            .then((res) => {
+                if (!cancelled && res.ok && res.data) setVatSetting(res.data.vat);
+            })
+            .catch(() => {});
+        return () => {
+            cancelled = true;
+        };
+    }, [contextSettings?.vat]);
+    const totals = computeOrderTotals({ subtotal: cartResponse?.total_price ?? 0, vatRate: vatSetting as any });
+    const total: number = totals.total;
 
     // Refetch from v1/basket every time the panel opens
     useEffect(() => {
@@ -268,6 +306,8 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
                 onClose={onClose}
                 items={items}
                 total={total}
+                vat={totals.vat}
+                vatRate={totals.vatRate}
                 loading={loading}
             />
             <DesktopSidebar
@@ -275,6 +315,8 @@ export default function CartPanel({ isOpen, onClose }: CartPanelProps) {
                 onClose={onClose}
                 items={items}
                 total={total}
+                vat={totals.vat}
+                vatRate={totals.vatRate}
                 loading={loading}
             />
         </>

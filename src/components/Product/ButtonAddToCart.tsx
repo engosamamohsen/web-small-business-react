@@ -8,18 +8,28 @@ import { cn } from "@/utils/utils";
 import Cookies from "js-cookie";
 import { Loader2, ShoppingCart, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "@/lib/navigation";
+import { quickAddPlan } from "@/lib/product/variations";
+import { getEffectiveDiscount, getLinePrices } from "@/lib/pricing-utils";
 
 export function ButtonAddToCart({ product }: { product: ProductType }) {
   const router = useRouter();
   const token = Cookies.get("app_token");
   const { loading, addToCart } = useCartHook();
 
-  const hasVariations = (product?.variations?.length ?? 0) > 0;
+  // Option groups (src/lib/product/variations.ts): add straight away only when no group
+  // needs the customer (each required group has one available choice, which is added
+  // with it; no optional group to offer). Otherwise the product page lets them choose.
+  const plan = quickAddPlan(product?.variations);
+  const hasVariations = plan.kind === "choose";
 
-  // Made from a recipe and an item ran out (API `in_stock`): no quick add.
-  if (product?.in_stock === false) {
+  // Made from a recipe and an item ran out (API `in_stock`), or a required option group
+  // has no available choice: no quick add.
+  if (product?.in_stock === false || plan.kind === "unavailable") {
     return (
-      <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500">
+      <span
+        className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500"
+        title={plan.kind === "unavailable" ? plan.message : undefined}
+      >
         غير متاح حالياً
       </span>
     );
@@ -55,7 +65,20 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
     }
 
     try {
-      await addToCart(product);
+      if (plan.kind === "add" && plan.variations.length > 0) {
+        // Auto-selected choices: send their ids, and price the local cart line like
+        // the server: discount on the base only, extras at full price once per piece.
+        const discount = getEffectiveDiscount(product.price, product.discount, product.price_after);
+        const prices = getLinePrices(Number(product.price) || 0, discount, plan.extra);
+        await addToCart({
+          ...product,
+          variations: plan.variations,
+          local_unit_price: prices.final,
+          local_original_unit_price: prices.original,
+        });
+      } else {
+        await addToCart(product);
+      }
     } catch (error) {
       console.error("Error adding to cart:", error);
     }

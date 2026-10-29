@@ -24,6 +24,7 @@ import {
 } from "@/lib/subscription";
 import { clearLocalCart } from "@/lib/cart/local-cart";
 import { getCartDiscountSummary, originalUnitPrice } from "@/lib/cart/cart-totals";
+import { computeOrderTotals, totalsFromServerOrder, type OrderTotals } from "@/lib/cart/order-totals";
 import {
   buildGuestOrderItems,
   checkCartStock,
@@ -621,14 +622,16 @@ export default function Cart({
   // blocked here.
   const orderingBlocked = isOrderQuotaExhausted(subscriptionPlan);
 
-  // Order tax. The backend applies VAT (settings.vat — a percentage) to the
-  // subtotal; mirror it here so the cart total matches the order that gets
-  // placed. Verified against real orders: order.tax = sub_total × vat%,
-  // total = sub_total + tax (service/shipping are 0 for web orders). A missing
-  // / zero vat → no tax line, total = subtotal.
-  const taxRate = parseFloat(String(settings?.vat ?? 0)) || 0;
+  // Order totals exactly as the server stores them (lib/cart/order-totals): VAT
+  // (settings.vat %) on the sub-total on EVERY plan — Basic included — no service
+  // on website orders, and no delivery fee (guest-buy sends none). A missing /
+  // zero vat → no tax line, total = subtotal.
   const subtotal = cartResponse?.total_price ?? 0;
-  const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100;
+  const totals = computeOrderTotals({ subtotal, vatRate: settings?.vat });
+  const taxRate = totals.vatRate;
+  const taxAmount = totals.vat;
+  // The VAT line for the WhatsApp text, from the computed or the stored totals.
+  const taxLine = (t: OrderTotals) => (t.vat > 0 ? { rate: t.vatRate, amount: t.vat } : null);
 
   // Before/after-discount products totals (shown in the summary, receipt and
   // WhatsApp message). Derived from the cart items' original_unit_price.
@@ -708,7 +711,7 @@ export default function Cart({
     const customer = isPlusOrder
       ? { name: customerName, address: customerAddress }
       : { name: customerName, phone: customerPhone };
-    const orderTotal = subtotal + (isPlusOrder ? taxAmount : 0);
+    const orderTotal = totals.total;
 
     const finishOrder = (message: string) => {
       clearLocalCart();
@@ -725,7 +728,7 @@ export default function Cart({
       // basket/guest-buy — Basic has no customer form, so name / phone / address /
       // notes are sent empty; the details reach the shop through the WhatsApp text.
       if (!isPlusOrder) {
-        const textUrl = buildWhatsAppOrderUrl(items, orderTotal, settings, customer);
+        let textUrl = buildWhatsAppOrderUrl(items, orderTotal, settings, customer, taxLine(totals));
         // Open the window now, while the click still allows pop-ups, and point it
         // at WhatsApp once the store has accepted the order.
         const win = textUrl ? window.open("", "_blank") : null;
@@ -734,7 +737,7 @@ export default function Cart({
           // stops the WhatsApp order; any other API failure still lets the text
           // order through (it carries the details to the shop), as before.
           try {
-            await submitGuestOrder({
+            const placed = await submitGuestOrder({
               items: buildGuestOrderItems(items),
               payment_method: 1, // cash on delivery (online not enabled yet)
               order_type: "takeaway", // Basic has no address → takeaway
@@ -745,6 +748,11 @@ export default function Cart({
               // Waits for the store to accept it once the WhatsApp message arrives
               channel: "whatsapp",
             });
+            // Word the WhatsApp text from the total the store actually saved.
+            const stored = totalsFromServerOrder(placed?.order);
+            if (stored) {
+              textUrl = buildWhatsAppOrderUrl(items, stored.total, settings, customer, taxLine(stored)) ?? textUrl;
+            }
           } catch (error: any) {
             // Outside opening hours: final — no WhatsApp text, the cart stays.
             if (refuseClosed(error)) {
@@ -796,7 +804,7 @@ export default function Cart({
         phone: customerPhone.trim(),
         notes: orderNotes.trim(),
       }).then(
-        () => ({ ok: true as const }),
+        (data: any) => ({ ok: true as const, stored: totalsFromServerOrder(data?.order) }),
         (error: any) => ({ ok: false as const, error }),
       );
 
@@ -851,11 +859,14 @@ export default function Cart({
       // "unsupported" / "failed" → this device can't share a file. Fall back to
       // a wa.me FULL-text order to the shop number (still no download). The order
       // is placed server-side regardless of whether the popup opens.
+      // Worded from the total the store saved (falls back to the computed one).
+      const fallbackTotals = order.stored ?? totals;
       const fallbackUrl = buildWhatsAppOrderUrl(
         items,
-        orderTotal,
+        fallbackTotals.total,
         settings,
         customer,
+        taxLine(fallbackTotals),
       );
       const win = fallbackUrl ? window.open(fallbackUrl, "_blank") : null;
       if (win) {
@@ -939,9 +950,9 @@ export default function Cart({
         subtotal={subtotal}
         originalSubtotal={discountSummary.originalSubtotal}
         discountAmount={discountSummary.discountAmount}
-        vatRate={isPlusOrder ? taxRate : 0}
-        vatAmount={isPlusOrder ? taxAmount : 0}
-        total={subtotal + (isPlusOrder ? taxAmount : 0)}
+        vatRate={taxRate}
+        vatAmount={taxAmount}
+        total={totals.total}
       />
 
       <h1 className="mb-2 text-3xl font-bold text-slate-900">عربة التسوق</h1>
@@ -997,8 +1008,8 @@ export default function Cart({
             subtotal={cartResponse.total_price}
             originalSubtotal={discountSummary.originalSubtotal}
             discountAmount={discountSummary.discountAmount}
-            tax={isPlusOrder ? taxAmount : 0}
-            taxRate={isPlusOrder ? taxRate : 0}
+            tax={taxAmount}
+            taxRate={taxRate}
             onWhatsAppOrder={handleWhatsAppOrder}
             orderingBlocked={orderingBlocked}
             stockMessage={stock.unavailableIds.length ? stock.message || "بعض المنتجات غير متاحة حالياً" : null}
