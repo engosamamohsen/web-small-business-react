@@ -1,5 +1,6 @@
 import { fetchHook } from "@/hooks/fetch-hook";
 import { toMenuDish, type ApiProduct, type MenuDish } from "@/lib/meal-helper/engine";
+import { onTenantForgotten } from "@/lib/store-status";
 
 // ─── Whole menu of one store, for the meal helper ────────────────────────────
 //
@@ -11,6 +12,8 @@ const CACHE_MS = 1000 * 60 * 5;
 const MAX_PAGES = 50; // 500 dishes is far beyond any real menu
 
 const cache = new Map<string, { dishes: MenuDish[]; at: number }>();
+// A deleted store's menu is dropped with its other caches (src/lib/store-status.ts).
+onTenantForgotten((apiBase) => cache.delete(apiBase));
 
 async function page(apiBase: string, n: number) {
   const res = await fetchHook({ url: `v1/product?page=${n}`, init: {}, baseUrl: apiBase });

@@ -1,9 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { fetchSettings } from "@/hooks/fetchSettings";
+import { storeUnavailableStatus } from "@/lib/store-status";
 
 // Rendered on-demand: middleware rewrites every storefront route here when the
-// tenant's subscription has expired (see src/middleware.ts). No Header/Footer
+// tenant's subscription has expired, or (with HTTP 404) when the store no longer
+// exists (see src/middleware.ts, src/lib/store-status.ts). No Header/Footer
 // and no product/category data is loaded — there is intentionally nothing to
 // browse from this screen.
 export const prerender = false;
@@ -13,14 +15,26 @@ const token = Astro.cookies.get("app_token")?.value;
 
 // Settings come from the same per-tenant cache middleware already warmed, so
 // this is a cache hit, not a second network round trip. Logo/name are optional.
+// A deleted store (middleware set storeMissing, or this page was opened directly on
+// such a host) has no settings: no branding, HTTP 404, never cached.
 let shopName: string | undefined;
 let logo: string | undefined;
-try {
-    const res = await fetchSettings(token, false, apiBase);
-    shopName = res?.data?.name;
-    logo = res?.data?.logo;
-} catch {
-    // ignore — the screen works without branding
+let storeMissing = Boolean(Astro.locals.storeMissing);
+if (!storeMissing) {
+    try {
+        const res = await fetchSettings(token, false, apiBase);
+        storeMissing = Boolean(res?.notFound);
+        shopName = res?.data?.name;
+        logo = res?.data?.logo;
+    } catch {
+        // ignore — the screen works without branding
+    }
+}
+
+Astro.response.status = storeUnavailableStatus(storeMissing);
+if (storeMissing) {
+    Astro.response.headers.set("Cache-Control", "no-store");
+    Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
 }
 
 const pageTitle = shopName ? `${shopName} — غير متاح` : "المتجر غير متاح";

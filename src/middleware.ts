@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { PLAN_COOKIE, planFromSettings, type StorePlan } from "@/lib/store-config";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { isStoreExpired } from "@/lib/subscription";
+import { decideStoreAccess } from "@/lib/store-status";
 import { devApiOrigin } from "@/lib/config";
 import { DEFAULT_THEME, THEME_PREVIEW_COOKIE, THEME_PREVIEW_PARAM, isThemeKey } from "@/themes/registry";
 
@@ -14,7 +15,8 @@ const planContext = new AsyncLocalStorage<StorePlan>();
 const bookingContext = new AsyncLocalStorage<boolean>();
 (globalThis as unknown as { __ctBookingStore?: AsyncLocalStorage<boolean> }).__ctBookingStore = bookingContext;
 
-// Lockout screen shown when the tenant's subscription has expired.
+// Lockout screen shown when the tenant's subscription has expired, or (with 404) when
+// the store doesn't exist any more.
 const STORE_UNAVAILABLE_PATH = "/store-unavailable";
 
 // Derive the tenant's admin API origin from the incoming request.
@@ -144,6 +146,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.hours = { enabled: false };
     context.locals.booking = { enabled: false };
     context.locals.shopType = null;
+    context.locals.storeMissing = context.locals.storeMissing ?? false; // kept across the rewrite below
     if (isGet && !isLockoutPage) {
         // Tracking test view (?ct_debug=1, the dashboard's "Test in my browser"):
         // load fresh settings so it shows what was saved a second ago, plus the test panel.
@@ -152,6 +155,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
         try {
             const token = context.cookies.get("app_token")?.value;
             const settings = await fetchSettings(token, trackingDebug, apiBase);
+
+            // ── Deleted / unknown store ──────────────────────────────────────
+            // The tenant API said this store doesn't exist (not a timeout or 5xx: those
+            // keep the store open, see src/lib/store-status.ts). Every page of this host
+            // becomes the store-unavailable page with 404 + noindex; fetchSettings has
+            // already dropped the host's caches, and its cookies go too.
+            const access = decideStoreAccess({
+                ok: settings.ok,
+                notFound: settings.notFound,
+                tenantUnknown,
+                expired: settings.ok && isStoreExpired(settings.current_subscription_plan),
+            });
+            if (access === "missing") {
+                context.locals.storeMissing = true;
+                context.locals.tracking = [];
+                context.cookies.delete("app_data", { path: "/" });
+                context.cookies.delete(PLAN_COOKIE, { path: "/" });
+                return context.rewrite(STORE_UNAVAILABLE_PATH);
+            }
             // Only when the tenant is known: on the PUBLIC_BASE_URL fallback every store
             // would get the default tenant's pixels and send its visitors to that account.
             context.locals.tracking = tenantUnknown ? [] : settings.tracking ?? [];
@@ -170,7 +192,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
             if (!context.locals.themePreview && isThemeKey(settings.data?.storefront_theme)) {
                 context.locals.theme = settings.data.storefront_theme;
             }
-            if (isStoreExpired(settings.current_subscription_plan)) {
+            if (access === "expired") {
                 return context.rewrite(STORE_UNAVAILABLE_PATH);
             }
         } catch {

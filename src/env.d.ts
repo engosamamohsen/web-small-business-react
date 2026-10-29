@@ -27,5 +27,8 @@ declare namespace App {
         shopType?: string | null;
         // The store's own colours (Classic theme), printed on <html> so the first paint already has them.
         storeColors?: { font?: string | null; background?: string | null };
+        // The tenant API says this store doesn't exist (deleted): every page is the
+        // store-unavailable page with HTTP 404. See src/lib/store-status.ts.
+        storeMissing?: boolean;
     }
 }

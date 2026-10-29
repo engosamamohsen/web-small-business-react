@@ -5,6 +5,7 @@ import type { TrackingItem } from "@/lib/tracking/providers";
 import type { StoreHoursSetting } from "@/lib/store-hours";
 import type { BookingSetting } from "@/lib/booking/types";
 import { bookingFromSettings } from "@/lib/booking/enabled";
+import { forgetTenant, isStoreGoneResponse, onTenantForgotten } from "@/lib/store-status";
 
 export interface SettingsData {
   id: number;
@@ -63,6 +64,8 @@ export type SettingsResponse = {
   ok: boolean;
   status?: number;
   error?: unknown;
+  /** The API said this store doesn't exist (deleted / never created): see src/lib/store-status.ts. */
+  notFound?: boolean;
 };
 
 // Resolved at call time from window.location.origin — never a hardcoded domain.
@@ -73,6 +76,9 @@ const SETTINGS_CACHE_KEY = "app_settings";
 const SETTINGS_CACHE_TIMESTAMP_KEY = "app_settings_timestamp";
 const CACHE_DURATION = 1000 * 60 * 15; // 15 minutes — storefront settings (e.g. WhatsApp number) propagate within this window on the client
 const SERVER_CACHE_DURATION = 1000 * 60 * 5; // 5 minutes on server
+// After this age a cached entry is still served, but refreshed in the background, so a
+// deleted store is noticed (and its cache dropped) within about a minute, not five.
+const SERVER_REVALIDATE_AFTER = 1000 * 60;
 
 // ===== Server-side Cache =====
 // Keyed by apiBase so different tenants never share cached settings.
@@ -90,6 +96,9 @@ const serverSettingsCache = new Map<
     timestamp: number;
   }
 >();
+
+// A store that turns out to be gone is dropped from the cache (src/lib/store-status.ts).
+onTenantForgotten((apiBase) => serverSettingsCache.delete(apiBase));
 
 // ===== LocalStorage Helpers =====
 export function getSettingsFromLocalStorage(): SettingsData | null {
@@ -121,6 +130,16 @@ function saveSettingsToLocalStorage(settings: SettingsData): void {
     localStorage.setItem(SETTINGS_CACHE_TIMESTAMP_KEY, Date.now().toString());
   } catch (error) {
     console.log("[Settings] error saving to localStorage", error);
+  }
+}
+
+function clearSettingsFromLocalStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(SETTINGS_CACHE_KEY);
+    localStorage.removeItem(SETTINGS_CACHE_TIMESTAMP_KEY);
+  } catch {
+    // storage blocked — nothing to clear
   }
 }
 
@@ -156,7 +175,12 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
     const response = await fetchWithTimeout(url, { headers });
 
     if (!response.ok) {
-      return { ok: false, status: response.status, error: `HTTP ${response.status}` };
+      return {
+        ok: false,
+        status: response.status,
+        error: `HTTP ${response.status}`,
+        notFound: isStoreGoneResponse(response.status, response.headers.get("content-type")),
+      };
     }
 
     const result = await response.json();
@@ -202,6 +226,9 @@ export async function fetchSettings(
     if (cached) {
       const age = Date.now() - cached.timestamp;
       if (age < SERVER_CACHE_DURATION) {
+        if (age > SERVER_REVALIDATE_AFTER && !ongoingFetches.has(cacheKey)) {
+          void refresh(cacheKey, token, baseUrl, true).catch(() => {});
+        }
         return {
           data: cached.data,
           current_subscription_plan: cached.current_subscription_plan,
@@ -242,7 +269,17 @@ export async function fetchSettings(
     }
   }
 
-  // Deduplicate concurrent fetches per tenant
+  return refresh(cacheKey, token, baseUrl, isServer);
+}
+
+// Fetch, store in the cache, and drop every per-host cache when the store is gone.
+// Concurrent fetches for the same tenant share one request.
+function refresh(
+  cacheKey: string,
+  token: string | undefined,
+  baseUrl: string | undefined,
+  isServer: boolean,
+): Promise<SettingsResponse> {
   const existing = ongoingFetches.get(cacheKey);
   if (existing) return existing;
 
@@ -264,6 +301,12 @@ export async function fetchSettings(
           });
         } else {
           saveSettingsToLocalStorage(result.data);
+        }
+      } else if (result.notFound) {
+        if (isServer) {
+          forgetTenant(cacheKey);
+        } else {
+          clearSettingsFromLocalStorage();
         }
       }
       return result;
