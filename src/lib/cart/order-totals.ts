@@ -7,8 +7,9 @@
 // The server's rule (Laravel, app/Http/Controllers/API/V1/BasketController.php):
 //   • guest / WhatsApp orders, placeGuestOrder():
 //       vat = settings.vat, service = 0 (never charged on website orders),
-//       shipping = request.shipping for "delivery", else 0 (the storefront sends
-//       none, and the WhatsApp endpoint forces 0),
+//       shipping = the city's fee (cities.shipping_fees) for "delivery" with a
+//       city_id, else 0; a `shipping` number from the browser is ignored (the
+//       storefront sends no city, and the WhatsApp endpoint forces 0),
 //       OrderCalculationService::calculateOrderTotals():
 //         vat   = vat% > 0 ? vat% × sub_total / 100 : 0      ← every plan, every order type
 //         total = sub_total + vat + service + shipping
