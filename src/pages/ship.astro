@@ -1,0 +1,52 @@
+---
+// /ship: send a shipment request to a shipping company (phase 3). The profile is fetched fresh here,
+// because its form_token (the time trap) is the moment the form was loaded. Booking closed (owner
+// decision D4): the company's "booking soon" text and its contacts instead of the form.
+// A store's host gets the normal 404.
+import CarrierLayout from "@/components/Carrier/CarrierLayout.astro";
+import ShipForm from "@/components/Carrier/ShipForm";
+import { getSiteOrigin } from "@/lib/site-origin";
+import { freshProfile, visitorIp } from "@/lib/shipping/server";
+import { carrierStrings, pickText } from "@/lib/shipping/strings";
+import type { CarrierProfile } from "@/lib/shipping/types";
+
+export const prerender = false;
+
+if (Astro.locals.siteKind !== "shipping") {
+    return Astro.redirect("/404");
+}
+
+const lang = Astro.locals.carrierLang ?? "ar";
+const t = carrierStrings(lang);
+const fresh = await freshProfile(Astro.locals.apiBase, visitorIp(Astro.request, Astro.clientAddress), lang);
+const profile: CarrierProfile = fresh ?? (Astro.locals.carrier as CarrierProfile);
+const formToken = fresh?.form_token ?? "";
+const open = Boolean(fresh && profile.booking_open && formToken);
+Astro.response.headers.set("Cache-Control", "private, no-store");
+if (!fresh) Astro.response.status = 503;
+
+const phone = profile.contact?.phone ?? null;
+const whatsapp = profile.contact?.whatsapp ?? null;
+---
+
+<CarrierLayout title={t.shipTitle} description={t.shipIntro} current="ship" canonicalPath="/ship" noindex={!open}>
+    <div class="cr-wrap" style="max-width:760px">
+        {open ? (
+            <Fragment>
+                <p class="cr-hint" style="margin:0 0 12px">{t.shipIntro}</p>
+                <ShipForm profile={profile} formToken={formToken} lang={lang} siteOrigin={getSiteOrigin(Astro.request, Astro.url)} client:load />
+                <noscript><p class="cr-alert">{t.needsJs}</p></noscript>
+            </Fragment>
+        ) : (
+            <section class="cr-card">
+                <h1>{fresh ? t.bookingClosedTitle : t.shipTitle}</h1>
+                <p>{fresh ? pickText(profile.texts?.booking_soon, lang) : t.errServer}</p>
+                <div class="cr-contact">
+                    {phone && <a class="cr-btn cr-btn--brand" href={`tel:${phone}`}><span>{t.call}</span> <span dir="ltr">{phone}</span></a>}
+                    {whatsapp && <a class="cr-btn cr-btn--ghost" href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener">{t.whatsapp}</a>}
+                    <a class="cr-btn cr-btn--ghost" href="/track">{t.navTrack}</a>
+                </div>
+            </section>
+        )}
+    </div>
+</CarrierLayout>

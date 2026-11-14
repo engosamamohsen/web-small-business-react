@@ -30,5 +30,12 @@ declare namespace App {
         // The tenant API says this store doesn't exist (deleted): every page is the
         // store-unavailable page with HTTP 404. See src/lib/store-status.ts.
         storeMissing?: boolean;
+        // A shipping company's host (CashierThru shipping ERP, phase 3): the carrier site instead of a
+        // storefront. Set by src/middleware.ts from api/shipping/public/profile. See src/lib/shipping/.
+        siteKind?: "shipping";
+        carrier?: import("@/lib/shipping/types").CarrierProfile;
+        carrierLang?: import("@/lib/shipping/types").CarrierLang;
+        // Unknown path on a carrier site: /carrier draws its 404 page.
+        carrierNotFound?: boolean;
     }
 }

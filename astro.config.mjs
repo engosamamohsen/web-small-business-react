@@ -58,6 +58,12 @@ export default defineConfig({
     },
     ssr: {
       noExternal: ['primereact', 'react-use']
+    },
+    // Dev server only: pre-bundle the form libraries of the React islands (the carrier /ship form) at start-up.
+    // Without this Vite finds them on the first page load, re-bundles, and the page that is already open gets
+    // "504 Outdated Optimize Dep" and a dead form until the server restarts (QA 2026-11-14, finding 2).
+    optimizeDeps: {
+      include: ['react-hook-form', '@hookform/resolvers/zod', 'zod']
     }
   },
 

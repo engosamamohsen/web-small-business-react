@@ -1,0 +1,102 @@
+---
+// /track and /track/<number> on a shipping company's site (phase 3, design 2.7). The timeline and the
+// governorates come with the number; first names and the COD due need the last 4 phone digits
+// (TrackDetails island). Never indexed. A store's host gets the normal 404.
+import CarrierLayout from "@/components/Carrier/CarrierLayout.astro";
+import TrackBox from "@/components/Carrier/TrackBox.astro";
+import TrackDetails from "@/components/Carrier/TrackDetails";
+import { normalizeTrackingNo } from "@/lib/shipping/booking";
+import { countryTimeZone, formatDateTime, formatDay } from "@/lib/shipping/format";
+import { shippingApi, visitorIp } from "@/lib/shipping/server";
+import { carrierStrings, pickText } from "@/lib/shipping/strings";
+import type { CarrierProfile, CarrierTracking } from "@/lib/shipping/types";
+
+export const prerender = false;
+
+if (Astro.locals.siteKind !== "shipping") {
+    return Astro.redirect("/404");
+}
+
+const profile = Astro.locals.carrier as CarrierProfile;
+const lang = Astro.locals.carrierLang ?? "ar";
+const t = carrierStrings(lang);
+Astro.response.headers.set("X-Robots-Tag", "noindex");
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+// The plain form sends ?number=…: go to the page of that number
+const typed = Astro.url.searchParams.get("number");
+if (typed !== null) {
+    const clean = normalizeTrackingNo(typed);
+    if (clean) return Astro.redirect(`/track/${encodeURIComponent(clean)}`, 303);
+}
+
+const raw = Astro.params.number ?? "";
+let error: string | null = typed !== null ? t.trackBadNumber : null;
+let tracking: CarrierTracking | null = null;
+
+if (raw) {
+    const number = normalizeTrackingNo(decodeURIComponent(raw));
+    if (!number) {
+        error = t.trackBadNumber;
+        Astro.response.status = 404;
+    } else {
+        const ip = visitorIp(Astro.request, Astro.clientAddress);
+        const result = await shippingApi<CarrierTracking>(Astro.locals.apiBase, `track/${encodeURIComponent(number)}`, { ip, lang });
+        if (result.ok && result.body && result.body.status === true) {
+            tracking = result.body.data;
+        } else if (result.status === 404) {
+            error = t.trackNotFound;
+            Astro.response.status = 404;
+        } else if (result.status === 429) {
+            error = (result.body as { message?: string } | null)?.message || t.errServer;
+            Astro.response.status = 429;
+        } else {
+            error = result.status === 0 ? t.errNetwork : t.errServer;
+            Astro.response.status = 503;
+        }
+    }
+}
+
+const tz = countryTimeZone(profile.country);
+const steps = tracking ? [...tracking.timeline].reverse() : [];
+---
+
+<CarrierLayout title={tracking ? `${t.trackPageTitle} ${tracking.tracking_no}` : t.trackPageTitle} current="track" noindex>
+    <div class="cr-wrap" style="display:grid;gap:16px">
+        {!tracking && <TrackBox value={raw ? decodeURIComponent(raw) : typed ?? ""} error={error} headingLevel={1} />}
+
+        {tracking && (
+            <Fragment>
+                <section class="cr-card" aria-labelledby="cr-track-h">
+                    <h1 id="cr-track-h" style="margin:0 0 4px;font-size:1.25rem">
+                        {t.trackNumber}: <span dir="ltr" style="unicode-bidi:isolate">{tracking.tracking_no}</span>
+                    </h1>
+                    <p style="margin:0 0 6px;color:var(--cr-muted)">{t.currentStatus}</p>
+                    <span class="cr-status-pill" data-status={tracking.status}>{pickText(tracking.status_label, lang)}</span>
+                    <dl class="cr-facts">
+                        {tracking.from_governorate && <div><dt>{t.from}</dt><dd>{pickText(tracking.from_governorate, lang)}</dd></div>}
+                        {tracking.to_governorate && <div><dt>{t.to}</dt><dd>{pickText(tracking.to_governorate, lang)}</dd></div>}
+                        {tracking.expected_delivery_date && <div><dt>{t.expected}</dt><dd>{formatDay(tracking.expected_delivery_date, lang)}</dd></div>}
+                        <div><dt>{t.bookedOn}</dt><dd>{formatDateTime(tracking.created_at, lang, tz)}</dd></div>
+                    </dl>
+                </section>
+
+                <section class="cr-card" aria-labelledby="cr-timeline-h">
+                    <h2 id="cr-timeline-h">{t.timelineTitle}</h2>
+                    <ol class="cr-timeline">
+                        {steps.map((s) => (
+                            <li>
+                                <strong>{pickText(s.label, lang)}</strong>
+                                <time datetime={s.at}>{formatDateTime(s.at, lang, tz)}</time>
+                            </li>
+                        ))}
+                    </ol>
+                </section>
+
+                <TrackDetails trackingNo={tracking.tracking_no} lang={lang} client:visible />
+
+                <TrackBox />
+            </Fragment>
+        )}
+    </div>
+</CarrierLayout>

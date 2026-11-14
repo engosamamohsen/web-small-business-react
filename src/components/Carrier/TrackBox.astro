@@ -1,0 +1,40 @@
+---
+// "Track your shipment" box: a plain form (works without JavaScript). /track?number=… redirects to
+// /track/<number>.
+import { carrierStrings } from "@/lib/shipping/strings";
+
+interface Props {
+    value?: string;
+    error?: string | null;
+    headingLevel?: 1 | 2;
+}
+
+const { value = "", error = null, headingLevel = 2 } = Astro.props;
+const t = carrierStrings(Astro.locals.carrierLang ?? "ar");
+const Heading = headingLevel === 1 ? "h1" : "h2";
+---
+
+<section class="cr-card" aria-labelledby="cr-track-title">
+    <Heading id="cr-track-title">{headingLevel === 1 ? t.trackPageTitle : t.trackTitle}</Heading>
+    <p>{t.trackHint}</p>
+    <form class="cr-track-form" method="get" action="/track" role="search">
+        <label class="cr-visually-hidden" for="cr-track-number">{t.trackNumber}</label>
+        <input
+            class="cr-input"
+            id="cr-track-number"
+            name="number"
+            value={value}
+            placeholder={t.trackPlaceholder}
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            inputmode="text"
+            maxlength="40"
+            required
+            aria-invalid={error ? "true" : undefined}
+            aria-describedby={error ? "cr-track-error" : undefined}
+        />
+        <button class="cr-btn cr-btn--brand" type="submit">{t.trackButton}</button>
+    </form>
+    {error && <p class="cr-error" id="cr-track-error" role="alert">{error}</p>}
+</section>

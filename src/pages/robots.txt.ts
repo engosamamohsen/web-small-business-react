@@ -7,8 +7,16 @@ import { getSiteOrigin } from "@/lib/site-origin";
 // placeholder that pointed at https://your-domain.com/sitemap.xml.
 export const prerender = false;
 
-export const GET: APIRoute = ({ request, url }) => {
+export const GET: APIRoute = ({ request, url, locals }) => {
     const origin = getSiteOrigin(request, url);
+
+    // A shipping company's site (src/lib/shipping): home and /ship only; tracking pages are private
+    if (locals.siteKind === "shipping") {
+        const carrierBody = ["User-agent: *", "Allow: /", "Disallow: /track", "Disallow: /api/", ""].join("\n");
+        return new Response(carrierBody, {
+            headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
+        });
+    }
 
     const body =
         [

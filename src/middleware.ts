@@ -6,6 +6,10 @@ import { isStoreExpired } from "@/lib/subscription";
 import { decideStoreAccess } from "@/lib/store-status";
 import { devApiOrigin } from "@/lib/config";
 import { DEFAULT_THEME, THEME_PREVIEW_COOKIE, THEME_PREVIEW_PARAM, isThemeKey } from "@/themes/registry";
+import { cachedCarrier, isCarrierPath, lookupCarrier, visitorIp } from "@/lib/shipping/server";
+import { CARRIER_LANG_COOKIE, isCarrierLang, pickCarrierLang } from "@/lib/shipping/strings";
+import type { CarrierProfile } from "@/lib/shipping/types";
+import type { APIContext, MiddlewareNext } from "astro";
 
 // Store mode for this request (basic / premium), read by storeConfig on the server.
 // See src/lib/store-config.ts.
@@ -101,6 +105,64 @@ function deriveAdminOrigin(hostname: string, protocol: string): { origin: string
     return { origin: `${protocol}://${hostname}`, fallback: false };
 }
 
+// ── Shipping company sites (CashierThru shipping ERP, phase 3) ─────────────────────────────────────
+// A shipping company's host answers setting-profile with 404 (it isn't a store) and
+// api/shipping/public/profile with its profile. It then shows the carrier site (home, /ship, /track)
+// and nothing of the storefront: "/" is the carrier home, any store path is the carrier's 404 page.
+// Stores never make the extra request: it only follows a 404.
+function carrierLangFromRequest(context: APIContext) {
+    const query = context.url.searchParams.get("lang");
+    if (isCarrierLang(query)) {
+        context.cookies.set(CARRIER_LANG_COOKIE, query, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365 });
+    }
+    return pickCarrierLang(query, context.cookies.get(CARRIER_LANG_COOKIE)?.value);
+}
+
+/** The connection address; Astro throws on prerendered pages, where there is no visitor. */
+function safeClientAddress(context: APIContext): string | undefined {
+    try {
+        return context.clientAddress;
+    } catch {
+        return undefined;
+    }
+}
+
+// Carrier pages may not be framed by other sites (the booking form), sniffed, or leak full URLs
+// (tracking numbers) to other sites through the Referer (QA 2026-11-08). Stores are unchanged.
+const CARRIER_HEADERS: Record<string, string> = {
+    "X-Frame-Options": "SAMEORIGIN",
+    "Content-Security-Policy": "frame-ancestors 'self'",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+};
+
+async function withCarrierHeaders(response: Response | Promise<Response>): Promise<Response> {
+    const res = await response;
+    try {
+        for (const [name, value] of Object.entries(CARRIER_HEADERS)) res.headers.set(name, value);
+        return res;
+    } catch {
+        // immutable headers: copy the response
+        const copy = new Response(res.body, res);
+        for (const [name, value] of Object.entries(CARRIER_HEADERS)) copy.headers.set(name, value);
+        return copy;
+    }
+}
+
+function serveCarrier(context: APIContext, next: MiddlewareNext, profile: CarrierProfile) {
+    context.locals.siteKind = "shipping";
+    context.locals.carrier = profile;
+    context.locals.carrierLang = carrierLangFromRequest(context);
+    context.locals.tracking = [];
+    const path = context.url.pathname;
+    if (path === "/") return withCarrierHeaders(context.rewrite("/carrier"));
+    if (!isCarrierPath(path)) {
+        context.locals.carrierNotFound = true;
+        return withCarrierHeaders(context.rewrite("/carrier"));
+    }
+    return withCarrierHeaders(next());
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
     const hostname = extractHostname(context.request, context.url.hostname);
     const protocol = extractProtocol(context.request, context.url.protocol);
@@ -153,6 +215,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
         const trackingDebug = context.url.searchParams.get("ct_debug") === "1";
         context.locals.trackingDebug = trackingDebug;
         try {
+            // A host known to be a shipping company skips the store settings call
+            const knownCarrier = tenantUnknown ? null : cachedCarrier(apiBase);
+            if (knownCarrier) return serveCarrier(context, next, knownCarrier);
+
             const token = context.cookies.get("app_token")?.value;
             const settings = await fetchSettings(token, trackingDebug, apiBase);
 
@@ -168,6 +234,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 expired: settings.ok && isStoreExpired(settings.current_subscription_plan),
             });
             if (access === "missing") {
+                // Not a store: maybe a shipping company
+                const carrier = await lookupCarrier(apiBase, visitorIp(context.request, safeClientAddress(context)), carrierLangFromRequest(context));
+                if (carrier.kind === "shipping") return serveCarrier(context, next, carrier.profile);
                 context.locals.storeMissing = true;
                 context.locals.tracking = [];
                 context.cookies.delete("app_data", { path: "/" });

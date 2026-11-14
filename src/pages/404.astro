@@ -1,5 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+// Rendered per request, not baked at build time (QA 2026-11-08, M1; owner approved 2026-11-09): a baked
+// 404.html showed whichever store PUBLIC_BASE_URL pointed to at build time, on every host. Now the middleware
+// runs first, so each store gets its own 404 page and a shipping company gets its carrier 404 (the
+// middleware rewrites an unknown carrier path to /carrier, in the visitor's language).
+export const prerender = false;
+
+Astro.response.status = 404;
 ---
 
 <Layout title="404 - الصفحة غير موجودة">

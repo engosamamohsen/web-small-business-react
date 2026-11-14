@@ -1,0 +1,89 @@
+---
+// Page frame of a shipping company's public site (CashierThru shipping ERP, phase 3): its own header,
+// language switch and footer. Not a storefront theme: no store settings, cart, pixels or theme registry.
+// Arabic first (RTL) with English; the language comes from ?lang= / the ct_ship_lang cookie (middleware).
+import "@/styles/fonts.css";
+import "@/styles/carrier.css";
+import { getSiteOrigin } from "@/lib/site-origin";
+import { absoluteLogo } from "@/lib/shipping/server";
+import { carrierStrings } from "@/lib/shipping/strings";
+import type { CarrierProfile } from "@/lib/shipping/types";
+
+interface Props {
+    title: string;
+    description?: string;
+    /** Which nav item is current. */
+    current?: "home" | "ship" | "track" | null;
+    noindex?: boolean;
+    /** Path (without query) for the canonical URL; omitted on pages that shouldn't have one. */
+    canonicalPath?: string;
+}
+
+const { title, description, current = null, noindex = false, canonicalPath } = Astro.props;
+const profile = Astro.locals.carrier as CarrierProfile;
+const lang = Astro.locals.carrierLang ?? "ar";
+const t = carrierStrings(lang);
+const origin = getSiteOrigin(Astro.request, Astro.url);
+const logo = absoluteLogo(Astro.locals.apiBase, profile?.logo_url);
+const name = profile?.name ?? "";
+const otherLang = lang === "ar" ? "en" : "ar";
+const switchHref = (() => {
+    const params = new URLSearchParams(Astro.url.search);
+    params.set("lang", otherLang);
+    const path = Astro.originPathname || Astro.url.pathname;
+    return `${path === "/carrier" ? "/" : path}?${params.toString()}`;
+})();
+const phone = profile?.contact?.phone ?? null;
+const whatsapp = profile?.contact?.whatsapp ?? null;
+const fullTitle = title === name ? name : `${title} | ${name}`;
+---
+
+<!doctype html>
+<html lang={lang} dir={t.dir}>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{fullTitle}</title>
+        {description && <meta name="description" content={description} />}
+        {noindex && <meta name="robots" content="noindex, nofollow" />}
+        {canonicalPath && !noindex && <link rel="canonical" href={`${origin}${canonicalPath}`} />}
+        <meta property="og:title" content={fullTitle} />
+        {description && <meta property="og:description" content={description} />}
+        <meta property="og:type" content="website" />
+        {logo && <meta property="og:image" content={logo} />}
+        {logo && <link rel="icon" href={logo} />}
+        <meta name="theme-color" content="#0e7c76" />
+        <link rel="preload" href={lang === "ar" ? "/fonts/cairo/cairo-arabic.woff2" : "/fonts/cairo/cairo-latin.woff2"} as="font" type="font/woff2" crossorigin />
+    </head>
+    <body class="cr-body">
+        <a class="cr-skip" href="#main">{t.skipToContent}</a>
+        <header class="cr-header">
+            <div class="cr-wrap cr-header__row">
+                <a class="cr-brand" href="/" aria-label={`${name} – ${t.navHome}`}>
+                    {logo ? <img src={logo} alt="" height="40" /> : <span class="cr-brand__mark" aria-hidden="true">{name.trim().charAt(0)}</span>}
+                    <span class="cr-brand__name">{name}</span>
+                </a>
+                <nav class="cr-nav" aria-label={t.navHome}>
+                    <a href="/ship" aria-current={current === "ship" ? "page" : undefined}>{t.navShip}</a>
+                    <a href="/track" aria-current={current === "track" ? "page" : undefined}>{t.navTrack}</a>
+                    <a class="cr-lang" href={switchHref} hreflang={otherLang} lang={otherLang} aria-label={t.switchLang}>{t.otherLangName}</a>
+                </nav>
+            </div>
+        </header>
+
+        <main id="main" class="cr-main" tabindex="-1">
+            <slot />
+        </main>
+
+        <footer class="cr-footer">
+            <div class="cr-wrap cr-footer__row">
+                <span>© {new Date().getFullYear()} {name}</span>
+                <span class="cr-contact">
+                    {phone && <a href={`tel:${phone}`} dir="ltr">{phone}</a>}
+                    {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`} rel="noopener" target="_blank">{t.whatsapp}</a>}
+                </span>
+                <span>{t.poweredBy}</span>
+            </div>
+        </footer>
+    </body>
+</html>

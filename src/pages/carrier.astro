@@ -1,0 +1,101 @@
+---
+// Home page (and 404 page) of a shipping company's public site. The middleware rewrites "/" of a
+// shipping company's host here, and any path the carrier site doesn't have (with carrierNotFound).
+// On a store's host it sends to the store's 404 page, like /ship and /track.
+import CarrierLayout from "@/components/Carrier/CarrierLayout.astro";
+import TrackBox from "@/components/Carrier/TrackBox.astro";
+import { carrierStrings, optionLabel, pickText } from "@/lib/shipping/strings";
+import type { CarrierProfile } from "@/lib/shipping/types";
+
+export const prerender = false;
+
+if (Astro.locals.siteKind !== "shipping") {
+    return Astro.redirect("/404");
+}
+
+const profile = Astro.locals.carrier as CarrierProfile;
+const lang = Astro.locals.carrierLang ?? "ar";
+const t = carrierStrings(lang);
+// /carrier itself is internal: typed into the address bar it is the carrier's 404 page
+const notFound = Boolean(Astro.locals.carrierNotFound) || Astro.originPathname === "/carrier";
+if (notFound) Astro.response.status = 404;
+
+const welcomeTitle = pickText(profile.texts?.welcome_title, lang) || profile.name;
+const welcomeText = pickText(profile.texts?.welcome_text, lang);
+const bookingSoon = pickText(profile.texts?.booking_soon, lang);
+const areas = profile.governorates.map((g) => optionLabel(g, lang));
+const phone = profile.contact?.phone ?? null;
+const whatsapp = profile.contact?.whatsapp ?? null;
+---
+
+<CarrierLayout
+    title={notFound ? t.notFoundTitle : profile.name}
+    description={welcomeText || welcomeTitle}
+    current={notFound ? null : "home"}
+    noindex={notFound}
+    canonicalPath={notFound ? undefined : "/"}
+>
+    {notFound ? (
+        <div class="cr-wrap">
+            <section class="cr-card">
+                <h1>{t.notFoundTitle}</h1>
+                <p>{t.notFoundBody}</p>
+                <div class="cr-hero__actions">
+                    <a class="cr-btn cr-btn--brand" href="/">{t.navHome}</a>
+                    <a class="cr-btn cr-btn--ghost" href="/track">{t.navTrack}</a>
+                </div>
+            </section>
+        </div>
+    ) : (
+        <Fragment>
+            <section class="cr-hero">
+                <div class="cr-wrap">
+                    <h1>{welcomeTitle}</h1>
+                    {welcomeText && <p>{welcomeText}</p>}
+                    <div class="cr-hero__actions">
+                        {profile.booking_open && <a class="cr-btn cr-btn--action" href="/ship">{t.sendShipment}</a>}
+                        <a class="cr-btn cr-btn--ghost" href="#cr-track-title">{t.navTrack}</a>
+                    </div>
+                </div>
+            </section>
+
+            <div class="cr-wrap">
+                {!profile.booking_open && (
+                    <p class="cr-note" style="margin-top:20px" role="status">
+                        <strong>{t.bookingClosedTitle}.</strong> {bookingSoon}
+                    </p>
+                )}
+                <div class="cr-grid cr-grid--2">
+                    <TrackBox />
+                    <section class="cr-card" aria-labelledby="cr-how">
+                        <h2 id="cr-how">{t.howTitle}</h2>
+                        <ol class="cr-steps">
+                            <li>{t.how1}</li>
+                            <li>{t.how2}</li>
+                            <li>{t.how3}</li>
+                        </ol>
+                    </section>
+                    <section class="cr-card" aria-labelledby="cr-areas">
+                        <h2 id="cr-areas">{t.areasTitle}</h2>
+                        {areas.length > 0 ? (
+                            <ul class="cr-chips">{areas.map((a) => <li>{a}</li>)}</ul>
+                        ) : (
+                            <p>{t.areasEmpty}</p>
+                        )}
+                    </section>
+                    {(phone || whatsapp) && (
+                        <section class="cr-card" aria-labelledby="cr-contact">
+                            <h2 id="cr-contact">{t.contactTitle}</h2>
+                            <div class="cr-contact">
+                                {phone && <a class="cr-btn cr-btn--ghost" href={`tel:${phone}`}><span>{t.call}</span> <span dir="ltr">{phone}</span></a>}
+                                {whatsapp && (
+                                    <a class="cr-btn cr-btn--ghost" href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener">{t.whatsapp}</a>
+                                )}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            </div>
+        </Fragment>
+    )}
+</CarrierLayout>
