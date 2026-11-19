@@ -93,11 +93,19 @@ export function parseProductParam(
     }
 
     // 2. "<api-slug ending in the id>-<name in another script>"
+    //    The API slug is the transliterated name + "-<id>", so numbers at the START of the name show
+    //    twice: at the start of the slug and right after the id ("2-ktaa-…-22-2-قطعة"). Numbers at
+    //    the END of the name sit just before the id ("…-tgrb-2-7-…تجربة-2" is product 7, not 2).
+    //    So the id is the last number of the run, minus the numbers the name starts with.
     const nameStart = tokens.findIndex((t) => !/^[a-z0-9]+$/i.test(t));
     if (nameStart > 0 && isNumber(tokens[nameStart - 1])) {
         let first = nameStart - 1;
         while (first > 0 && isNumber(tokens[first - 1])) first--;
-        return { id: tokens[first], slug: param };
+        // No API slug: the path is "<id>-<name>", so the id comes first
+        if (first === 0) return { id: tokens[0], slug: param };
+        let leading = 0;
+        while (leading < first && isNumber(tokens[leading])) leading++;
+        return { id: tokens[Math.max(first, nameStart - 1 - leading)], slug: param };
     }
 
     // 3. Name-less slug or bare id

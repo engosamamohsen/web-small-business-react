@@ -78,6 +78,12 @@ describe("buildProductPath ↔ parseProductParam round-trip", () => {
     { id: 11, slug: "nsf-kylo-hoaoshy-fy-aysh-4-arghf-11", name: "نصف كيلو حواوشي في عيش (4 أرغفة)" },
     { id: 22, name: "2 قطعة بانيه" },
     { id: 5, slug: "pepsi-2-liter-5", name: "Pepsi 2 Liter" },
+    // A number at the END of an Arabic name sits just before the id: product 7, not 2.
+    { id: 7, slug: "haml-labtob-alomnyom-tgrb-2-7", name: "حامل لابتوب ألومنيوم - تجربة 2" },
+    { id: 31, slug: "kabl-3-30-31", name: "كابل 3 30" },
+    // emand (2026-11-19): "… كود 952" is product 637, not 952 — every product in the category opened a 404.
+    { id: 637, slug: "bdyl-alshybord-122280-sm-kod-952-637", name: "بديل الشيبورد  122×280 سم كود 952" },
+    { id: 636, slug: "bdyl-alshybord-122280-sm-kod-920-636", name: "بديل الشيبورد 122×280 سم كود 920" },
   ];
 
   it.each(cases)("recovers id %j", (product) => {
