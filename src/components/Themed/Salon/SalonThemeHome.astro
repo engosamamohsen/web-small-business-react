@@ -32,9 +32,13 @@ interface Props {
     catalog: BookingCatalog | null;
     /** The store sells products (they follow below, in #products). */
     hasProducts: boolean;
+    /** Product photos for the hero when the store has no banner or gallery photo. */
+    showcase?: string[];
 }
 
-const { settings, storeName, banners, gallery, branches, booking, catalog, hasProducts } = Astro.props;
+const { settings, storeName, banners, gallery, branches, booking, catalog, hasProducts, showcase = [] } = Astro.props;
+// A shop (products, no booking) shows its products right under the hero; a salon keeps services first.
+const productsFirst = hasProducts && !booking;
 
 const about = settings?.about_us?.replace(/\s+/g, " ").trim() ?? "";
 // The hero keeps the first sentence; the whole text is in "عن المكان".
@@ -60,9 +64,13 @@ const places: StoreBranch[] = branches.length
       ? [{ id: 0, address: settings.full_address.replace(/\s+/g, " ").trim(), whatsappUrl: whatsapp, mapUrl: mapsLink({ address: settings.full_address }) }]
       : [];
 
-// Hero photo: the first banner, else the first gallery photo, else a drawn arch with the initial.
-const heroPhoto = banners.find((b) => b?.image)?.image ?? gallery[0]?.url ?? null;
-const heroAccent = (banners.filter((b) => b?.image)[1]?.image ?? (heroPhoto === gallery[0]?.url ? gallery[1]?.url : gallery[0]?.url)) ?? null;
+// Hero photo: the first banner, else the first gallery photo, else a product photo, else a drawn
+// arch with the initial.
+const heroPhoto = banners.find((b) => b?.image)?.image ?? gallery[0]?.url ?? showcase[0] ?? null;
+const heroAccent =
+    (banners.filter((b) => b?.image)[1]?.image ??
+        (heroPhoto === gallery[0]?.url ? gallery[1]?.url : gallery[0]?.url) ??
+        (heroPhoto === showcase[0] ? showcase[1] : showcase[0])) ?? null;
 const initial = Array.from(storeName.trim())[0] ?? "✦";
 const img = (src: string, sizes: string, max: number) => {
     const p = storeImageProps(src, sizes, max);
@@ -90,6 +98,10 @@ const aboutPhotos = gallery.filter((g) => g.url !== heroPhoto && g.url !== heroA
 // Shown only with the store's own words (Settings → about us); the gallery already shows the photos.
 // Left out when the hero already shows all of it (a one-sentence about).
 const showAbout = Boolean(about) && about !== lead;
+// About without photos and one or two places: one section, the text beside the address cards,
+// instead of a text half-page and a small card alone on a wide row.
+
+const placesBeside = showAbout && aboutPhotos.length === 0 && places.length > 0 && places.length <= 2;
 
 const eyebrow = settings?.shop_type === "beauty" || settings?.shop_type === "salon" ? "صالون · عناية وجمال" : settings?.shop_type === "service" ? "خدمات بالحجز" : "أهلاً بيك";
 
@@ -165,6 +177,9 @@ const facts = [
         </div>
     </section>
 
+    <!-- A shop's products come first, right under the hero (index.astro) -->
+    {productsFirst && <slot />}
+
     <!-- ── Services (booking on) ────────────────────────────────────────── -->
     {booking && (
         <section class="sl-section sl-services" id="services" aria-labelledby="sl-services-title">
@@ -239,6 +254,24 @@ const facts = [
                     <p class="sl-about__body">{about}</p>
                     {booking && <a class="sl-link" href="/book">{t.navBook}<span aria-hidden="true"> ←</span></a>}
                 </div>
+                {placesBeside && (
+                    <div class="sl-about__places" id="branches" data-reveal style="--ct-i: 1">
+                        <p class="sl-eyebrow">{places.length > 1 ? "فروعنا" : "مكاننا"}</p>
+                        <h3 class="sl-about__places-title">{places.length > 1 ? "زورنا في أقرب فرع" : "تعالى زورنا"}</h3>
+                        <ul class="sl-branches__list sl-branches__list--stack" role="list">
+                            {places.map((b, i) => (
+                                <li class="sl-branch">
+                                    <span class="sl-branch__num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                                    <p class="sl-branch__address">{b.address}</p>
+                                    <div class="sl-branch__actions">
+                                        {b.mapUrl && <a class="sl-chip" href={b.mapUrl} target="_blank" rel="noopener" aria-label={`افتح على الخريطة: ${b.address}`}>افتح على الخريطة</a>}
+                                        {b.whatsappUrl && <a class="sl-chip sl-chip--wa" href={b.whatsappUrl} target="_blank" rel="noopener" aria-label={`واتساب: ${b.address}`}>واتساب</a>}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
                 {aboutPhotos.length > 0 && (
                     <div class={`sl-about__photos sl-about__photos--${aboutPhotos.length}`} data-reveal style="--ct-i: 1">
                         {aboutPhotos.map((p, i) => (
@@ -276,7 +309,7 @@ const facts = [
     )}
 
     <!-- ── Branches ─────────────────────────────────────────────────────── -->
-    {places.length > 0 && (
+    {places.length > 0 && !placesBeside && (
         <section class="sl-section sl-branches" id="branches" aria-labelledby="sl-branches-title">
             <div class="sl-wrap">
                 <header class="sl-head" data-reveal>
@@ -310,7 +343,7 @@ const facts = [
     )}
 
     <!-- The store's products (index.astro), when it sells any -->
-    <slot />
+    {!productsFirst && <slot />}
 
     <!-- ── Contact ──────────────────────────────────────────────────────── -->
     <section class="sl-contact" id="contact" aria-labelledby="sl-contact-title">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { LayoutGrid } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, LayoutGrid } from "lucide-react";
 import { useSearchParams } from "@/lib/navigation";
 import { CategoryType } from "@/lib/types";
 import { scrollToProducts } from "@/components/Categories/CategorySwiper";
@@ -35,6 +35,53 @@ function selectCategory(category: CategoryType | null) {
   scrollToProducts({ elementId: "products", top: 140 });
 }
 
+/**
+ * Sideways scrolling for a category row (chips, rounds): which ends still have hidden categories, and
+ * a step to scroll there. Works in RTL (Chrome reports scrollLeft from 0 down to a negative number).
+ * The server and the first browser render show no arrows, so hydration matches; they appear once
+ * the row is measured.
+ */
+function useRowScroll() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [ends, setEnds] = useState({ start: false, end: false });
+
+  const measure = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const pos = Math.abs(el.scrollLeft);
+    setEnds({ start: pos > 2, end: max - pos > 2 });
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    measure();
+    el.addEventListener("scroll", measure, { passive: true });
+    const resize = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    resize?.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      el.removeEventListener("scroll", measure);
+      resize?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [measure]);
+
+  /** One "page" (most of the visible width) towards the row's start or end. */
+  const step = (towards: "start" | "end") => {
+    const el = ref.current;
+    if (!el) return;
+    const rtl = getComputedStyle(el).direction === "rtl";
+    const amount = Math.max(160, el.clientWidth * 0.8);
+    const sign = (towards === "end" ? 1 : -1) * (rtl ? -1 : 1);
+    const smooth = !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({ left: sign * amount, behavior: smooth ? "smooth" : "auto" });
+  };
+
+  return { ref, ends, step };
+}
+
 /** Category navigation for the non-classic themes: photo tiles, round photos or a chip bar. */
 export default function CategoryNav({
   categories,
@@ -49,6 +96,7 @@ export default function CategoryNav({
   initialCategory?: string | null;
 }) {
   const searchParams = useSearchParams();
+  const row = useRowScroll();
   // Same value on the server and in the hydrating browser, so the selected category is
   // marked in the HTML the visitor first sees; afterwards the URL decides.
   const selectedParam =
@@ -74,6 +122,7 @@ export default function CategoryNav({
     variant === "chips" ? (
       <div
         className="ct-chips"
+        ref={row.ref}
         role="group"
         aria-label="الأقسام"
         data-reveal-group=""
@@ -106,6 +155,7 @@ export default function CategoryNav({
     ) : (
       <div
         className={variant === "tiles" ? "ct-tiles" : "ct-rounds"}
+        ref={variant === "tiles" ? undefined : row.ref}
         role="group"
         aria-label="الأقسام"
         data-reveal-group=""
@@ -161,7 +211,38 @@ export default function CategoryNav({
             {title}
           </h2>
         )}
-        {list}
+        {variant === "tiles" ? (
+          list
+        ) : (
+          // Sideways row: arrows at the ends that still hide categories, plus a soft fade there
+          <div
+            className="ct-catrow"
+            data-more-start={row.ends.start ? "" : undefined}
+            data-more-end={row.ends.end ? "" : undefined}
+          >
+            {list}
+            {row.ends.start && (
+              <button
+                type="button"
+                className="ct-catrow__arrow ct-catrow__arrow--start"
+                aria-label="الأقسام السابقة"
+                onClick={() => row.step("start")}
+              >
+                <ChevronLeft aria-hidden="true" />
+              </button>
+            )}
+            {row.ends.end && (
+              <button
+                type="button"
+                className="ct-catrow__arrow ct-catrow__arrow--end"
+                aria-label="المزيد من الأقسام"
+                onClick={() => row.step("end")}
+              >
+                <ChevronLeft aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        )}
         {subcategories.length > 0 && (
           <div className="ct-subcats">
             <SubCategories categories={subcategories} />

@@ -38,6 +38,7 @@ import { buildSalonBusinessJsonLd, salonHomeMeta, servicesFirstHome, storeHasPro
 import SalonThemeHome from "@/components/Themed/Salon/SalonThemeHome.astro";
 import { parseBranches, parseGallery } from "@/lib/showcase";
 import StoreGallery from "@/components/Showcase/StoreGallery.astro";
+import { collectProductImages } from "@/components/products/detail-components/gallery-images";
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
@@ -163,6 +164,11 @@ const showShop = !salonHome || storeSells;
 const okBody = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" && r.value?.ok ? r.value.data : null);
 const gallery = parseGallery(okBody(galleryResult));
 const salonBranches = salonTheme ? parseBranches(okBody(branchesResult)) : [];
+// Salon theme on a shop without banners or gallery photos: its first product photos fill the hero
+// instead of a drawn letter (2026-11-21, emand).
+const salonShowcase: string[] = salonTheme
+    ? (productsData ?? []).map((p: any) => collectProductImages(p)[0]).filter(Boolean).slice(0, 2)
+    : [];
 
 // Website theme (dashboard → Website settings): which hero, category and product
 // layout this page uses. Classic keeps the original components.
@@ -271,6 +277,7 @@ const homeJsonLd = [
                     booking={Boolean(salonHome)}
                     catalog={salonCatalog}
                     hasProducts={storeSells}
+                    showcase={salonShowcase}
                 >
                     {showShop && showCategories && layout.categories !== "swiper" && (
                         <CategoryNav

@@ -233,6 +233,61 @@
   scrollbar-width: none;
 }
 .ct-chips::-webkit-scrollbar { display: none; }
+
+/* A sideways category row (chips, rounds): arrows and a fade at the ends that still hide categories.
+   Swipe and trackpad keep working; the arrows are for mouse users, who otherwise can't scroll it. */
+.ct-catrow { position: relative; }
+.ct-chips, .ct-rounds { scroll-snap-type: x proximity; scroll-padding-inline: 2.75rem; }
+.ct-chip, .ct-round { scroll-snap-align: start; }
+.ct-catrow[data-more-start] .ct-chips, .ct-catrow[data-more-start] .ct-rounds {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent);
+          mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent);
+}
+.ct-catrow[data-more-end] .ct-chips, .ct-catrow[data-more-end] .ct-rounds {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+          mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+}
+.ct-catrow[data-more-start][data-more-end] .ct-chips, .ct-catrow[data-more-start][data-more-end] .ct-rounds {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+          mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+}
+/* In RTL the row starts on the right: swap the fades */
+[dir="rtl"] .ct-catrow[data-more-start]:not([data-more-end]) .ct-chips, [dir="rtl"] .ct-catrow[data-more-start]:not([data-more-end]) .ct-rounds {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+          mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+}
+[dir="rtl"] .ct-catrow[data-more-end]:not([data-more-start]) .ct-chips, [dir="rtl"] .ct-catrow[data-more-end]:not([data-more-start]) .ct-rounds {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent);
+          mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent);
+}
+.ct-catrow__arrow {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--t-line);
+  border-radius: 999px;
+  background: var(--t-surface);
+  color: var(--t-ink);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
+  cursor: pointer;
+}
+.ct-rounds + .ct-catrow__arrow, .ct-rounds ~ .ct-catrow__arrow { top: calc(50% - 0.75rem); }
+.ct-catrow__arrow svg { width: 1.25rem; height: 1.25rem; }
+.ct-catrow__arrow:hover { border-color: var(--main-color); color: var(--main-color); }
+.ct-catrow__arrow:focus-visible { outline: 2px solid var(--main-color); outline-offset: 2px; }
+.ct-catrow__arrow--start { inset-inline-start: 0; }
+.ct-catrow__arrow--end { inset-inline-end: 0; }
+/* ChevronLeft points left: the "start" arrow points to the row's start (right in RTL), "end" to its end */
+.ct-catrow__arrow--end svg { transform: scaleX(-1); }
+[dir="rtl"] .ct-catrow__arrow--end svg { transform: none; }
+[dir="rtl"] .ct-catrow__arrow--start svg { transform: scaleX(-1); }
+/* Phones swipe; the arrows would cover the first and last chip */
+@media (hover: none) and (pointer: coarse) { .ct-catrow__arrow { display: none; } }
 .ct-chip {
   flex: 0 0 auto;
   display: inline-flex;

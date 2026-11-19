@@ -381,6 +381,11 @@ html.ct-motion [data-reveal]:not([data-revealed]) {
   transform: var(--ct-from);
   filter: blur(var(--ct-blur));
 }
+/* Items inside a sideways row (category chips, tiles) never slide vertically: the row clips them,
+   so with a long slide ("rise" = 64px) they could never be seen and stayed hidden (emand, 2026-11-21). */
+html.ct-motion [data-reveal-group] [data-reveal]:not([data-revealed]) {
+  transform: none;
+}
 html.ct-motion [data-reveal][data-revealed="in"] {
   transition:
     opacity var(--ct-dur) ease-out,
