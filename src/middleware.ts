@@ -5,7 +5,7 @@ import { fetchSettings } from "@/hooks/fetchSettings";
 import { isStoreExpired } from "@/lib/subscription";
 import { decideStoreAccess } from "@/lib/store-status";
 import { devApiOrigin } from "@/lib/config";
-import { deriveApiOrigin, forgetCustomDomain, lookupCustomDomain, platformDomains } from "@/lib/tenant-host";
+import { customDomainRedirect, deriveApiOrigin, forgetCustomDomain, lookupCustomDomain, platformDomains } from "@/lib/tenant-host";
 import { DEFAULT_THEME, THEME_PREVIEW_COOKIE, THEME_PREVIEW_PARAM, isThemeKey } from "@/themes/registry";
 import { cachedCarrier, isCarrierPath, lookupCarrier, visitorIp } from "@/lib/shipping/server";
 import { CARRIER_LANG_COOKIE, isCarrierLang, pickCarrierLang } from "@/lib/shipping/strings";
@@ -246,6 +246,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
                     context.cookies.set(PLAN_COOKIE, context.locals.plan, { path: "/", sameSite: "lax" });
                 }
             }
+            // The store's own domain is live: its free address sends visitors there (301)
+            const moveTo = tenantUnknown || access !== "open"
+                ? null
+                : customDomainRedirect({
+                      host: hostname,
+                      method: context.request.method,
+                      path: context.url.pathname,
+                      search: context.url.search,
+                      customDomain: settings.custom_domain,
+                      platforms: PLATFORM_DOMAINS,
+                      dev: Boolean(import.meta.env.DEV),
+                  });
+            if (moveTo) return context.redirect(moveTo, 301);
             if (!context.locals.themePreview && isThemeKey(settings.data?.storefront_theme)) {
                 context.locals.theme = settings.data.storefront_theme;
             }

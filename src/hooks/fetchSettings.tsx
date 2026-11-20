@@ -54,6 +54,9 @@ export type SettingsResponse = {
   hours?: StoreHoursSetting;
   // Online booking (salons / services): {enabled:false} when off. See src/lib/booking/.
   booking?: BookingSetting;
+  // The store's own domain once it is live with HTTPS ("emandbuild.com"), else null. The middleware sends
+  // visitors of the free address there (src/lib/tenant-host.ts customDomainRedirect).
+  custom_domain?: string | null;
   // Top-level sibling of `data` in the setting-profile response. Drives the
   // expired-store lockout (see src/lib/subscription.ts + src/middleware.ts).
   current_subscription_plan?: CurrentSubscriptionPlan | null;
@@ -93,6 +96,7 @@ const serverSettingsCache = new Map<
     online_payment: OnlinePaymentSetting;
     hours: StoreHoursSetting;
     booking: BookingSetting;
+    custom_domain: string | null;
     timestamp: number;
   }
 >();
@@ -193,6 +197,7 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
       online_payment: result.online_payment ?? {},
       hours: result.hours && typeof result.hours === "object" ? result.hours : { enabled: false },
       booking: bookingFromSettings(result.booking),
+      custom_domain: typeof result.custom_domain === "string" ? result.custom_domain : null,
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -238,6 +243,7 @@ export async function fetchSettings(
           online_payment: cached.online_payment,
           hours: cached.hours,
           booking: cached.booking,
+          custom_domain: cached.custom_domain,
           ok: true,
           status: 200,
         };
@@ -297,6 +303,7 @@ function refresh(
             online_payment: result.online_payment ?? {},
             hours: result.hours ?? { enabled: false },
             booking: result.booking ?? { enabled: false },
+            custom_domain: result.custom_domain ?? null,
             timestamp: Date.now(),
           });
         } else {

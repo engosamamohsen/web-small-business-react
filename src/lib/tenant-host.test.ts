@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     classifyHost,
     clearCustomDomainCache,
+    customDomainRedirect,
     forgetCustomDomain,
     deriveApiOrigin,
     lookupCustomDomain,
@@ -188,5 +189,32 @@ describe("lookupCustomDomain", () => {
         t = 61_000;
         await lookupCustomDomain("gone.com", { fetchImpl: missing, now });
         expect(missing).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("customDomainRedirect (free address → live custom domain)", () => {
+    const base = { method: "GET", path: "/products/12-cake", search: "?ref=qr", customDomain: "emandbuild.com" };
+
+    it("store subdomain → https custom domain, same path and query", () => {
+        expect(customDomainRedirect({ ...base, host: "emand.cashierthru.com" })).toBe("https://emandbuild.com/products/12-cake?ref=qr");
+        expect(customDomainRedirect({ ...base, host: "EMAND.CashierThru.com", path: "/", search: "" })).toBe("https://emandbuild.com/");
+    });
+
+    it.each([
+        ["no live custom domain", { host: "emand.cashierthru.com", customDomain: null }],
+        ["already on the custom domain", { host: "emandbuild.com" }],
+        ["www of the custom domain", { host: "www.emandbuild.com" }],
+        ["the panel / API host", { host: "admin-emand.cashierthru.com" }],
+        ["the platform itself", { host: "cashierthru.com" }],
+        ["www.cashierthru.com", { host: "www.cashierthru.com" }],
+        ["local dev host", { host: "emand.localhost" }],
+        ["dev server", { host: "emand.cashierthru.com", dev: true }],
+        ["POST", { host: "emand.cashierthru.com", method: "POST" }],
+        ["storefront API route", { host: "emand.cashierthru.com", path: "/api/vitals" }],
+        ["build asset", { host: "emand.cashierthru.com", path: "/_astro/app.js" }],
+        ["custom domain that is really ours", { host: "emand.cashierthru.com", customDomain: "other.cashierthru.com" }],
+        ["junk custom domain", { host: "emand.cashierthru.com", customDomain: "not a domain" }],
+    ])("no redirect: %s", (_name, over) => {
+        expect(customDomainRedirect({ ...base, ...(over as object) } as Parameters<typeof customDomainRedirect>[0])).toBeNull();
     });
 });

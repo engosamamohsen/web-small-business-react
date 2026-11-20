@@ -188,3 +188,37 @@ export async function lookupCustomDomain(
     }
     return status;
 }
+
+// ── The free address sends visitors to the live custom domain (docs/CUSTOM_DOMAINS.md phase 2, D4) ──
+
+/**
+ * emand.cashierthru.com/products?x=1 → https://emandbuild.com/products?x=1 (301), once the store's own
+ * domain is live with HTTPS (setting-profile `custom_domain`). One address for search engines; old links and
+ * printed QR codes keep working. Only page loads (GET/HEAD) on a store subdomain move: never the panel
+ * (admin-*), the storefront's own /api/ routes, build assets, or the dev server.
+ */
+export function customDomainRedirect(req: {
+    host: string;
+    method: string;
+    path: string;
+    search?: string;
+    customDomain?: string | null;
+    platforms?: string[];
+    dev?: boolean;
+}): string | null {
+    if (req.dev || !req.customDomain) return null;
+    if (req.method !== "GET" && req.method !== "HEAD") return null;
+    if (req.path.startsWith("/api/") || req.path.startsWith("/_astro/")) return null;
+
+    const platforms = req.platforms ?? DEFAULT_PLATFORM_DOMAINS;
+    const here = classifyHost(req.host, platforms);
+    if (here.kind !== "platform") return null;
+    const label = here.host.split(".")[0];
+    if (platforms.includes(here.host) || label === "www" || label.startsWith("admin")) return null;
+
+    const target = classifyHost(req.customDomain, platforms);
+    if (target.kind !== "custom") return null;
+
+    return `https://${target.host}${req.path || "/"}${req.search ?? ""}`;
+}
+
