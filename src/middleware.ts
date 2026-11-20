@@ -5,6 +5,7 @@ import { fetchSettings } from "@/hooks/fetchSettings";
 import { isStoreExpired } from "@/lib/subscription";
 import { decideStoreAccess } from "@/lib/store-status";
 import { devApiOrigin } from "@/lib/config";
+import { deriveApiOrigin, forgetCustomDomain, lookupCustomDomain, platformDomains } from "@/lib/tenant-host";
 import { DEFAULT_THEME, THEME_PREVIEW_COOKIE, THEME_PREVIEW_PARAM, isThemeKey } from "@/themes/registry";
 import { cachedCarrier, isCarrierPath, lookupCarrier, visitorIp } from "@/lib/shipping/server";
 import { CARRIER_LANG_COOKIE, isCarrierLang, pickCarrierLang } from "@/lib/shipping/strings";
@@ -54,55 +55,20 @@ function extractProtocol(request: Request, urlProtocol: string): string {
 }
 
 // `fallback` is true when the tenant couldn't be resolved and PUBLIC_BASE_URL's
-// (the default tenant's) API is used instead.
-function deriveAdminOrigin(hostname: string, protocol: string): { origin: string; fallback: boolean } {
-    const parts = hostname.split(".");
+// (the default tenant's) API is used instead. `custom` is true for a merchant's own domain
+// (emandbuild.com, www.emandbuild.com): its API is the same host, used only once the backend
+// says the domain is connected. The rules live in src/lib/tenant-host.ts (deriveApiOrigin, tested).
+const PLATFORM_DOMAINS = platformDomains(import.meta.env.PUBLIC_PLATFORM_DOMAINS);
+const CENTRAL_ORIGIN = import.meta.env.PUBLIC_CENTRAL_API_ORIGIN || undefined;
 
-    // Production tenant: roka.cashierthru.com  →  admin-roka.cashierthru.com
-    if (parts.length >= 3 && !parts[0].startsWith("admin-")) {
-        const adminParts = [...parts];
-        adminParts[0] = `admin-${parts[0]}`;
-        return { origin: `${protocol}://${adminParts.join(".")}`, fallback: false };
-    }
-
-    // Local dev server (npm run dev), or a production build run locally against
-    // the local stores (http://<store>.localhost:<port>) — real hosts never end in .localhost.
-    if (import.meta.env.DEV || hostname.endsWith(".localhost")) {
-        return {
-            origin: devApiOrigin(hostname),
-            fallback: false,
-        };
-    }
-
-    // Production but hostname is localhost / IP — Nginx is not forwarding the
-    // tenant host. Fall back to PUBLIC_BASE_URL so at least the configured
-    // default tenant works; operators should add proxy_set_header X-Forwarded-Host $host;
-    // to their Nginx config to support multiple tenants from one server.
-    // NOTE: the @astrojs/node adapter does NOT derive the hostname from the plain
-    // `Host` header (context.url.hostname stays "localhost"), so X-Forwarded-Host
-    // is the header that actually resolves the tenant — see extractHostname above.
-    if (
-        hostname === "localhost" ||
-        hostname === "127.0.0.1" ||
-        hostname.startsWith("192.168.") ||
-        hostname.startsWith("10.")
-    ) {
-        const fallback =
-            import.meta.env.PUBLIC_BASE_URL || "http://localhost:3000";
-        // Loud warning: this means EVERY tenant gets the same fallback API.
-        // The cure is `proxy_set_header X-Forwarded-Host $host;` in Nginx
-        // (the Node adapter ignores the plain Host header), not editing .env.
-        console.warn(
-            `[middleware] No tenant host header (saw "${hostname}") — serving ` +
-            `fallback PUBLIC_BASE_URL=${fallback} for ALL tenants. Add ` +
-            `'proxy_set_header X-Forwarded-Host $host;' to Nginx (the Node adapter ignores ` +
-            `the plain Host header) so each subdomain resolves dynamically.`,
-        );
-        return { origin: fallback, fallback: true };
-    }
-
-    // Unexpected shape — return as-is rather than silently using the wrong tenant
-    return { origin: `${protocol}://${hostname}`, fallback: false };
+function deriveAdminOrigin(hostname: string, protocol: string) {
+    return deriveApiOrigin(hostname, protocol, {
+        dev: Boolean(import.meta.env.DEV),
+        platforms: PLATFORM_DOMAINS,
+        devOrigin: devApiOrigin,
+        baseUrl: import.meta.env.PUBLIC_BASE_URL,
+        warn: (message) => console.warn(message),
+    });
 }
 
 // ── Shipping company sites (CashierThru shipping ERP, phase 3) ─────────────────────────────────────
@@ -166,9 +132,26 @@ function serveCarrier(context: APIContext, next: MiddlewareNext, profile: Carrie
 export const onRequest = defineMiddleware(async (context, next) => {
     const hostname = extractHostname(context.request, context.url.hostname);
     const protocol = extractProtocol(context.request, context.url.protocol);
-    const { origin: adminOrigin, fallback: tenantUnknown } = deriveAdminOrigin(hostname, protocol);
+    const { origin: adminOrigin, fallback: tenantUnknown, custom: customDomain } = deriveAdminOrigin(hostname, protocol);
     const apiBase = `${adminOrigin}/api/`;
     context.locals.apiBase = apiBase;
+
+    // ── Custom domain (emandbuild.com) ────────────────────────────────────────
+    // Served only when the backend says it is connected to a store. A domain that points at
+    // our server but isn't connected (or was disconnected) gets "store not found" with 404,
+    // never another store's site. A lookup error (backend down) fails open: the store's own
+    // API on this host still refuses a domain it doesn't know.
+    if (customDomain && context.url.pathname !== STORE_UNAVAILABLE_PATH) {
+        const status = await lookupCustomDomain(hostname.toLowerCase(), { centralOrigin: CENTRAL_ORIGIN });
+        if (status === "unknown") {
+            context.locals.storeMissing = true;
+            context.locals.tracking = [];
+            if (context.request.method !== "GET" && context.request.method !== "HEAD") {
+                return new Response("Not found", { status: 404 });
+            }
+            return context.rewrite(STORE_UNAVAILABLE_PATH);
+        }
+    }
 
     // ── Website theme ─────────────────────────────────────────────────────────
     // The store's saved theme comes with the settings below. A preview from the
@@ -234,9 +217,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 expired: settings.ok && isStoreExpired(settings.current_subscription_plan),
             });
             if (access === "missing") {
-                // Not a store: maybe a shipping company
-                const carrier = await lookupCarrier(apiBase, visitorIp(context.request, safeClientAddress(context)), carrierLangFromRequest(context));
-                if (carrier.kind === "shipping") return serveCarrier(context, next, carrier.profile);
+                // Not a store: maybe a shipping company. Never on a custom domain: only stores connect
+                // one, and there /api/shipping/ is the storefront's own route, not the backend's.
+                if (customDomain) {
+                    forgetCustomDomain(hostname.toLowerCase());
+                } else {
+                    const carrier = await lookupCarrier(apiBase, visitorIp(context.request, safeClientAddress(context)), carrierLangFromRequest(context));
+                    if (carrier.kind === "shipping") return serveCarrier(context, next, carrier.profile);
+                }
                 context.locals.storeMissing = true;
                 context.locals.tracking = [];
                 context.cookies.delete("app_data", { path: "/" });

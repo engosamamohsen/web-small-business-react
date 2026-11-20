@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { classifyHost, customDomainApiOrigin, platformDomains } from "./tenant-host";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,12 @@ export function getAdminOrigin(): string {
     hostname.startsWith("10.")
   ) {
     return devApiOrigin(hostname);
+  }
+
+  // A merchant's own domain (emandbuild.com, www.emandbuild.com): the store's API is the
+  // same host (src/lib/tenant-host.ts). Before this, "www.x.com" became "admin-www.x.com".
+  if (classifyHost(hostname, platformDomains(import.meta.env.PUBLIC_PLATFORM_DOMAINS)).kind === "custom") {
+    return customDomainApiOrigin(hostname, protocol.replace(":", ""));
   }
 
   const parts = hostname.split(".");
