@@ -88,12 +88,15 @@ export default function CategoryNav({
   variant,
   title,
   initialCategory = null,
+  initialSubCategory = null,
 }: {
   categories: CategoryType[];
   variant: Variant;
   title: string | null;
   /** The page's ?category= value. The server can't read the browser URL, so it renders this. */
   initialCategory?: string | null;
+  /** The page's ?sub_category= value, for the sub-category chips (same reason). */
+  initialSubCategory?: string | null;
 }) {
   const searchParams = useSearchParams();
   const row = useRowScroll();
@@ -245,7 +248,7 @@ export default function CategoryNav({
         )}
         {subcategories.length > 0 && (
           <div className="ct-subcats">
-            <SubCategories categories={subcategories} />
+            <SubCategories categories={subcategories} initialSubCategory={initialSubCategory} />
           </div>
         )}
       </div>

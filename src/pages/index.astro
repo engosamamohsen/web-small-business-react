@@ -285,6 +285,7 @@ const homeJsonLd = [
                             variant={layout.categories}
                             title={layout.categoriesTitle}
                             initialCategory={categoryParam ?? null}
+                            initialSubCategory={subCategoryParam ?? null}
                             client:visible
                         />
                     )}
@@ -345,6 +346,7 @@ const homeJsonLd = [
                     variant={layout.categories}
                     title={layout.categoriesTitle}
                     initialCategory={categoryParam ?? null}
+                    initialSubCategory={subCategoryParam ?? null}
                     client:visible
                 />
             )
@@ -356,6 +358,8 @@ const homeJsonLd = [
                     categoriesData={categoriesData}
                     isSuccess={true}
                     targetFilterCategory={targetFilterCategory}
+                    initialCategory={categoryParam ?? null}
+                    initialSubCategory={subCategoryParam ?? null}
                     client:visible
                 />
             )

@@ -11,11 +11,22 @@ import { useSearchParams } from "@/lib/navigation";
 import React from 'react';
 import { LayoutGrid } from "lucide-react";
 import { CategoryType } from "@/lib/types";
-import { categoryParam } from "@/lib/category/category-param";
+import { categoryParam, isSelectedCategory } from "@/lib/category/category-param";
 
 
-export default function CategorySwiper({ categories }: { categories: any }) {
+export default function CategorySwiper({
+  categories,
+  initialCategory = null,
+}: {
+  categories: any;
+  /** The page's ?category= value. The server can't read the browser URL, so it renders this. */
+  initialCategory?: string | null;
+}) {
   const searchParams = useSearchParams();
+  // Same value on the server and in the hydrating browser (as in Themed/CategoryNav), so a direct
+  // link shows its category selected in the first HTML; afterwards the URL decides.
+  const selectedParam =
+    typeof window === "undefined" ? initialCategory : searchParams.get("category");
 
   // Only enable loop if we have enough slides (more than max slidesPerView)
   const categoryCount = categories?.categoriesData?.length || 0;
@@ -27,7 +38,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
     // Safe when the category has no slug (API slug: null): "<id>" instead of a crash
     const nextId = categoryParam(category);
 
-    if (nextId === current) {
+    if (isSelectedCategory(current, category)) {
       // Unselect category
       sp.delete("category");
       sp.delete("sub_category");
@@ -65,7 +76,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
           modules={[Navigation, Autoplay]}
           navigation
           autoplay={
-            searchParams.get("category")
+            selectedParam
               ? false
               : {
                 delay: 2800,
@@ -90,14 +101,13 @@ export default function CategorySwiper({ categories }: { categories: any }) {
           {categoryCount > 0 && (
             <SwiperSlide key="all-categories" className="group py-3 max-md:py-2">
               <AllCategoriesBox
-                isActive={!searchParams.get("category")}
+                isActive={!selectedParam}
                 onClick={onAllClick}
               />
             </SwiperSlide>
           )}
           {categories?.categoriesData?.map((category: CategoryType) => {
-            const isActive =
-              searchParams.get("category") === categoryParam(category);
+            const isActive = isSelectedCategory(selectedParam, category);
 
             return (
               <SwiperSlide

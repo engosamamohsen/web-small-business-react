@@ -11,27 +11,35 @@ interface CategoriesProps {
   isSuccess: boolean;
   // targetFilterCategory is kept for SSR compatibility but not used client-side
   targetFilterCategory?: any;
+  /** The page's ?category= and ?sub_category= values. The server can't read the browser URL, so it renders these. */
+  initialCategory?: string | null;
+  initialSubCategory?: string | null;
 }
 
 export default function Categories({
   categoriesData,
   isSuccess,
+  initialCategory = null,
+  initialSubCategory = null,
 }: CategoriesProps) {
   const searchParams = useSearchParams();
+  // Same value on the server and in the hydrating browser (as in Themed/CategoryNav), so a direct
+  // link renders its category and sub-categories in the first HTML; afterwards the URL decides.
+  const selectedParam =
+    typeof window === "undefined" ? initialCategory : searchParams.get("category");
 
-  // Derive the selected category reactively from the URL param (client-side).
-  // URL format: "{id}-{slug}", e.g. "1-test-first-category"
+  // Derive the selected category from the URL param.
+  // URL format: "{id}-{slug}", e.g. "1-test-first-category", or just "{id}" (no slug)
   const selectedCategory = useMemo(() => {
-    const categoryParam = searchParams.get("category");
-    if (!categoryParam) return null;
+    if (!selectedParam) return null;
 
-    const categoryId = categoryParam.match(/^(\d+)/)?.[1];
+    const categoryId = selectedParam.match(/^(\d+)/)?.[1];
     if (!categoryId) return null;
 
     return (
       categoriesData?.find((cat) => cat.id?.toString() === categoryId) ?? null
     );
-  }, [searchParams, categoriesData]);
+  }, [selectedParam, categoriesData]);
 
   const subcategories = selectedCategory?.subcategories ?? [];
 
@@ -47,7 +55,7 @@ export default function Categories({
           </h2>
         </div>
 
-        <CategorySwiper categories={{ categoriesData, isSuccess }} />
+        <CategorySwiper categories={{ categoriesData, isSuccess }} initialCategory={initialCategory} />
       </section>
 
       {/* Subcategories — shown only when the selected category has subcategories */}
@@ -57,7 +65,7 @@ export default function Categories({
             <bdi className="text-sm font-bold text-gray-700 max-md:text-xs">
               اختر الفئة الفرعية :
             </bdi>
-            <SubCategories categories={subcategories} />
+            <SubCategories categories={subcategories} initialSubCategory={initialSubCategory} />
           </div>
         </section>
       )}

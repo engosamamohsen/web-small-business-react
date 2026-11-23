@@ -12,13 +12,24 @@ import { cn } from "@/utils/utils";
 import { scrollToProducts } from "./CategorySwiper";
 import styles from "./style.module.css";
 import { CategoryType } from "@/lib/types";
-import { categoryParam } from "@/lib/category/category-param";
+import { categoryParam, isSelectedCategory } from "@/lib/category/category-param";
 
 import { useRouter } from "@/lib/navigation";
 
 
-const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
+const SubCategories = ({
+  categories,
+  initialSubCategory = null,
+}: {
+  categories: CategoryType[];
+  /** The page's ?sub_category= value. The server can't read the browser URL, so it renders this. */
+  initialSubCategory?: string | null;
+}) => {
   const searchParams = useSearchParams();
+  // Same value on the server and in the hydrating browser, so a direct link shows its sub-category
+  // selected in the first HTML; afterwards the URL decides.
+  const selectedParam =
+    typeof window === "undefined" ? initialSubCategory : searchParams.get("sub_category");
 
   const onSubCategoryClick = (category: CategoryType) => {
     const sp = new URLSearchParams(window.location.search);
@@ -29,7 +40,7 @@ const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
 
     sp.set("page", "1");
 
-    if (nextId === current) {
+    if (isSelectedCategory(current, category)) {
       // unselect subcategory - use pushState to avoid full reload
       sp.delete("sub_category");
       window.history.pushState({}, '', `${window.location.pathname}?${sp}`);
@@ -56,8 +67,7 @@ const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
           className={cn(styles["subcategories-swiper"], "!pb-3")}
         >
           {categories.map((item: any) => {
-            const isActive =
-              searchParams.get("sub_category") === categoryParam(item);
+            const isActive = isSelectedCategory(selectedParam, item);
 
             return (
               <SwiperSlide key={item.id} className="!w-auto">

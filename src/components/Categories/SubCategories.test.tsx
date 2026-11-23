@@ -78,6 +78,14 @@ describe("the sub-category chips", () => {
         expect(pushState).toHaveBeenCalledWith({}, "", "/?page=1&sub_category=5-cakes");
     });
 
+    it("unselect on a second click when the link has a bare id or an old slug", () => {
+        for (const search of ["?sub_category=5", "?sub_category=5-old-slug"]) {
+            const pushState = fakeWindow(search);
+            clickChip([{ id: 5, name: "Cakes", slug: "cakes" }], 0);
+            expect(pushState).toHaveBeenCalledWith({}, "", "/?page=1");
+        }
+    });
+
     it("unselect the chosen sub-category on a second click, with or without a slug", () => {
         let pushState = fakeWindow("?sub_category=5");
         clickChip([{ id: 5, name: "Sub", slug: null }], 0);
@@ -86,5 +94,38 @@ describe("the sub-category chips", () => {
         pushState = fakeWindow("?sub_category=5-cakes");
         clickChip([{ id: 5, name: "Cakes", slug: "cakes" }], 0);
         expect(pushState).toHaveBeenCalledWith({}, "", "/?page=1");
+    });
+});
+
+// A direct link (?sub_category=...) showed no sub-category selected: the server can't read the browser URL
+// (QA 2026-11-23).
+describe("the sub-category chips on a direct link (server HTML)", () => {
+    const SUBS: Sub[] = [
+        { id: 5, name: "Null slug", slug: null },
+        { id: 6, name: "Empty slug", slug: "" },
+        { id: 7, name: "With slug", slug: "cakes" },
+    ];
+    const active = (html: string) =>
+        [...html.matchAll(/<button[^>]*class="([^"]*)"[^>]*>.*?<span[^>]*>([^<]+)<\/span>/g)]
+            .filter((m) => m[1].includes("text-white"))
+            .map((m) => m[2]);
+
+    it("marks the linked sub-category, with or without a slug", () => {
+        const cases: Array<[string, string]> = [["5", "Null slug"], ["6", "Empty slug"], ["7-cakes", "With slug"], ["7", "With slug"]];
+        for (const [param, name] of cases) {
+            const html = renderToStaticMarkup(<SubCategories categories={list(SUBS)} initialSubCategory={param} />);
+            expect(active(html), param).toEqual([name]);
+        }
+        expect(active(renderToStaticMarkup(<SubCategories categories={list(SUBS)} />))).toEqual([]);
+    });
+
+    it("gives the browser the same first HTML as the server, so the selection survives hydration", () => {
+        for (const param of ["5", "7-cakes", null]) {
+            const server = renderToStaticMarkup(<SubCategories categories={list(SUBS)} initialSubCategory={param} />);
+            fakeWindow(param ? `?sub_category=${param}` : "");
+            const browser = renderToStaticMarkup(<SubCategories categories={list(SUBS)} initialSubCategory={param} />);
+            vi.unstubAllGlobals();
+            expect(browser, String(param)).toBe(server);
+        }
     });
 });
