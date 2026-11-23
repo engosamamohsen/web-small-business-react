@@ -8,6 +8,7 @@ import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "./ButtonAddToCart";
 import { buildProductPath } from "@/lib/product-url";
 import { autoSelectedExtra } from "@/lib/product/variations";
+import { collectProductImages } from "@/components/products/detail-components/gallery-images";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,12 @@ export function ProductSkeleton() {
   );
 }
 
+/** The store's default product image, or undefined for the platform's placeholder (Laravel SettingProfile). */
+function realDefaultImage(value?: string): string | undefined {
+  const v = value?.trim();
+  return v && !/(^|\/)image\/setting\/product_image\.svg(\?.*)?$/i.test(v) ? v : undefined;
+}
+
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
 export function Product({ product, defaultImage }: ProductProps) {
@@ -58,26 +65,33 @@ export function Product({ product, defaultImage }: ProductProps) {
   // defaultImage is a FALLBACK ONLY: used just when the product has no image of
   // its own. It is NEVER appended to a product that already has an image, so the
   // shared settings image can't show up as an extra thumbnail on every card.
-  const productImages: string[] = [
-    product?.product_image,
-    ...(product?.gallery_images ?? []),
-  ].filter(Boolean) as string[];
+  // The API's "no image" placeholder is not a real photo: it's dropped here (collectProductImages).
+  const productImages: string[] = collectProductImages(product);
+  // The platform's own default (image/setting/product_image.svg, sent when the store set none) is a
+  // placeholder too: only a default product image the store uploaded is used as the fallback.
+  const storeDefault = realDefaultImage(defaultImage);
   const images =
     productImages.length > 0
       ? productImages
-      : defaultImage
-        ? [defaultImage]
+      : storeDefault
+        ? [storeDefault]
         : [""];
 
   const [activeIdx, setActiveIdx] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
+  // Images that failed to load (deleted file, broken link): the card shows "no image" instead
+  const [failed, setFailed] = useState<Record<string, true>>({});
 
   // Images served from browser cache (e.g. after navigating back from product
   // details) finish loading BEFORE React hydrates, so onLoad never fires and
   // the image would stay at opacity-0 behind the skeleton forever. Checking
   // .complete on mount catches those.
-  const handleImgRef = (node: HTMLImageElement | null) => {
-    if (node?.complete) setImgLoaded(true);
+  // The same goes for a broken link that FAILED before hydration: onError never fires, so a
+  // finished image with no pixels counts as failed ("no image" box instead of a broken picture).
+  const handleImgRef = (node: HTMLImageElement | null, src: string) => {
+    if (!node?.complete) return;
+    setImgLoaded(true);
+    if (node.naturalWidth === 0 && src) setFailed((f) => (f[src] ? f : { ...f, [src]: true }));
   };
 
   // Touch swipe
@@ -99,7 +113,7 @@ export function Product({ product, defaultImage }: ProductProps) {
     touchStartX.current = null;
   };
 
-  const currentImage = images[activeIdx] || "";
+  const currentImage = images[activeIdx] && !failed[images[activeIdx]] ? images[activeIdx] : "";
   const categoryName = product?.category?.name;
   const productAlt = product?.name
     ? `صورة المنتج ${product.name}`
@@ -121,7 +135,7 @@ export function Product({ product, defaultImage }: ProductProps) {
             onTouchEnd={handleTouchEnd}
           >
             {/* Skeleton shimmer — shown until image loads */}
-            {!imgLoaded && (
+            {!imgLoaded && currentImage && (
               <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%]" />
             )}
 
@@ -132,7 +146,7 @@ export function Product({ product, defaultImage }: ProductProps) {
               // it shows as soon as the browser paints it; the skeleton simply
               // sits behind it until then.
               <Image
-                ref={handleImgRef}
+                ref={(node: HTMLImageElement | null) => handleImgRef(node, currentImage)}
                 src={currentImage}
                 alt={productAlt}
                 fill
@@ -141,11 +155,19 @@ export function Product({ product, defaultImage }: ProductProps) {
                 sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                 className="absolute inset-0 h-full w-full object-cover"
                 onLoad={() => setImgLoaded(true)}
-                onError={() => setImgLoaded(true)}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  // A failed resized copy is first swapped to the original (Layout.astro): only a
+                  // finished image with no pixels (the original failed too) is a broken image
+                  const img = e.currentTarget;
+                  if (!img.complete || img.naturalWidth > 0) return;
+                  setImgLoaded(true);
+                  setFailed((f) => ({ ...f, [currentImage]: true }));
+                }}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gray-100">
-                <span className="text-sm text-gray-400">لا توجد صورة</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gray-100 text-gray-400">
+                <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 9" /></svg>
+                <span className="text-sm">لا توجد صورة</span>
               </div>
             )}
 

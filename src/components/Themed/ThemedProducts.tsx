@@ -10,6 +10,8 @@ import { revealProps } from "@/components/motion/scroll-reveal";
 import type { ThemeLayout } from "@/themes/registry";
 import "./themed.css";
 import { storeImageProps } from "@/lib/responsive-image";
+import { useState } from "react";
+import { collectProductImages } from "@/components/products/detail-components/gallery-images";
 
 // ─── Price helpers (same maths as the classic card, src/components/Product/Product.tsx) ───
 
@@ -34,10 +36,19 @@ function prices(product: ProductType) {
 
 const money = (n: number) => `${n % 1 === 0 ? n : n.toFixed(2)} ج.م`;
 
+// The API's "no image" placeholder is not a real photo (collectProductImages drops it).
 function firstImage(product: ProductType, defaultImage?: string): string {
-  return (
-    product?.product_image || product?.gallery_images?.[0] || defaultImage || ""
-  );
+  // The platform's default (image/setting/product_image.svg) is a placeholder too; a store-uploaded default is kept
+  const storeDefault = defaultImage?.trim() && !/(^|\/)image\/setting\/product_image\.svg(\?.*)?$/i.test(defaultImage.trim()) ? defaultImage.trim() : "";
+  return collectProductImages(product)[0] || storeDefault;
+}
+
+/**
+ * True when an <img> finished with no pixels. A failed resized copy is first swapped to the original
+ * (Layout.astro), so only the original failing too counts; also catches a failure before hydration.
+ */
+function isBrokenImage(img: HTMLImageElement | null): boolean {
+  return !!img && img.complete && img.naturalWidth === 0;
 }
 
 function plainText(html?: string): string {
@@ -60,7 +71,8 @@ function Card({
   cascade: number;
 }) {
   const { base, now, discount, hasDiscount } = prices(product);
-  const image = firstImage(product, defaultImage);
+  const [broken, setBroken] = useState(false); // the photo failed to load: show "no image"
+  const image = broken ? "" : firstImage(product, defaultImage);
   const href = buildProductPath(product);
 
   return (
@@ -76,6 +88,8 @@ function Card({
             alt={`صورة المنتج ${product.name}`}
             loading="lazy"
             decoding="async"
+            ref={(node) => { if (isBrokenImage(node)) setBroken(true); }}
+            onError={(e) => { if (isBrokenImage(e.currentTarget)) setBroken(true); }}
           />
         ) : (
           <span className="ct-card__noimg">لا توجد صورة</span>
@@ -123,7 +137,8 @@ function MenuRow({
   cascade: number;
 }) {
   const { base, now, discount, hasDiscount } = prices(product);
-  const image = firstImage(product, defaultImage);
+  const [broken, setBroken] = useState(false); // a photo that fails to load is hidden
+  const image = broken ? "" : firstImage(product, defaultImage);
   const href = buildProductPath(product);
   const description = plainText(product.description);
 
@@ -142,6 +157,8 @@ function MenuRow({
             alt={`صورة ${product.name}`}
             loading="lazy"
             decoding="async"
+            ref={(node) => { if (isBrokenImage(node)) setBroken(true); }}
+            onError={(e) => { if (isBrokenImage(e.currentTarget)) setBroken(true); }}
           />
         </Link>
       )}
