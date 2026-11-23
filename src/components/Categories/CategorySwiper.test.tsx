@@ -22,7 +22,7 @@ const STRIP = categories([
 
 /** The aria-labels of the chips marked selected in the HTML. */
 const pressed = (html: string) =>
-    [...html.matchAll(/aria-pressed="true"[^>]*aria-label="([^"]+)"/g)].map((m) => m[1]);
+    [...html.matchAll(/aria-current="true"[^>]*aria-label="([^"]+)"/g)].map((m) => m[1]);
 
 // The home page crashed ("Cannot read properties of null (reading 'toString')") when a category had no slug
 // (QA 2026-11-23). The strip must render every category, whatever its slug.
@@ -67,5 +67,16 @@ describe("the category strip on a direct link (server HTML)", () => {
             vi.unstubAllGlobals();
             expect(browser, String(param)).toBe(server);
         }
+    });
+});
+
+// Search engines must be able to follow every category (owner decision 2026-11-23): the Classic boxes are
+// real links to each category's page (the address the sitemap lists), whatever the slug.
+describe("the category strip links", () => {
+    it("links every category to its page, and All to the home page", () => {
+        const html = renderToStaticMarkup(<CategorySwiper categories={STRIP} />);
+        const hrefs = [...html.matchAll(/<a[^>]*href="([^"]+)"/g)].map((m) => decodeURIComponent(m[1]));
+        expect(hrefs).toEqual(["/", "/?category=1-null-slug", "/?category=2-no-slug", "/?category=3-empty-slug", "/?category=4-with-slug"]);
+        expect(html).not.toContain("<button");
     });
 });

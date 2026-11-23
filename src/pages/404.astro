@@ -10,7 +10,11 @@ export const prerender = false;
 Astro.response.status = 404;
 ---
 
-<Layout title="404 - الصفحة غير موجودة">
+<Layout
+    title="404 - الصفحة غير موجودة"
+    description="الصفحة اللي بتدور عليها مش موجودة. ارجع للصفحة الرئيسية وكمّل تسوّق."
+    noindex
+>
     <section class="flex min-h-screen items-center justify-center bg-gray-50">
         <div class="text-center p-8">
             <h1 class="text-8xl font-bold text-[var(--main-color)] mb-4">

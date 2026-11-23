@@ -40,7 +40,7 @@ describe("the Classic categories section on a direct link (server HTML)", () => 
             const html = render(param);
             expect(html, param).toContain("Cakes sub");
             expect(html, param).toContain("Pies sub");
-            expect(html, param).toMatch(/aria-pressed="true"[^>]*aria-label="Category Bakery"/);
+            expect(html, param).toMatch(/aria-current="true"[^>]*aria-label="Category Bakery"/);
         }
     });
 
@@ -55,7 +55,7 @@ describe("the Classic categories section on a direct link (server HTML)", () => 
             const html = render(param);
             expect(html).not.toContain("Cakes sub");
         }
-        expect(render("20")).toMatch(/aria-pressed="true"[^>]*aria-label="Category Drinks"/);
+        expect(render("20")).toMatch(/aria-current="true"[^>]*aria-label="Category Drinks"/);
     });
 
     it("gives the browser the same first HTML as the server, so the selection survives hydration", () => {

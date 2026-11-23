@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { fetchHook } from "@/hooks/fetch-hook";
 import { buildProductPath } from "@/lib/product-url";
 import { getSiteOrigin } from "@/lib/site-origin";
-import { slugify } from "@/utils/utils";
+import { categoryPagePath } from "@/lib/category/category-param";
 import { getCatalog } from "@/lib/booking/api";
 import { SERVICES_PATH, servicePath } from "@/lib/booking/seo";
 
@@ -34,7 +34,10 @@ interface SitemapEntry {
     priority: string;
 }
 
-function renderEntry(origin: string, lastmod: string, entry: SitemapEntry): string {
+// No <lastmod>: the API has no "last updated" date for products or categories, and stamping every
+// address with today's date (as before) teaches search engines to ignore the field (owner decision
+// 2026-11-23). changefreq: the home page changes daily, the other pages weekly.
+function renderEntry(origin: string, entry: SitemapEntry): string {
     // encodeURI keeps the URL structure (`/ ? = &`) but percent-encodes the
     // Arabic/space characters in slugs — the same canonical form the app emits
     // (see products/[slug].astro). xmlEscape then makes it XML-safe.
@@ -42,7 +45,6 @@ function renderEntry(origin: string, lastmod: string, entry: SitemapEntry): stri
     return [
         "  <url>",
         `    <loc>${loc}</loc>`,
-        `    <lastmod>${lastmod}</lastmod>`,
         `    <changefreq>${entry.changefreq}</changefreq>`,
         `    <priority>${entry.priority}</priority>`,
         "  </url>",
@@ -98,7 +100,6 @@ async function fetchCategories(
 export const GET: APIRoute = async ({ locals, request, url }) => {
     const apiBase = locals.apiBase; // tenant-aware, set by src/middleware.ts
     const origin = getSiteOrigin(request, url);
-    const lastmod = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
     // Fail soft: a flaky products/categories call should still yield a valid
     // sitemap (at minimum the homepage) rather than a 500.
@@ -122,19 +123,17 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
     // Customer reviews page (every store; openspec/changes/store-reviews).
     add({ path: "/reviews", changefreq: "weekly", priority: "0.5" });
 
-    // Category landing pages — the homepage filtered by category.
-    // URL format "{id}-{slug}" matches what the storefront parses (leading id).
+    // Category pages — the homepage filtered by category, each with its own title and canonical
+    // (src/lib/local-seo.ts). categoryPagePath() is the address that canonical names.
     for (const category of categories) {
         if (category?.id == null) continue;
-        const name = category.name ? slugify(category.name) : "";
-        const param = name ? `${category.id}-${name}` : String(category.id);
-        add({ path: `/?category=${param}`, changefreq: "daily", priority: "0.6" });
+        add({ path: categoryPagePath(category), changefreq: "weekly", priority: "0.6" });
     }
 
     // Product detail pages — the real SEO surface.
     for (const product of products) {
         if (product?.id == null) continue;
-        add({ path: buildProductPath(product), changefreq: "daily", priority: "0.8" });
+        add({ path: buildProductPath(product), changefreq: "weekly", priority: "0.8" });
     }
 
     if (bookingCatalog) {
@@ -147,7 +146,7 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
     const body =
         `<?xml version="1.0" encoding="UTF-8"?>\n` +
         `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-        entries.map((entry) => renderEntry(origin, lastmod, entry)).join("\n") +
+        entries.map((entry) => renderEntry(origin, entry)).join("\n") +
         `\n</urlset>\n`;
 
     return new Response(body, {

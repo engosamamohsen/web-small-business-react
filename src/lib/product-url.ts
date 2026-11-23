@@ -2,13 +2,18 @@ import { slugify } from "@/utils/utils";
 
 // ─── SEO-friendly product URLs ────────────────────────────────────────────────
 //
-// Canonical format: /product/{slug}-{seo-name}
-// Example:          /product/ft-shaorma-frakh-9-فتة-شاورما-فراخ
+// Canonical format (owner decision 2026-11-23): /product/{id}/{seo-name}
+// Example:          /product/9/فتة-شاورما-فراخ
 //
-// The API slug already embeds the product id as a trailing number
-// (e.g. "ft-shaorma-frakh-9"). The product name is appended after the slug
-// purely for SEO — lookup always uses the id embedded in the slug, never the
-// appended name, so an outdated/missing/wrong name still resolves the product.
+// The id is its own path segment, so it is never confused with numbers in the
+// name, and the address carries the name once, in its own script (no Latin
+// transliteration before an Arabic name). Lookup always uses the id, never the
+// name, so an outdated/missing/wrong name still resolves the product.
+//
+// Older addresses keep working and 301 to the canonical one
+// (src/pages/product/[...slug].astro): "/product/{api-slug}-{name}"
+// ("ft-shaorma-frakh-9-فتة-شاورما-فراخ"), "/product/{api-slug}", "/product/{id}-{name}"
+// and "/product/{id}".
 
 export interface ProductUrlParts {
     id: string;
@@ -17,40 +22,42 @@ export interface ProductUrlParts {
 
 /**
  * Builds the canonical product path from anything that has an id.
- * Prefers the API-provided slug; falls back to a slugified name.
  *
  * The latest product name is slugified (Unicode-aware, Arabic preserved) and
- * appended to the slug for SEO. Because the name comes from `product`, the
- * canonical path always reflects the *current* name — when the name changes,
- * the page 301-redirects old URLs to the freshly-built canonical.
+ * added after the id. Because the name comes from `product`, the canonical path
+ * always reflects the *current* name — when the name changes, the page
+ * 301-redirects old URLs to the freshly-built canonical. The API slug (a Latin
+ * transliteration) is no longer part of the address.
  *
- * { id: 9, slug: "ft-shaorma-frakh-9", name: "فتة شاورما فراخ" }
- *     → "/product/ft-shaorma-frakh-9-فتة-شاورما-فراخ"
- * { id: 8, slug: "ft-shaorma-frakh-8" } → "/product/ft-shaorma-frakh-8"
- * { id: 8, name: "Some Product" }       → "/product/8-some-product"
- * { id: 8 }                             → "/product/8"
+ * { id: 9, slug: "ft-shaorma-frakh-9", name: "فتة شاورما فراخ" } → "/product/9/فتة-شاورما-فراخ"
+ * { id: 9, name: "Chicken Shawarma" }                         → "/product/9/chicken-shawarma"
+ * { id: 8, slug: "ft-shaorma-frakh-8" }                       → "/product/8"
+ * { id: 8 }                                                   → "/product/8"
  */
 export function buildProductPath(product: {
     id: number | string;
     slug?: string | null;
     name?: string | null;
 }): string {
-    const id = String(product.id);
-    const apiSlug = product.slug?.trim() ?? "";
+    const id = String(product.id).trim();
     const seoName = product.name ? slugify(product.name) : "";
+    return seoName ? `/product/${id}/${seoName}` : `/product/${id}`;
+}
 
-    if (apiSlug) {
-        // The slug already carries the id; append the SEO name once.
-        // The `endsWith` guard keeps the path idempotent so it can't grow if the
-        // slug ever already ends with the name.
-        return seoName && !apiSlug.endsWith(`-${seoName}`)
-            ? `/product/${apiSlug}-${seoName}`
-            : `/product/${apiSlug}`;
+/**
+ * Extracts the product id from the path after "/product/" (the route's rest parameter).
+ *
+ * "9/فتة-شاورما-فراخ" (canonical) → { id: "9" }: the first segment, when it is a number.
+ * Anything else is an older single-segment address → parseProductParam.
+ */
+export function parseProductPath(path: string | undefined | null): ProductUrlParts | null {
+    if (!path) return null;
+    const segments = path.split("/").filter(Boolean);
+    if (segments.length === 0) return null;
+    if (segments.length > 1) {
+        return /^\d+$/.test(segments[0]) ? { id: segments[0], slug: path } : null;
     }
-
-    // No API slug — keep the id in the path so the product stays resolvable,
-    // then append the SEO name when we have one.
-    return seoName ? `/product/${id}-${seoName}` : `/product/${id}`;
+    return parseProductParam(segments[0]);
 }
 
 /**

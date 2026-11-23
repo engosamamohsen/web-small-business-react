@@ -42,6 +42,8 @@ import StoreReviews from "@/components/Showcase/StoreReviews.astro";
 import { getReviews, HOME_TIMEOUT_MS } from "@/lib/reviews/api";
 import { pickReviewsLang } from "@/lib/reviews/strings";
 import { collectProductImages } from "@/components/products/detail-components/gallery-images";
+import { buildFoodBusinessJsonLd, categoryPageSeo, foodBusinessType } from "@/lib/local-seo";
+import { categoryPagePath } from "@/lib/category/category-param";
 
 // Get auth token from cookies
 const token = Astro.cookies.get("app_token")?.value;
@@ -84,7 +86,10 @@ const [settingsResult, bannerResult, categoriesResult, productsResult, catalogRe
         fetchHook({ url: productsUrl, init: {}, baseUrl: apiBase }),
         wantsCatalog ? getCatalog(apiBase) : Promise.resolve(null),
         fetchHook({ url: "v1/gallery", init: {}, baseUrl: apiBase }),
-        salonTheme ? fetchHook({ url: "v1/store-branches", init: {}, baseUrl: apiBase }) : Promise.resolve(null),
+        // Branches: the Salon theme shows them; a food store also names its address in its local-business data
+        salonTheme || foodBusinessType(Astro.locals.shopType)
+            ? fetchHook({ url: "v1/store-branches", init: {}, baseUrl: apiBase })
+            : Promise.resolve(null),
         // The reviews the owner chose for the home page (every theme); none, a failure or slower than
         // HOME_TIMEOUT_MS (3 s): no section, and the rest of the page is never held up by it
         getReviews(apiBase, 1, 12, HOME_TIMEOUT_MS),
@@ -210,13 +215,14 @@ const preloadImage = firstBanner
 // A salon home names its services in the title and description.
 const salonServices = salonCatalog?.services ?? [];
 const salonMeta = salonHome ? salonHomeMeta(settingsData?.name, settingsData?.about_us, salonServices) : null;
-const pageTitle = salonMeta?.title || settingsData?.name || "الرئيسية - منصة الأعمال";
+const homeTitle = salonMeta?.title || settingsData?.name || "الرئيسية - منصة الأعمال";
 // about_us can carry CRLF line breaks; collapse to one clean line.
-const pageDescription =
+const homeDescription =
     salonMeta?.description ||
     settingsData?.about_us?.replace(/\s+/g, " ").trim() ||
-    "منصة إدارة الأعمال الصغيرة";
-const pageKeywords = normalizeKeywords(
+    // No "about us" yet: a sentence about this store, not the platform's own tagline
+    `${isFoodStore(settingsData?.shop_type) ? "اطلب" : "تسوّق"} من ${settingsData?.name || "المتجر"} أونلاين.`;
+const homeKeywords = normalizeKeywords(
     settingsData?.keywords,
     salonHome && salonServices.length
         ? salonServices.slice(0, 10).map((s) => s.name)
@@ -229,11 +235,43 @@ const pageKeywords = normalizeKeywords(
 // resolved from the request inside Layout/SEO.
 const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
 const storeName = settingsData?.name || "المتجر";
+
+// A category page (/?category=<id>-<name>) is its own page for search engines (owner decision
+// 2026-11-23): own title, description and canonical (the address the sitemap lists), and a
+// breadcrumb. An unknown category keeps the home page's tags (canonical = the home page).
+const seoCategory = categoryId ? categoriesData.find((c: any) => c?.id?.toString() === categoryId) ?? null : null;
+const categorySeo = seoCategory
+    ? categoryPageSeo({
+          category: seoCategory,
+          pagePath: categoryPagePath(seoCategory),
+          storeName,
+          origin: siteOrigin,
+          productNames: productsData.map((p: any) => p?.name).filter(Boolean).slice(0, 6),
+          food: foodStore,
+      })
+    : null;
+const pageTitle = categorySeo?.title ?? homeTitle;
+const pageDescription = categorySeo?.description ?? homeDescription;
+const pageKeywords = seoCategory?.name ? [seoCategory.name, ...homeKeywords] : homeKeywords;
+
+// A restaurant / café / bakery is also described as a local business: address, opening hours,
+// price range, menu (src/lib/local-seo.ts). The price range is the whole menu's, so only on the
+// unfiltered home page.
+const unfiltered = !categoryParam && !subCategoryParam && !searchParams.get("q");
+const foodBusiness = salonHome
+    ? null
+    : buildFoodBusinessJsonLd(settingsData, siteOrigin, {
+          hours: Astro.locals.hours,
+          branchesBody: okBody(branchesResult),
+          priceRange: unfiltered ? productsPriceRange : null,
+      });
 // A salon home adds the store as a BeautySalon / LocalBusiness with its services, and offers no
 // product search box unless it sells products.
 const homeJsonLd = [
     buildStoreOrganization(settingsData, siteOrigin),
     ...(salonHome ? [buildSalonBusinessJsonLd(settingsData, siteOrigin, salonServices)] : []),
+    ...(foodBusiness ? [foodBusiness] : []),
+    ...(categorySeo ? [categorySeo.breadcrumb] : []),
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
@@ -256,6 +294,7 @@ const homeJsonLd = [
     title={pageTitle}
     description={pageDescription}
     keywords={pageKeywords}
+    canonical={categorySeo?.canonical}
     image={settingsData?.logo}
     favicon={settingsData?.logo}
     jsonLd={homeJsonLd}

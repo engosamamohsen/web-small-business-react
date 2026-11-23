@@ -1,6 +1,6 @@
 // SEO of the service pages (/services, /services/<slug>): paths, canonical redirects, meta
 // description and Schema.org JSON-LD (Service + provider + BreadcrumbList). Mirrors the product
-// pages (src/pages/product/[slug].astro): Arabic slugs are percent-encoded in headers and hrefs.
+// pages (src/pages/product/[...slug].astro): Arabic slugs are percent-encoded in headers and hrefs.
 
 import type { SettingsData } from "@/hooks/fetchSettings";
 import { resolveWhatsappNumber } from "@/lib/whatsapp-order";

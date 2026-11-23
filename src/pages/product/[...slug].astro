@@ -10,21 +10,24 @@ import FaviconHandler from "@/layouts/FaviconHandler";
 import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { buildWhatsAppLink, resolveWhatsappNumber } from "@/lib/whatsapp-order";
-import { fetchHook } from "@/hooks/fetch-hook";
-import { buildProductPath, parseProductParam } from "@/lib/product-url";
+import { lookupProduct } from "@/lib/product-lookup";
+import { schemaOfferPrice } from "@/lib/price-display";
+import { buildProductPath, parseProductPath } from "@/lib/product-url";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { buildStoreOrganization, storeOrganizationId } from "@/lib/seo";
 import packageJson from "../../../package.json";
 import type { ProductType } from "@/lib/types";
 
-// SEO-friendly URL: /product/{slug}  (e.g. /product/ft-shaorma-frakh-8)
-// The id is the trailing number embedded in the API slug.
-const { slug: rawParam } = Astro.params as { slug: string };
+// SEO-friendly URL: /product/{id}/{name}  (e.g. /product/8/فتة-شاورما-فراخ), src/lib/product-url.ts.
+// Older single-segment addresses (/product/ft-shaorma-frakh-8-…, /product/8) still resolve and
+// 301 to it below.
+const { slug: rawParam } = Astro.params as { slug?: string };
 
-const parsed = parseProductParam(rawParam);
+const parsed = parseProductPath(rawParam);
 
+// Not a product address at all: answer 404 here (never a redirect, which search engines treat as "moved")
 if (!parsed) {
-    return Astro.redirect("/404");
+    return Astro.rewrite("/404");
 }
 
 const { id } = parsed;
@@ -49,29 +52,20 @@ const appVersion = (packageJson as any).version;
 // WhatsApp contact link — null for missing/placeholder numbers (shared helper).
 const whatsappLink = buildWhatsAppLink(resolveWhatsappNumber(settingsData));
 
-// Fetch product details — same API contract as before, id-only
-let productData: ProductType | null = null;
-try {
-    const response = await fetchHook({
-        url: `v1/product-details?product_id=${id}`,
-        init: {},
-        baseUrl: apiBase,
-    });
-
-    if (response?.ok && response?.data?.data) {
-        productData = response.data.data;
-    }
-} catch (error) {
-    console.error("Error fetching product details:", error);
+// Fetch product details — same API contract as before, id-only (src/lib/product-lookup.ts).
+// Missing product: 404 at this address. API down or slow (after one more try): 503 "try again",
+// so a real product is never reported as gone.
+const lookup = await lookupProduct(id, apiBase);
+if (lookup.kind === "missing") {
+    return Astro.rewrite("/404");
 }
-
-// If product not found, redirect to 404
-if (!productData) {
-    return Astro.redirect("/404");
+if (lookup.kind === "unavailable") {
+    return Astro.rewrite("/unavailable");
 }
+const productData: ProductType = lookup.product;
 
-// Canonical URL handling: if the URL doesn't match the API's slug,
-// 301-redirect to the canonical /product/{slug}.
+// Canonical URL handling: any other address of this product (an older format,
+// an old name) 301-redirects to the canonical /product/{id}/{name}.
 const canonicalPath = buildProductPath(productData);
 // The canonical path can contain non-ASCII (Arabic) name characters. HTTP
 // headers (Location) and the <link rel="canonical"> href must be ASCII, so
@@ -99,7 +93,7 @@ const canonicalUrl = `${siteOrigin}${encodedCanonicalPath}`;
 // SEO metadata
 const pageTitle = productData?.name || "تفاصيل المنتج";
 const pageDescription =
-    productData?.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
+    productData?.description?.replace(/<[^>]*>/g, " ") ||
     "عرض تفاصيل ومواصفات المنتج";
 const pageKeywords = [
     productData?.name,
@@ -126,6 +120,7 @@ const productImage: string | undefined = productImages[0];
 // settings and linked as the offer's seller by @id, so the brand + social data
 // is present on product pages too.
 const storeOrg = buildStoreOrganization(settingsData, siteOrigin);
+const offerPrice = schemaOfferPrice(productData);
 const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -136,15 +131,22 @@ const productSchema = {
         "@type": "Brand",
         name: settingsData?.name || "Store",
     },
-    offers: {
-        "@type": "Offer",
-        url: canonicalUrl,
-        priceCurrency: "EGP",
-        price: productData?.price,
-        // Made from a recipe and an item ran out (API in_stock): tell search engines too.
-        availability: productData?.in_stock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-        seller: { "@id": storeOrganizationId(siteOrigin) },
-    },
+    // No offer when the price is 0 ("price on request"): Google refuses or flags a free offer, and the
+    // page shows "اطلب السعر" instead (src/lib/price-display.ts). The price is what the customer pays
+    // (after the product's discount).
+    ...(offerPrice !== null
+        ? {
+              offers: {
+                  "@type": "Offer",
+                  url: canonicalUrl,
+                  priceCurrency: "EGP",
+                  price: offerPrice,
+                  // Made from a recipe and an item ran out (API in_stock): tell search engines too.
+                  availability: productData?.in_stock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+                  seller: { "@id": storeOrganizationId(siteOrigin) },
+              },
+          }
+        : {}),
     category: productData?.category?.name,
 };
 const schema = JSON.stringify([productSchema, storeOrg]);

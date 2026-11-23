@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, RotateCcw, Sparkles } from "lucide-react";
 import { questionsFor, recommend, type Answers, type MenuDish, type Recommendation } from "@/lib/meal-helper/engine";
 import { buildProductPath } from "@/lib/product-url";
+import { isPriceOnRequest, PRICE_ON_REQUEST } from "@/lib/price-display";
 import { storeImageProps } from "@/lib/responsive-image";
 
 // ─── Meal helper: a few taps, then dishes from this store's menu ─────────────
@@ -183,7 +184,9 @@ function ResultCard({ pick, rank, defaultImage }: { pick: Recommendation; rank: 
         )}
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
           <span className="font-bold text-orange-500">
-            {quantity > 1 ? `${quantity} × ${fmt(dish.price)} = ${fmt(total)} ج.م` : `${fmt(dish.price)} ج.م`}
+            {isPriceOnRequest(dish.price)
+              ? PRICE_ON_REQUEST
+              : quantity > 1 ? `${quantity} × ${fmt(dish.price)} = ${fmt(total)} ج.م` : `${fmt(dish.price)} ج.م`}
           </span>
           <a
             href={href}

@@ -10,6 +10,7 @@ import { ShoppingCart, Zap, Plus, Minus } from "lucide-react";
 import { useSettings } from "@/providers";
 import { storeConfig } from "@/lib/store-config";
 import { getEffectiveDiscount, getLinePrices } from "@/lib/pricing-utils";
+import { isPriceOnRequest } from "@/lib/price-display";
 import type { CartVariation, SelectionCheck } from "@/lib/product/variations";
 
 // Lazy-load AuthDialog — only needed when user is not logged in
@@ -258,7 +259,7 @@ export const CartActions = memo(({
                             <ShoppingCart size={16} />
                         )}
                         <span>أضف للسلة</span>
-                        <span className="text-xs opacity-70">{finalPrice} ج.م</span>
+                        {!isPriceOnRequest(finalPrice) && <span className="text-xs opacity-70">{finalPrice} ج.م</span>}
                     </button>
 
                     {/* Buy Now — filled → goes to /shop/cart */}

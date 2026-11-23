@@ -8,6 +8,7 @@ import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "./ButtonAddToCart";
 import { buildProductPath } from "@/lib/product-url";
 import { autoSelectedExtra } from "@/lib/product/variations";
+import { isPriceOnRequest, PRICE_ON_REQUEST } from "@/lib/price-display";
 import { collectProductImages } from "@/components/products/detail-components/gallery-images";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -295,6 +296,15 @@ function PriceContent({ product }: { product: ProductType }) {
     ? parseFloat((getDiscountedPrice(productPrice, discountValue) + extra).toFixed(2))
     : basePrice;
   const saving = hasDiscount ? basePrice - finalPrice : 0;
+
+  // Price 0 = "price on request" (src/lib/price-display.ts): same look, words instead of "0 ج.م"
+  if (isPriceOnRequest(finalPrice)) {
+    return (
+      <span className="text-lg font-bold text-orange-500 sm:text-xl" dir="rtl">
+        {PRICE_ON_REQUEST}
+      </span>
+    );
+  }
 
   if (hasDiscount) {
     return (

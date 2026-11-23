@@ -181,8 +181,8 @@
 }
 .ct-tile__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ct-tile__name { font-size: 0.9rem; font-weight: 600; color: var(--t-ink); }
-.ct-tile[aria-pressed="true"] .ct-tile__img { border: 2px solid var(--main-color); }
-.ct-tile[aria-pressed="true"] .ct-tile__name { color: var(--main-color); }
+.ct-tile[aria-current="true"] .ct-tile__img { border: 2px solid var(--main-color); }
+.ct-tile[aria-current="true"] .ct-tile__name { color: var(--main-color); }
 
 /* Rounds (Souq): a row of round photos */
 .ct-rounds {
@@ -214,7 +214,7 @@
 }
 .ct-round__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ct-round__name { font-family: var(--t-display); font-size: 0.9rem; font-weight: 600; color: var(--t-ink); text-align: center; }
-.ct-round[aria-pressed="true"] .ct-round__img { box-shadow: 0 0 0 3px var(--t-highlight); }
+.ct-round[aria-current="true"] .ct-round__img { box-shadow: 0 0 0 3px var(--t-highlight); }
 
 /* Chips (Bistro, Street): a sticky bar of category names */
 .ct-chipbar {
@@ -305,10 +305,10 @@
 }
 .ct-chip--plain { padding-inline: 1rem; }
 .ct-chip img { width: 1.75rem; height: 1.75rem; border-radius: 999px; object-fit: cover; }
-.ct-chip[aria-pressed="true"] { background: var(--main-color); border-color: var(--main-color); color: var(--t-accent-ink); }
+.ct-chip[aria-current="true"] { background: var(--main-color); border-color: var(--main-color); color: var(--t-accent-ink); }
 [data-theme="street"] .ct-chipbar { border-bottom: 3px solid var(--t-ink); }
 [data-theme="street"] .ct-chip { border: 2px solid var(--t-ink); }
-[data-theme="street"] .ct-chip[aria-pressed="true"] { border-color: var(--t-ink); box-shadow: 2px 2px 0 var(--t-ink); }
+[data-theme="street"] .ct-chip[aria-current="true"] { border-color: var(--t-ink); box-shadow: 2px 2px 0 var(--t-ink); }
 
 .ct-subcats { margin-top: 1rem; }
 
@@ -580,8 +580,8 @@ html[data-theme="souq"] h3.ct-card__name { font-family: var(--t-font); font-weig
 /* Category tiles become tall portraits */
 [data-theme="fashion"] .ct-tile__img { aspect-ratio: 3 / 4; border: 0; }
 [data-theme="fashion"] .ct-tile__name { text-align: center; font-size: 0.85rem; letter-spacing: 0.02em; }
-[data-theme="fashion"] .ct-tile[aria-pressed="true"] .ct-tile__img { border: 0; outline: 2px solid var(--t-ink); outline-offset: 3px; }
-[data-theme="fashion"] .ct-tile[aria-pressed="true"] .ct-tile__name { color: var(--t-ink); text-decoration: underline; text-underline-offset: 4px; }
+[data-theme="fashion"] .ct-tile[aria-current="true"] .ct-tile__img { border: 0; outline: 2px solid var(--t-ink); outline-offset: 3px; }
+[data-theme="fashion"] .ct-tile[aria-current="true"] .ct-tile__name { color: var(--t-ink); text-decoration: underline; text-underline-offset: 4px; }
 
 [data-theme="fashion"] .ct-card { background: transparent; }
 [data-theme="fashion"] .ct-card__img { aspect-ratio: 3 / 4; }
@@ -622,8 +622,8 @@ html[data-theme="fashion"] h3.ct-card__name { font-family: var(--t-font); font-w
   color: #fff;
   font-size: 1rem;
 }
-[data-theme="furniture"] .ct-tile[aria-pressed="true"] .ct-tile__img { border: 0; box-shadow: 0 0 0 3px var(--main-color); }
-[data-theme="furniture"] .ct-tile[aria-pressed="true"] .ct-tile__name { color: #fff; }
+[data-theme="furniture"] .ct-tile[aria-current="true"] .ct-tile__img { border: 0; box-shadow: 0 0 0 3px var(--main-color); }
+[data-theme="furniture"] .ct-tile[aria-current="true"] .ct-tile__name { color: #fff; }
 
 @media (min-width: 1024px) { [data-theme="furniture"] .ct-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; } }
 [data-theme="furniture"] .ct-card { box-shadow: 0 10px 30px -22px rgba(43, 38, 32, 0.5); transition: box-shadow 200ms ease, transform 200ms ease; }

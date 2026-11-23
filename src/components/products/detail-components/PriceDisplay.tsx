@@ -2,6 +2,7 @@ import { currency } from "@/constants/constansts";
 import { ProductType } from "@/lib/types";
 import { memo, useMemo } from "react";
 import { getEffectiveDiscount, getLinePrices } from "@/lib/pricing-utils";
+import { isPriceOnRequest, PRICE_ON_REQUEST } from "@/lib/price-display";
 
 interface PriceDisplayProps {
     product: ProductType;
@@ -27,6 +28,15 @@ export const PriceDisplay = memo(({ product, currentPrice, extras = 0 }: PriceDi
         [currentPrice, extras, discount],
     );
     const priceDiscount = prices.final;
+
+    // Price 0 (and no paid option picked) = "price on request" (src/lib/price-display.ts)
+    if (isPriceOnRequest(currentPrice)) {
+        return (
+            <div className="flex flex-col items-start justify-start gap-1">
+                <bdi className="mb-2 text-lg font-semibold text-[var(--second-color)]">{PRICE_ON_REQUEST}</bdi>
+            </div>
+        );
+    }
 
     if (discount > 0) {
         return (

@@ -4,6 +4,7 @@ import { useProductsFilter } from "@/hooks/useProductsFilter";
 import { ProductType } from "@/lib/types";
 import { buildProductPath } from "@/lib/product-url";
 import { autoSelectedExtra } from "@/lib/product/variations";
+import { isPriceOnRequest, PRICE_ON_REQUEST } from "@/lib/price-display";
 import Link from "@/components/common/Link";
 import { ButtonAddToCart } from "@/components/Product/ButtonAddToCart";
 import { revealProps } from "@/components/motion/scroll-reveal";
@@ -110,8 +111,9 @@ function Card({
         </Link>
         <div className="ct-card__foot">
           <span className="ct-price">
-            <span className="ct-price__now">{money(now)}</span>
-            {hasDiscount && (
+            {/* Price 0 = "price on request" (src/lib/price-display.ts) */}
+            <span className="ct-price__now">{isPriceOnRequest(now) ? PRICE_ON_REQUEST : money(now)}</span>
+            {hasDiscount && !isPriceOnRequest(now) && (
               <span className="ct-price__was">{money(base)}</span>
             )}
           </span>
@@ -168,8 +170,8 @@ function MenuRow({
             <h3 className="ct-row__name">{product.name}</h3>
           </Link>
           <span className="ct-row__dots" aria-hidden="true" />
-          {hasDiscount && <span className="ct-row__was">{money(base)}</span>}
-          <span className="ct-row__price">{money(now)}</span>
+          {hasDiscount && !isPriceOnRequest(now) && <span className="ct-row__was">{money(base)}</span>}
+          <span className="ct-row__price">{isPriceOnRequest(now) ? PRICE_ON_REQUEST : money(now)}</span>
         </div>
         {description && <p className="ct-row__desc">{description}</p>}
         <div className="ct-row__foot">

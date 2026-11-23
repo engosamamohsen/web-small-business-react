@@ -1,0 +1,38 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Shown in place of a page whose data the store's API could not give right now (timeout, error).
+// 503 + Retry-After tells search engines "come back later" instead of "this page is gone" (a 404
+// made them drop real products). Not indexed. Reached by Astro.rewrite() from the product pages.
+export const prerender = false;
+
+Astro.response.status = 503;
+Astro.response.headers.set("Retry-After", "120");
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+
+<Layout
+    title="الصفحة غير متاحة مؤقتاً"
+    description="الصفحة دي مش متاحة دلوقتي. جرّب تاني بعد شوية."
+    noindex
+>
+    <section class="flex min-h-screen items-center justify-center bg-gray-50">
+        <div class="text-center p-8">
+            <h1 class="text-3xl font-bold text-[var(--main-color)] mb-4">
+                الصفحة مش متاحة دلوقتي
+            </h1>
+            <p class="text-lg text-gray-700 mb-8">
+                حصلت مشكلة مؤقتة. جرّب تاني بعد شوية.
+            </p>
+            <a
+                href=""
+                class="inline-block rounded-lg bg-[var(--main-color)] px-8 py-3 text-white font-semibold hover:opacity-90 transition-opacity"
+            >
+                حاول تاني
+            </a>
+            <a href="/" class="ms-4 inline-block px-4 py-3 font-semibold text-[var(--main-color)] underline">
+                الصفحة الرئيسية
+            </a>
+        </div>
+    </section>
+</Layout>

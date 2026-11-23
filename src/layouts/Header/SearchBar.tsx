@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import Image from "@/components/common/Image";
 import { fetchHookClient } from "@/hooks/fetch-hook-client";
 import { buildProductPath } from "@/lib/product-url";
+import { isPriceOnRequest, PRICE_ON_REQUEST } from "@/lib/price-display";
 import { storeConfig } from "@/lib/store-config";
 
 type Category = {
@@ -267,7 +268,13 @@ export default function SearchBar() {
                                                         )}
                                                         {price !== undefined && (
                                                             <span className="text-xs font-bold text-[var(--main-color)]">
-                                                                {formatPrice(price)} <span className="text-[10px]">جنيه</span>
+                                                                {isPriceOnRequest(price) ? (
+                                                                    PRICE_ON_REQUEST
+                                                                ) : (
+                                                                    <>
+                                                                        {formatPrice(price)} <span className="text-[10px]">جنيه</span>
+                                                                    </>
+                                                                )}
                                                             </span>
                                                         )}
                                                     </div>

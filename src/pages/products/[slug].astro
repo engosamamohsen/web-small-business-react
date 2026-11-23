@@ -1,5 +1,5 @@
 ---
-import { fetchHook } from "@/hooks/fetch-hook";
+import { lookupProduct } from "@/lib/product-lookup";
 import { buildProductPath } from "@/lib/product-url";
 import type { ProductType } from "@/lib/types";
 
@@ -7,12 +7,12 @@ import type { ProductType } from "@/lib/types";
 // the early-return redirects below).
 export const prerender = false;
 
-// Legacy route — product pages now live at /product/{id}-{slug}.
+// Legacy route — product pages now live at /product/{id}/{name}.
 // Kept as a permanent redirect so old indexed/shared links keep working.
 const { slug } = Astro.params as { slug: string };
 
 if (!slug) {
-    return Astro.redirect("/404");
+    return Astro.rewrite("/404");
 }
 
 // Old links ended with the id ("ft-shaorma-frakh-8", "{name}-{id}", or bare "{id}").
@@ -23,29 +23,20 @@ const id = /^\d+$/.test(lastSegment)
     : (slug.match(/^(\d+)/)?.[1] ?? null);
 
 if (!id) {
-    return Astro.redirect("/404");
+    return Astro.rewrite("/404");
 }
 
-// Resolve the canonical slug from the same product-details API
-let productData: ProductType | null = null;
-try {
-    // This store's API (set per request by the middleware), not the build-time default store
-    const response = await fetchHook({
-        url: `v1/product-details?product_id=${id}`,
-        init: {},
-        baseUrl: Astro.locals.apiBase,
-    });
-
-    if (response?.ok && response?.data?.data) {
-        productData = response.data.data;
-    }
-} catch (error) {
-    console.error("Error fetching product details:", error);
+// Resolve the canonical address from the same product-details API (this store's API, set per request
+// by the middleware). Missing: 404 here; API down after one more try: 503 "try again"
+// (src/lib/product-lookup.ts), never a redirect to /404.
+const lookup = await lookupProduct(id, Astro.locals.apiBase);
+if (lookup.kind === "missing") {
+    return Astro.rewrite("/404");
 }
-
-if (!productData) {
-    return Astro.redirect("/404");
+if (lookup.kind === "unavailable") {
+    return Astro.rewrite("/unavailable");
 }
+const productData: ProductType = lookup.product;
 
 // API id + slug are authoritative; keep query params (utm etc.) across the redirect.
 // encodeURI escapes any non-ASCII (Arabic) name chars so the Location header is

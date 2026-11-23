@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryParam, isSelectedCategory } from "./category-param";
+import { categoryParam, inPlaceClick, isPlainClick, isSelectedCategory } from "./category-param";
 import { idFromParam } from "@/lib/products-query";
 
 // ?category= of a category chip (CategorySwiper). A category without a slug crashed the home page (2026-11-23).
@@ -45,5 +45,27 @@ describe("isSelectedCategory", () => {
         }
         expect(isSelectedCategory("7", null)).toBe(false);
         expect(isSelectedCategory("7", { id: null })).toBe(false);
+    });
+});
+
+// Category links (owner decision 2026-11-23): a plain click filters in place; a new-tab click is the browser's.
+describe("category link clicks", () => {
+    it("handles only a plain left click", () => {
+        expect(isPlainClick({ button: 0 })).toBe(true);
+        expect(isPlainClick({})).toBe(true);
+        for (const e of [{ button: 1 }, { button: 0, ctrlKey: true }, { button: 0, metaKey: true }, { button: 0, shiftKey: true }, { button: 0, altKey: true }, { button: 0, defaultPrevented: true }]) {
+            expect(isPlainClick(e), JSON.stringify(e)).toBe(false);
+        }
+    });
+
+    it("runs the handler and stops the page load only for a plain click", () => {
+        let ran = 0;
+        const onClick = inPlaceClick(() => ran++);
+        const plain = { button: 0, prevented: false, preventDefault() { this.prevented = true; } };
+        onClick(plain);
+        expect([ran, plain.prevented]).toEqual([1, true]);
+        const newTab = { button: 0, ctrlKey: true, prevented: false, preventDefault() { this.prevented = true; } };
+        onClick(newTab);
+        expect([ran, newTab.prevented]).toEqual([1, false]);
     });
 });

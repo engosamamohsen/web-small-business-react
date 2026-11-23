@@ -10,23 +10,22 @@ import { revealProps } from "@/components/motion/scroll-reveal";
 import type { ThemeLayout } from "@/themes/registry";
 import "./themed.css";
 import { storeImageProps } from "@/lib/responsive-image";
+import { categoryPagePath, categoryParam, inPlaceClick, isSelectedCategory } from "@/lib/category/category-param";
 
 type Variant = Exclude<ThemeLayout["categories"], "swiper">;
 
 // Categories cascade in one after another; long lists stop adding delay after this many.
 const cascade = (index: number) => revealProps(Math.min(index, 8));
 
-const categoryParam = (category: CategoryType) =>
-  `${category.id}-${category.slug}`;
-
 // Same URL mechanics as the classic swiper (src/components/Categories/CategorySwiper.tsx):
-// the products island listens for pushState and reloads the list.
-function selectCategory(category: CategoryType | null) {
+// the products island listens for pushState and reloads the list. The shared categoryParam()
+// gives "<id>" for a category without a slug (it used to write "<id>-null").
+export function selectCategory(category: CategoryType | null) {
   const sp = new URLSearchParams(window.location.search);
   const next = category ? categoryParam(category) : null;
   sp.delete("sub_category");
   sp.set("page", "1");
-  if (!next || sp.get("category") === next) {
+  if (!next || isSelectedCategory(sp.get("category"), category)) {
     sp.delete("category");
   } else {
     sp.set("category", next);
@@ -82,6 +81,13 @@ function useRowScroll() {
   return { ref, ends, step };
 }
 
+// The categories are real links (search engines follow them to each category page, owner decision
+// 2026-11-23); a plain click still filters in place without a reload.
+const linkProps = (category: CategoryType | null) => ({
+  href: category ? categoryPagePath(category) : "/",
+  onClick: inPlaceClick(() => selectCategory(category)),
+});
+
 /** Category navigation for the non-classic themes: photo tiles, round photos or a chip bar. */
 export default function CategoryNav({
   categories,
@@ -130,29 +136,27 @@ export default function CategoryNav({
         aria-label="الأقسام"
         data-reveal-group=""
       >
-        <button
-          type="button"
+        <a
           className="ct-chip ct-chip--plain"
-          aria-pressed={isActive(null)}
+          aria-current={isActive(null) ? "true" : undefined}
           {...cascade(0)}
-          onClick={() => selectCategory(null)}
+          {...linkProps(null)}
         >
           الكل
-        </button>
+        </a>
         {categories.map((category, i) => (
-          <button
+          <a
             key={category.id}
-            type="button"
             className="ct-chip"
-            aria-pressed={isActive(category)}
+            aria-current={isActive(category) ? "true" : undefined}
             {...cascade(i + 1)}
-            onClick={() => selectCategory(category)}
+            {...linkProps(category)}
           >
             {category.icon && (
               <img {...storeImageProps(category.icon, "28px", 28)} alt="" width={28} height={28} loading="lazy" decoding="async" />
             )}
             {category.name}
-          </button>
+          </a>
         ))}
       </div>
     ) : (
@@ -166,13 +170,12 @@ export default function CategoryNav({
         {[null, ...categories].map((category, i) => {
           const base = variant === "tiles" ? "ct-tile" : "ct-round";
           return (
-            <button
+            <a
               key={category?.id ?? "all"}
-              type="button"
               className={base}
-              aria-pressed={isActive(category)}
+              aria-current={isActive(category) ? "true" : undefined}
               {...cascade(i)}
-              onClick={() => selectCategory(category)}
+              {...linkProps(category)}
             >
               <span className={`${base}__img`}>
                 {category?.icon ? (
@@ -197,7 +200,7 @@ export default function CategoryNav({
               <span className={`${base}__name`}>
                 {category ? category.name : "الكل"}
               </span>
-            </button>
+            </a>
           );
         })}
       </div>

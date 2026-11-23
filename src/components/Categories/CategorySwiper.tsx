@@ -11,7 +11,7 @@ import { useSearchParams } from "@/lib/navigation";
 import React from 'react';
 import { LayoutGrid } from "lucide-react";
 import { CategoryType } from "@/lib/types";
-import { categoryParam, isSelectedCategory } from "@/lib/category/category-param";
+import { categoryPagePath, categoryParam, inPlaceClick, isSelectedCategory } from "@/lib/category/category-param";
 
 
 export default function CategorySwiper({
@@ -128,6 +128,9 @@ export default function CategorySwiper({
   );
 }
 
+// The category boxes are real links (search engines follow them to each category page,
+// owner decision 2026-11-23); a plain click still filters in place without a reload (inPlaceClick).
+
 function AllCategoriesBox({
   onClick,
   isActive,
@@ -136,11 +139,11 @@ function AllCategoriesBox({
   isActive: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <a
+      href="/"
+      onClick={inPlaceClick(onClick)}
       className="flex w-full flex-col items-center gap-2 outline-none"
-      aria-pressed={isActive}
+      aria-current={isActive ? "true" : undefined}
       aria-label="كل الفئات"
       suppressHydrationWarning
     >
@@ -174,7 +177,7 @@ function AllCategoriesBox({
       >
         الكل
       </span>
-    </button>
+    </a>
   );
 }
 
@@ -188,11 +191,11 @@ function CategoryBox({
   isActive: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <a
+      href={categoryPagePath(category)}
+      onClick={inPlaceClick(onClick)}
       className="flex w-full flex-col items-center gap-2 outline-none"
-      aria-pressed={isActive}
+      aria-current={isActive ? "true" : undefined}
       aria-label={`Category ${category.name}`}
       suppressHydrationWarning
     >
@@ -241,7 +244,7 @@ function CategoryBox({
       >
         {category.name}
       </span>
-    </button>
+    </a>
   );
 }
 

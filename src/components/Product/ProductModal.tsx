@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import Image from "@/components/common/Image";
 import { ProductType } from "@/lib/types";
+import { isPriceOnRequest, PRICE_ON_REQUEST } from "@/lib/price-display";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProductModalProps {
@@ -54,7 +55,7 @@ export default function ProductModal({
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-orange-500">
-                    {product.price} ج.م
+                    {isPriceOnRequest(product.price) ? PRICE_ON_REQUEST : `${product.price} ج.م`}
                   </span>
                 </div>
                 <button
