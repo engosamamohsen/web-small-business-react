@@ -38,6 +38,9 @@ import { buildSalonBusinessJsonLd, salonHomeMeta, servicesFirstHome, storeHasPro
 import SalonThemeHome from "@/components/Themed/Salon/SalonThemeHome.astro";
 import { parseBranches, parseGallery } from "@/lib/showcase";
 import StoreGallery from "@/components/Showcase/StoreGallery.astro";
+import StoreReviews from "@/components/Showcase/StoreReviews.astro";
+import { getReviews, HOME_TIMEOUT_MS } from "@/lib/reviews/api";
+import { pickReviewsLang } from "@/lib/reviews/strings";
 import { collectProductImages } from "@/components/products/detail-components/gallery-images";
 
 // Get auth token from cookies
@@ -73,7 +76,7 @@ const wantsCatalog = salonCandidate || (salonTheme && Astro.locals.booking?.enab
 // PARALLEL API CALLS - settings + banner + categories + products in one round trip
 // Using allSettled to prevent one failure from breaking the entire page
 // ============================================
-const [settingsResult, bannerResult, categoriesResult, productsResult, catalogResult, galleryResult, branchesResult] =
+const [settingsResult, bannerResult, categoriesResult, productsResult, catalogResult, galleryResult, branchesResult, reviewsResult] =
     await Promise.allSettled([
         fetchSettings(token, false, apiBase),
         fetchHook({ url: "v1/banner", init: {}, token, baseUrl: apiBase }),
@@ -82,6 +85,9 @@ const [settingsResult, bannerResult, categoriesResult, productsResult, catalogRe
         wantsCatalog ? getCatalog(apiBase) : Promise.resolve(null),
         fetchHook({ url: "v1/gallery", init: {}, baseUrl: apiBase }),
         salonTheme ? fetchHook({ url: "v1/store-branches", init: {}, baseUrl: apiBase }) : Promise.resolve(null),
+        // The reviews the owner chose for the home page (every theme); none, a failure or slower than
+        // HOME_TIMEOUT_MS (3 s): no section, and the rest of the page is never held up by it
+        getReviews(apiBase, 1, 12, HOME_TIMEOUT_MS),
     ]);
 
 // Extract settings data (handle rejected promises)
@@ -164,6 +170,9 @@ const showShop = !salonHome || storeSells;
 const okBody = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" && r.value?.ok ? r.value.data : null);
 const gallery = parseGallery(okBody(galleryResult));
 const salonBranches = salonTheme ? parseBranches(okBody(branchesResult)) : [];
+const homeReviews = reviewsResult.status === "fulfilled" ? reviewsResult.value.reviews : [];
+// The reviews strip follows ?lang=en (the storefront itself is Arabic first)
+const reviewsLang = pickReviewsLang(Astro.url.searchParams.get("lang"));
 // Salon theme on a shop without banners or gallery photos: its first product photos fill the hero
 // instead of a drawn letter (2026-11-21, emand).
 const salonShowcase: string[] = salonTheme
@@ -410,6 +419,9 @@ const homeJsonLd = [
         {/* The store's photos (dashboard → gallery), after the products; nothing without photos */}
         {gallery.length > 0 && <StoreGallery photos={gallery} storeName={storeName} />}
         </Fragment>}
+
+        {/* Customer reviews the owner chose (every theme, Classic and Salon included); nothing when none */}
+        {homeReviews.length > 0 && <StoreReviews reviews={homeReviews} lang={reviewsLang} />}
     </main>
 
     <WhatsAppButton phone={resolveWhatsappNumber(settingsData)} client:idle />
@@ -418,6 +430,7 @@ const homeJsonLd = [
     <Footer
         settingsData={settingsData}
         appVersion={appVersion}
+        lang={reviewsLang}
         client:visible
     />
 </Layout>

@@ -5,14 +5,25 @@ import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { usePathname } from "@/lib/navigation";
 import { cn } from "@/utils/utils";
 import { useSettingsData } from "@/providers/SettingsProvider";
+import { useEffect, useState } from "react";
+import { pickReviewsLang, reviewsHref, reviewsStrings, type ReviewsLang } from "@/lib/reviews/strings";
 
 interface FooterProps {
   settingsData?: any; // Keep for backwards compatibility
   appVersion?: string;
+  /** Language of the "Share your feedback" link; pages that don't pass it follow ?lang=en in the address. */
+  lang?: ReviewsLang;
 }
 
-export default function Footer({ settingsData, appVersion }: FooterProps) {
+export default function Footer({ settingsData, appVersion, lang }: FooterProps) {
   const pathname = usePathname();
+
+  // Store reviews link: Arabic first; English when the page is in English (?lang=en)
+  const [reviewsLang, setReviewsLang] = useState<ReviewsLang>(lang ?? "ar");
+  useEffect(() => {
+    setReviewsLang(lang ?? pickReviewsLang(new URLSearchParams(window.location.search).get("lang")));
+  }, [lang]);
+  const reviewsText = reviewsStrings(reviewsLang);
 
   // ✅ Prefer context over props (new logic)
   const contextSettings = useSettingsData();
@@ -128,6 +139,16 @@ export default function Footer({ settingsData, appVersion }: FooterProps) {
             <p className="text-center md:text-right">
               © {year} {siteName}. جميع الحقوق محفوظة.
             </p>
+
+            {/* "Share your feedback" form (openspec/changes/store-reviews; one text link in every theme, Classic included) */}
+            <a
+              href={reviewsHref(reviewsLang)}
+              lang={reviewsLang}
+              hrefLang={reviewsLang}
+              className="ct-footer__reviews hover:text-white underline-offset-4 hover:underline"
+            >
+              {reviewsText.footerLink}
+            </a>
 
             {appVersion && (
               <div className="flex items-center gap-2">

@@ -1,0 +1,92 @@
+/*
+ * Store reviews page (/reviews), openspec/changes/store-reviews in the talent-dashboard repo.
+ * Loaded only by src/pages/reviews.astro, so no other page changes. Every value reads the theme
+ * tokens of src/styles/themes.css with a neutral fallback (what Classic gets); the accent is the
+ * store's --main-color, the stars are a warm amber that reads on light and dark surfaces.
+ */
+
+.ct-rv {
+    --rv-surface: var(--t-surface, #ffffff);
+    --rv-ink: var(--t-ink, #1f2328);
+    --rv-muted: var(--t-muted, #5f6670);
+    --rv-line: var(--t-line, #e3e6ea);
+    --rv-accent: var(--main-color, #0d7a73);
+    --rv-accent-ink: var(--t-accent-ink, #ffffff);
+    --rv-soft: color-mix(in srgb, var(--rv-accent) 10%, var(--rv-surface));
+    --rv-star: #f59e0b;
+    --rv-star-off: color-mix(in srgb, var(--rv-ink) 18%, transparent);
+    --rv-radius: var(--t-radius, 12px);
+    --rv-radius-lg: var(--t-radius-lg, 16px);
+    --rv-danger: #b42318;
+    color: var(--rv-ink);
+    font-family: var(--t-font, "Cairo"), sans-serif;
+}
+
+.ct-rv-wrap { max-width: 72rem; margin: 0 auto; padding: 1.25rem 1rem 2.5rem; }
+.ct-rv-wrap--form { max-width: 36rem; }
+.ct-rv-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.25rem; }
+.ct-rv-title { font: 800 1.6rem/1.3 var(--t-display, "Cairo"), sans-serif; margin: 0 0 0.25rem; }
+.ct-rv-lead { color: var(--rv-muted); margin: 0; }
+.ct-rv-lang { display: inline-flex; align-items: center; min-height: 40px; padding: 0.25rem 0.9rem; border: 1px solid var(--rv-line); border-radius: 999px; color: var(--rv-ink); font-weight: 600; font-size: 0.9rem; }
+.ct-rv-lang:hover { border-color: var(--rv-accent); }
+.ct-rv-lang:focus-visible, .ct-rv-btn:focus-visible, .ct-rv-field input:focus-visible, .ct-rv-field textarea:focus-visible { outline: 3px solid color-mix(in srgb, var(--rv-accent) 45%, transparent); outline-offset: 2px; }
+.ct-rv-sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+.ct-rv-card { background: var(--rv-surface); border: 1px solid var(--rv-line); border-radius: var(--rv-radius-lg); padding: 1.25rem; }
+.ct-rv-h2 { font: 700 1.2rem/1.3 var(--t-display, "Cairo"), sans-serif; margin: 0 0 0.4rem; }
+.ct-rv-muted { color: var(--rv-muted); font-size: 0.9rem; margin: 0 0 1rem; }
+
+/* Buttons */
+.ct-rv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 44px; padding: 0.5rem 1.25rem; border: 0; border-radius: var(--rv-radius); background: var(--rv-accent); color: var(--rv-accent-ink); font-weight: 700; cursor: pointer; }
+.ct-rv-btn:hover { filter: brightness(0.94); }
+.ct-rv-btn[disabled] { opacity: 0.6; cursor: not-allowed; filter: none; }
+.ct-rv-btn--ghost { background: transparent; color: var(--rv-ink); border: 1px solid var(--rv-line); }
+.ct-rv-submit { width: 100%; margin-top: 0.5rem; }
+
+/* Form */
+.ct-rv-field { display: flex; flex-direction: column; gap: 0.35rem; margin: 0 0 1rem; padding: 0; border: 0; min-width: 0; }
+.ct-rv-field > label, .ct-rv-field > legend { font-weight: 600; font-size: 0.95rem; padding: 0; margin-bottom: 0.35rem; }
+.ct-rv-field input, .ct-rv-field textarea { width: 100%; min-height: 44px; padding: 0.6rem 0.8rem; border: 1px solid var(--rv-line); border-radius: var(--rv-radius); background: var(--rv-surface); color: var(--rv-ink); font: inherit; }
+.ct-rv-field textarea { resize: vertical; min-height: 110px; }
+/* Branch dropdown (stores with 2+ branches): same box as the inputs, native arrow kept for every browser */
+.ct-rv-field select { width: 100%; min-height: 44px; padding: 0.6rem 0.8rem; border: 1px solid var(--rv-line); border-radius: var(--rv-radius); background: var(--rv-surface); color: var(--rv-ink); font: inherit; }
+.ct-rv-field select[aria-invalid="true"] { border-color: var(--rv-danger); }
+.ct-rv-field select:focus-visible { outline: 3px solid color-mix(in srgb, var(--rv-accent) 45%, transparent); outline-offset: 2px; }
+.ct-rv-field input[aria-invalid="true"], .ct-rv-field textarea[aria-invalid="true"] { border-color: var(--rv-danger); }
+.ct-rv-hint, .ct-rv-count { margin: 0; font-size: 0.8rem; }
+.ct-rv-count { text-align: end; }
+.ct-rv-err { margin: 0; color: var(--rv-danger); font-size: 0.85rem; font-weight: 600; }
+.ct-rv-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0 0 0.75rem; padding: 0.75rem 1rem; border-radius: var(--rv-radius); background: color-mix(in srgb, var(--rv-danger) 10%, var(--rv-surface)); color: var(--rv-danger); font-weight: 600; }
+
+/* Star picker: radios behind big stars (44px targets) */
+.ct-rv-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
+.ct-rv-picker label { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; cursor: pointer; font-size: 2rem; line-height: 1; color: var(--rv-star-off); transition: transform 0.12s ease, color 0.12s ease; }
+.ct-rv-picker label.is-on { color: var(--rv-star); }
+.ct-rv-picker label:hover { transform: scale(1.12); }
+.ct-rv-picker input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.ct-rv-picker label:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--rv-accent) 45%, transparent); border-radius: 8px; }
+.ct-rv-picker__hint { margin: 0 0.5rem; }
+
+/* Honeypot: clipped to nothing (an off-screen offset would widen the page in RTL) */
+.ct-rv-hp { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0; opacity: 0; pointer-events: none; }
+
+/* Sent */
+.ct-rv-sent { text-align: center; padding: 1rem 0; }
+.ct-rv-sent__icon { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--rv-soft); color: var(--rv-accent); font-size: 1.6rem; font-weight: 800; }
+.ct-rv-sent h3 { margin: 0.75rem 0 0.25rem; font-weight: 800; }
+.ct-rv-sent p { color: var(--rv-muted); margin: 0 0 1rem; }
+.ct-rv-sent:focus { outline: none; }
+.ct-rv-redirect { display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.ct-rv-spinner { width: 16px; height: 16px; border: 2px solid var(--rv-line); border-top-color: var(--rv-accent); border-radius: 50%; animation: ct-rv-spin 0.8s linear infinite; }
+@keyframes ct-rv-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) { .ct-rv-picker label { transition: none; } .ct-rv-picker label:hover { transform: none; } .ct-rv-spinner { animation: none; } }
+
+/* The floating "ساعدني أختار" button (MealHelperFab: 56px high, 24-32px from the bottom) on phones and tablets
+   (owner 2026-11-23): the reviews page ends with room to scroll every field and the send button clear of it, and the
+   button steps aside while the customer types, so it never covers the field being filled in. */
+@media (max-width: 1023px) {
+    main.ct-rv { padding-bottom: 112px; }
+    [data-floating-helper] { transition: opacity .15s ease, visibility .15s ease; }
+    body:has(main.ct-rv :is(input, textarea, select):focus) [data-floating-helper] { opacity: 0; visibility: hidden; pointer-events: none; }
+}

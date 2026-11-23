@@ -1,0 +1,64 @@
+---
+// /reviews — "Share your feedback": the review form only (owner, 2026-11-22: no reviews list here).
+// openspec/changes/store-reviews (talent-dashboard repo): any visitor may send one (no login); after
+// sending, the customer goes back to the store's home page, where the reviews the owner chose show
+// (StoreReviews.astro). Every theme, both store kinds. Arabic (owner 2026-11-23: no language button until the
+// storefront is translated; ?lang=en still renders English).
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/layouts/Header/Header";
+import Footer from "@/layouts/Footer";
+import ColorHandler from "@/layouts/ColorHandler";
+import FaviconHandler from "@/layouts/FaviconHandler";
+import { SettingsProvider } from "@/providers";
+import ReviewsPage from "@/components/Reviews/ReviewsPage";
+import { fetchSettings } from "@/hooks/fetchSettings";
+import { pickReviewsLang, reviewsStrings } from "@/lib/reviews/strings";
+import { cleanBranchId, cleanSource, getReviewForm, preselectBranch } from "@/lib/reviews/api";
+import { getSiteOrigin } from "@/lib/site-origin";
+import packageJson from "../../package.json";
+import "@/styles/reviews.css";
+
+export const prerender = false;
+
+const token = Astro.cookies.get("app_token")?.value;
+const settingsResponse = await fetchSettings(token, false, Astro.locals.apiBase);
+const settingsData = settingsResponse?.data ?? null;
+const storeName = settingsData?.name || "";
+
+const lang = pickReviewsLang(Astro.url.searchParams.get("lang"));
+const t = reviewsStrings(lang);
+// Where the customer came from (?utm_source=receipt from the receipt QR): sent with the review
+const source = cleanSource(Astro.url.searchParams.get("utm_source"));
+// Branch reviews (owner 2026-11-23): 2+ active branches = an editable dropdown; 0 / 1 = none (the server assigns
+// the only one). The receipt QR's ?branch=<id> only preselects it. At most 3 s; slow or failed = no dropdown
+// (the server's 422 on branch_id then brings it back in the browser).
+const reviewForm = await getReviewForm(Astro.locals.apiBase);
+const requestedBranch = cleanBranchId(Astro.url.searchParams.get("branch"));
+const initialBranch = preselectBranch(reviewForm, requestedBranch);
+
+const siteOrigin = getSiteOrigin(Astro.request, Astro.url);
+const canonical = `${siteOrigin}/reviews${lang === "en" ? "?lang=en" : ""}`;
+const title = storeName ? `${t.title} - ${storeName}` : t.title;
+---
+
+<Layout title={title} description={`${t.lead} ${storeName}`.trim()} favicon={settingsData?.logo} canonical={canonical}>
+    <SettingsProvider initialSettings={settingsData} isLogin={Boolean(settingsResponse?.is_login)} cartCount={settingsResponse?.cart_count ?? 0} token={token} client:only="react">
+        <ColorHandler client:only="react" />
+        <FaviconHandler client:load />
+        <Header client:load />
+        <main class="ct-rv min-h-screen" id="main" lang={lang} dir={t.dir}>
+            <div class="ct-rv-wrap ct-rv-wrap--form">
+                <div class="ct-rv-top">
+                    <div>
+                        <h1 class="ct-rv-title">{t.title}</h1>
+                        <p class="ct-rv-lead">{t.lead}</p>
+                    </div>
+                    {/* No "English" button (owner 2026-11-23): the storefront is not translated yet, so every review link
+                        opens in Arabic. ?lang=en still works for later; reviewsHref keeps the source and branch for it. */}
+                </div>
+                <ReviewsPage client:load lang={lang} source={source} form={reviewForm} initialBranch={initialBranch} />
+            </div>
+        </main>
+        <Footer settingsData={settingsData} appVersion={packageJson.version} lang={lang} client:load />
+    </SettingsProvider>
+</Layout>

@@ -67,6 +67,8 @@ export default function MealHelperFab({ lifted = false }: Props) {
         type="button"
         onClick={show}
         aria-haspopup="dialog"
+        // Hook for pages that must keep it off their content (src/styles/reviews.css)
+        data-floating-helper=""
         className={`group fixed right-6 z-50 flex h-14 items-center gap-2 rounded-full bg-[var(--main-color)] px-4 text-white shadow-lg transition hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--main-color)] sm:right-8 ${
           lifted ? "bottom-28 md:bottom-8" : "bottom-6 sm:bottom-8"
         }`}

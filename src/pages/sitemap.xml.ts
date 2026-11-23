@@ -119,6 +119,8 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
 
     // Homepage.
     add({ path: "/", changefreq: "daily", priority: "1.0" });
+    // Customer reviews page (every store; openspec/changes/store-reviews).
+    add({ path: "/reviews", changefreq: "weekly", priority: "0.5" });
 
     // Category landing pages — the homepage filtered by category.
     // URL format "{id}-{slug}" matches what the storefront parses (leading id).
