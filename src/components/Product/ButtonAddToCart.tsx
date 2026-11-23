@@ -10,6 +10,8 @@ import { Loader2, ShoppingCart, SlidersHorizontal } from "lucide-react";
 import { useRouter } from "@/lib/navigation";
 import { quickAddPlan } from "@/lib/product/variations";
 import { getEffectiveDiscount, getLinePrices } from "@/lib/pricing-utils";
+import { isOnRequestProduct } from "@/lib/price-request";
+import { AskPriceButton } from "./AskPriceButton";
 
 export function ButtonAddToCart({ product }: { product: ProductType }) {
   const router = useRouter();
@@ -33,6 +35,11 @@ export function ButtonAddToCart({ product }: { product: ProductType }) {
         غير متاح حالياً
       </span>
     );
+  }
+
+  // Price 0 and no paid option: never into the cart at 0 — ask the store (owner 2026-11-23)
+  if (isOnRequestProduct(product)) {
+    return <AskPriceButton product={product} />;
   }
 
   if (hasVariations) {

@@ -11,6 +11,8 @@ import { useSettings } from "@/providers";
 import { storeConfig } from "@/lib/store-config";
 import { getEffectiveDiscount, getLinePrices } from "@/lib/pricing-utils";
 import { isPriceOnRequest } from "@/lib/price-display";
+import { resolveWhatsappNumber } from "@/lib/whatsapp-order";
+import { AskPriceButton } from "@/components/Product/AskPriceButton";
 import type { CartVariation, SelectionCheck } from "@/lib/product/variations";
 
 // Lazy-load AuthDialog — only needed when user is not logged in
@@ -80,6 +82,7 @@ export const CartActions = memo(({
     // Pre-discount per-unit price (extras included), for before-vs-after in the cart.
     const totalPrice = linePrices.original;
     const finalPrice = Math.round(finalUnitPrice * count * 100) / 100;
+    const onRequest = isPriceOnRequest(finalUnitPrice);
 
     // ── Core cart add (called directly or after login) ──────────────────────
     const doAddToCart = useCallback(async () => {
@@ -243,6 +246,16 @@ export const CartActions = memo(({
                         "md:flex-row md:items-stretch"
                     )}
                 >
+                    {/* Price on request (price 0 with the picked options): ask the store instead of
+                        ordering at 0 (src/lib/price-request.ts; the server refuses it too) */}
+                    {onRequest ? (
+                        <AskPriceButton
+                            product={product}
+                            variant="page"
+                            contact={{ whatsapp: resolveWhatsappNumber(settings), phone: settings?.phone ?? null }}
+                        />
+                    ) : (
+                    <>
                     {/* Add to Cart — outlined */}
                     <button
                         disabled={loading || optionsBlocked || !inStock}
@@ -275,6 +288,8 @@ export const CartActions = memo(({
                         <Zap size={16} />
                         <span>اشتري الآن</span>
                     </button>
+                    </>
+                    )}
                 </div>
 
                 {/* Spacer so fixed bar doesn't overlap content on mobile */}

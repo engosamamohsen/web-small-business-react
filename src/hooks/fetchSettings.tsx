@@ -11,6 +11,9 @@ export interface SettingsData {
   id: number;
   name?: string;
   about_us?: string;
+  /** Website settings → Google title / description (owner 2026-11-23); empty = name / about_us. */
+  seo_title?: string | null;
+  seo_description?: string | null;
   phone?: string;
   whatsapp_phone?: string;
   logo?: string;

@@ -215,9 +215,11 @@ const preloadImage = firstBanner
 // A salon home names its services in the title and description.
 const salonServices = salonCatalog?.services ?? [];
 const salonMeta = salonHome ? salonHomeMeta(settingsData?.name, settingsData?.about_us, salonServices) : null;
-const homeTitle = salonMeta?.title || settingsData?.name || "الرئيسية - منصة الأعمال";
+// Website settings → Google title / description (owner 2026-11-23) come first; empty = as before
+const homeTitle = settingsData?.seo_title?.trim() || salonMeta?.title || settingsData?.name || "الرئيسية - منصة الأعمال";
 // about_us can carry CRLF line breaks; collapse to one clean line.
 const homeDescription =
+    settingsData?.seo_description?.trim() ||
     salonMeta?.description ||
     settingsData?.about_us?.replace(/\s+/g, " ").trim() ||
     // No "about us" yet: a sentence about this store, not the platform's own tagline

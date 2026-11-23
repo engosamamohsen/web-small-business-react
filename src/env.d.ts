@@ -25,6 +25,8 @@ declare namespace App {
         booking: import("@/lib/booking/types").BookingSetting;
         // Kind of store (setting-profile data.shop_type); the meal helper is for food stores only.
         shopType?: string | null;
+        // The store's WhatsApp / phone, for "اسأل عن السعر" (src/lib/price-request.ts); null when unknown.
+        contact?: import("@/lib/price-request").StoreContact;
         // The store's own colours (Classic theme), printed on <html> so the first paint already has them.
         storeColors?: { font?: string | null; background?: string | null };
         // The tenant API says this store doesn't exist (deleted): every page is the

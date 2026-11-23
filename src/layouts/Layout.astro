@@ -83,6 +83,8 @@ const storeBoot = JSON.stringify({
     hours: storeHours,
     // Online booking: the header shows "احجز موعد" when on (src/lib/booking/enabled.ts).
     booking: { enabled: Boolean(Astro.locals.booking?.enabled) },
+    // "اسأل عن السعر" on price-on-request product cards (src/lib/price-request.ts)
+    contact: { whatsapp: Astro.locals.contact?.whatsapp ?? null, phone: Astro.locals.contact?.phone ?? null },
 }).replace(/</g, "\\u003c");
 
 // Classic theme: the store's colours on <html> from the first paint (ColorHandler sets the same

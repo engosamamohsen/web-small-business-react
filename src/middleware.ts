@@ -2,6 +2,7 @@ import { defineMiddleware } from "astro:middleware";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { PLAN_COOKIE, planFromSettings, type StorePlan } from "@/lib/store-config";
 import { fetchSettings } from "@/hooks/fetchSettings";
+import { resolveWhatsappNumber } from "@/lib/whatsapp-order";
 import { isStoreExpired } from "@/lib/subscription";
 import { decideStoreAccess } from "@/lib/store-status";
 import { devApiOrigin } from "@/lib/config";
@@ -241,6 +242,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 context.locals.hours = settings.hours?.enabled ? settings.hours : { enabled: false };
                 context.locals.booking = { enabled: Boolean(settings.booking?.enabled) };
                 context.locals.shopType = settings.data?.shop_type ?? null;
+                // "اسأل عن السعر" on price-on-request products (src/lib/price-request.ts)
+                context.locals.contact = {
+                    whatsapp: resolveWhatsappNumber(settings.data) ?? null,
+                    phone: settings.data?.phone ?? null,
+                };
                 context.locals.storeColors = { font: settings.data?.main_font_color, background: settings.data?.main_bg };
                 if (context.cookies.get(PLAN_COOKIE)?.value !== context.locals.plan) {
                     context.cookies.set(PLAN_COOKIE, context.locals.plan, { path: "/", sameSite: "lax" });
