@@ -11,6 +11,7 @@ import { useSearchParams } from "@/lib/navigation";
 import React from 'react';
 import { LayoutGrid } from "lucide-react";
 import { CategoryType } from "@/lib/types";
+import { categoryParam } from "@/lib/category/category-param";
 
 
 export default function CategorySwiper({ categories }: { categories: any }) {
@@ -23,7 +24,8 @@ export default function CategorySwiper({ categories }: { categories: any }) {
   const onCategoryClick = (category: CategoryType) => {
     const sp = new URLSearchParams(window.location.search);
     const current = sp.get("category");
-    const nextId = category.id?.toString() + "-" + category.slug.toString();
+    // Safe when the category has no slug (API slug: null): "<id>" instead of a crash
+    const nextId = categoryParam(category);
 
     if (nextId === current) {
       // Unselect category
@@ -95,7 +97,7 @@ export default function CategorySwiper({ categories }: { categories: any }) {
           )}
           {categories?.categoriesData?.map((category: CategoryType) => {
             const isActive =
-              searchParams.get("category") == category.id?.toString() + "-" + category.slug.toString();
+              searchParams.get("category") === categoryParam(category);
 
             return (
               <SwiperSlide

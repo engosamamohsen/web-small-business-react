@@ -12,6 +12,7 @@ import { cn } from "@/utils/utils";
 import { scrollToProducts } from "./CategorySwiper";
 import styles from "./style.module.css";
 import { CategoryType } from "@/lib/types";
+import { categoryParam } from "@/lib/category/category-param";
 
 import { useRouter } from "@/lib/navigation";
 
@@ -23,7 +24,8 @@ const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
     const sp = new URLSearchParams(window.location.search);
 
     const current = sp.get("sub_category");
-    const nextId = category.id?.toString() + "-" + category.slug.toString();
+    // Safe when the sub-category has no slug (API slug: null): "<id>" instead of a crash
+    const nextId = categoryParam(category);
 
     sp.set("page", "1");
 
@@ -55,7 +57,7 @@ const SubCategories = ({ categories }: { categories: CategoryType[] }) => {
         >
           {categories.map((item: any) => {
             const isActive =
-              searchParams.get("sub_category") == item.id?.toString() + "-" + item.slug?.toString();
+              searchParams.get("sub_category") === categoryParam(item);
 
             return (
               <SwiperSlide key={item.id} className="!w-auto">
