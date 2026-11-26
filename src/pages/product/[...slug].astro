@@ -147,7 +147,8 @@ const productSchema = {
               },
           }
         : {}),
-    category: productData?.category?.name,
+    // No `category`: Google Merchant listings wants a Google product taxonomy value there and flags the
+    // store's own category name ("Invalid value in field category", Search Console 2026-11-26).
 };
 const schema = JSON.stringify([productSchema, storeOrg]);
 
