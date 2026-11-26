@@ -12,6 +12,8 @@ import { cachedCarrier, isCarrierPath, lookupCarrier, visitorIp } from "@/lib/sh
 import { CARRIER_LANG_COOKIE, isCarrierLang, pickCarrierLang } from "@/lib/shipping/strings";
 import type { CarrierProfile } from "@/lib/shipping/types";
 import type { APIContext, MiddlewareNext } from "astro";
+import { forgetSitemap, sitemapStoreKey, sitemapTrust } from "@/lib/sitemap";
+import { getSiteOrigin } from "@/lib/site-origin";
 
 // Store mode for this request (basic / premium), read by storeConfig on the server.
 // See src/lib/store-config.ts.
@@ -137,6 +139,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const apiBase = `${adminOrigin}/api/`;
     context.locals.apiBase = apiBase;
 
+    // Sitemap last known-good copy (src/lib/sitemap.ts): nothing is confirmed until the checks below
+    // say so; a failed lookup never confirms anything.
+    context.locals.storeVerified = false;
+    context.locals.domainVerified = false;
+    context.locals.storeKey = null;
+    const siteOrigin = getSiteOrigin(context.request, context.url);
+    let domainStatus: "connected" | "unknown" | "error" | null = null;
+
     // ── Custom domain (emandbuild.com) ────────────────────────────────────────
     // Served only when the backend says it is connected to a store. A domain that points at
     // our server but isn't connected (or was disconnected) gets "store not found" with 404,
@@ -144,7 +154,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // API on this host still refuses a domain it doesn't know.
     if (customDomain && context.url.pathname !== STORE_UNAVAILABLE_PATH) {
         const status = await lookupCustomDomain(hostname.toLowerCase(), { centralOrigin: CENTRAL_ORIGIN });
+        domainStatus = status;
         if (status === "unknown") {
+            forgetSitemap(siteOrigin); // disconnected: its sitemap is never served again
             context.locals.storeMissing = true;
             context.locals.tracking = [];
             if (context.request.method !== "GET" && context.request.method !== "HEAD") {
@@ -217,6 +229,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 tenantUnknown,
                 expired: settings.ok && isStoreExpired(settings.current_subscription_plan),
             });
+            const trust = sitemapTrust({
+                customDomain: Boolean(customDomain),
+                domainStatus,
+                tenantUnknown: Boolean(tenantUnknown),
+                settingsOk: Boolean(settings.ok),
+                access,
+            });
+            if (trust.forget) forgetSitemap(siteOrigin); // store gone or expired: drop its sitemap
+            context.locals.storeVerified = trust.storeVerified;
+            // Which store answered: a custom domain that moved to another store never gets the old one's sitemap
+            context.locals.storeKey = settings.ok && !tenantUnknown ? sitemapStoreKey(apiBase, settings.data) : null;
+            context.locals.domainVerified = trust.domainVerified;
             if (access === "missing") {
                 // Not a store: maybe a shipping company. Never on a custom domain: only stores connect
                 // one, and there /api/shipping/ is the storefront's own route, not the backend's.

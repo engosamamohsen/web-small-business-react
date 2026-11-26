@@ -32,6 +32,13 @@ declare namespace App {
         // The tenant API says this store doesn't exist (deleted): every page is the
         // store-unavailable page with HTTP 404. See src/lib/store-status.ts.
         storeMissing?: boolean;
+        // Set by src/middleware.ts for the sitemap's last known-good copy (src/lib/sitemap.ts sitemapTrust):
+        // true only when THIS request positively confirmed the store is open (settings answered OK, not
+        // expired) and, on a custom domain, that the domain is connected. A failed lookup is never true.
+        storeVerified?: boolean;
+        domainVerified?: boolean;
+        // Which store answered this request (src/lib/sitemap.ts sitemapStoreKey); null when settings failed.
+        storeKey?: string | null;
         // A shipping company's host (CashierThru shipping ERP, phase 3): the carrier site instead of a
         // storefront. Set by src/middleware.ts from api/shipping/public/profile. See src/lib/shipping/.
         siteKind?: "shipping";
