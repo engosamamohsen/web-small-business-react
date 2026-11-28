@@ -7,6 +7,7 @@ import { useSettingsData } from "@/providers/SettingsProvider";
 import type { SettingsData } from "@/providers/SettingsProvider";
 import { buildWhatsAppLink, resolveWhatsappNumber } from "@/lib/whatsapp-order";
 import { toCartVariations } from "@/lib/product/variations";
+import type { ShippingTexts } from "@/lib/store-policies";
 
 // Detail sub-components
 import {
@@ -26,9 +27,12 @@ const CartPanel = lazy(() => import("@/components/Cart/CartPanel"));
 export default function DetailPage({
     product,
     settings: settingsProp,
+    shippingTexts,
 }: {
     product: ProductType;
     settings?: SettingsData | null;
+    /** The store's shipping policy lines from the store API (S1, src/lib/store-policies.ts); null keeps the old text. */
+    shippingTexts?: ShippingTexts | null;
 }) {
     const [isCartOpen, setIsCartOpen] = useState(false);
     // Prefer explicitly-passed prop (works across Astro island boundaries)
@@ -264,19 +268,19 @@ export default function DetailPage({
                         <div className="space-y-4 text-right">
                             <section>
                                 <h3 className="mb-2 font-bold text-slate-700">1. مناطق الشحن</h3>
-                                <p className="text-slate-600">نقوم بالشحن إلى جميع المحافظات داخل جمهورية مصر العربية.</p>
+                                <p className="text-slate-600">{shippingTexts?.coverage ?? "نقوم بالشحن إلى جميع المحافظات داخل جمهورية مصر العربية."}</p>
                             </section>
                             <section>
                                 <h3 className="mb-2 font-bold text-slate-700">2. مدة تجهيز الطلب</h3>
-                                <p className="text-slate-600">يتم تجهيز الطلب خلال مدة تتراوح بين 24 إلى 48 ساعة من تأكيد الطلب.</p>
+                                <p className="text-slate-600">{shippingTexts?.prep ?? "يتم تجهيز الطلب خلال مدة تتراوح بين 24 إلى 48 ساعة من تأكيد الطلب."}</p>
                             </section>
                             <section>
                                 <h3 className="mb-2 font-bold text-slate-700">3. مدة الشحن والتوصيل</h3>
-                                <p className="text-slate-600">تتراوح مدة الشحن عادة بين 2 إلى 5 أيام عمل حسب المحافظة وموقع العميل.</p>
+                                <p className="text-slate-600">{shippingTexts?.transit ?? "تتراوح مدة الشحن عادة بين 2 إلى 5 أيام عمل حسب المحافظة وموقع العميل."}</p>
                             </section>
                             <section>
                                 <h3 className="mb-2 font-bold text-slate-700">4. رسوم الشحن</h3>
-                                <p className="text-slate-600">قد تختلف رسوم الشحن حسب موقع التوصيل ويتم توضيحها للعميل قبل إتمام عملية الشراء.</p>
+                                <p className="text-slate-600">{shippingTexts?.fees ?? "قد تختلف رسوم الشحن حسب موقع التوصيل ويتم توضيحها للعميل قبل إتمام عملية الشراء."}</p>
                             </section>
                             <section>
                                 <h3 className="mb-2 font-bold text-slate-700">5. تأكيد الطلب</h3>

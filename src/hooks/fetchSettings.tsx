@@ -1,4 +1,5 @@
 // src/hooks/fetchSettings.ts
+import { shippingPolicyFrom, type ShippingPolicy } from "@/lib/store-policies";
 import { getApiUrl } from "@/lib/config";
 import type { CurrentSubscriptionPlan } from "@/lib/subscription";
 import type { TrackingItem } from "@/lib/tracking/providers";
@@ -60,6 +61,8 @@ export type SettingsResponse = {
   // The store's own domain once it is live with HTTPS ("emandbuild.com"), else null. The middleware sends
   // visitors of the free address there (src/lib/tenant-host.ts customDomainRedirect).
   custom_domain?: string | null;
+  // Shipping policy (S1): the product page's shipping texts and the JSON-LD shippingDetails (src/lib/store-policies.ts).
+  shipping?: ShippingPolicy | null;
   // Top-level sibling of `data` in the setting-profile response. Drives the
   // expired-store lockout (see src/lib/subscription.ts + src/middleware.ts).
   current_subscription_plan?: CurrentSubscriptionPlan | null;
@@ -100,6 +103,7 @@ const serverSettingsCache = new Map<
     hours: StoreHoursSetting;
     booking: BookingSetting;
     custom_domain: string | null;
+    shipping: ShippingPolicy | null;
     timestamp: number;
   }
 >();
@@ -201,6 +205,7 @@ async function fetchSettingsBase(token?: string, baseUrl?: string): Promise<Sett
       hours: result.hours && typeof result.hours === "object" ? result.hours : { enabled: false },
       booking: bookingFromSettings(result.booking),
       custom_domain: typeof result.custom_domain === "string" ? result.custom_domain : null,
+      shipping: shippingPolicyFrom(result.shipping),
       is_login: result.is_login ?? false,
       cart_count: result.cart_count ?? 0,
       ok: true,
@@ -247,6 +252,7 @@ export async function fetchSettings(
           hours: cached.hours,
           booking: cached.booking,
           custom_domain: cached.custom_domain,
+          shipping: cached.shipping,
           ok: true,
           status: 200,
         };
@@ -307,6 +313,7 @@ function refresh(
             hours: result.hours ?? { enabled: false },
             booking: result.booking ?? { enabled: false },
             custom_domain: result.custom_domain ?? null,
+            shipping: result.shipping ?? null,
             timestamp: Date.now(),
           });
         } else {

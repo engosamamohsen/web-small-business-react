@@ -15,6 +15,7 @@ import { schemaOfferPrice } from "@/lib/price-display";
 import { buildProductPath, parseProductPath } from "@/lib/product-url";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { buildStoreOrganization, storeOrganizationId } from "@/lib/seo";
+import { productShippingDetails, shippingTexts } from "@/lib/store-policies";
 import packageJson from "../../../package.json";
 import type { ProductType } from "@/lib/types";
 
@@ -121,6 +122,9 @@ const productImage: string | undefined = productImages[0];
 // is present on product pages too.
 const storeOrg = buildStoreOrganization(settingsData, siteOrigin);
 const offerPrice = schemaOfferPrice(productData);
+// Shipping (S1): exactly what the store API built (StorePolicies), only when complete and valid (src/lib/store-policies.ts).
+const shippingDetails = productShippingDetails(settingsResponse?.shipping);
+const shippingPolicyTexts = shippingTexts(settingsResponse?.shipping, "ar");
 const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -144,6 +148,7 @@ const productSchema = {
                   // Made from a recipe and an item ran out (API in_stock): tell search engines too.
                   availability: productData?.in_stock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
                   seller: { "@id": storeOrganizationId(siteOrigin) },
+                  ...(shippingDetails ? { shippingDetails } : {}),
               },
           }
         : {}),
@@ -184,6 +189,7 @@ export const prerender = false;
             <DetailPage
                 product={productData}
                 settings={settingsData}
+                shippingTexts={shippingPolicyTexts}
                 client:load
             />
         </main>
