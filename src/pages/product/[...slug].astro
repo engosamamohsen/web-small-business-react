@@ -11,7 +11,7 @@ import { SettingsProvider } from "@/providers";
 import { fetchSettings } from "@/hooks/fetchSettings";
 import { buildWhatsAppLink, resolveWhatsappNumber } from "@/lib/whatsapp-order";
 import { lookupProduct } from "@/lib/product-lookup";
-import { schemaOfferPrice } from "@/lib/price-display";
+import { productPageJsonLd } from "@/lib/product-schema";
 import { buildProductPath, parseProductPath } from "@/lib/product-url";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { buildStoreOrganization, storeOrganizationId } from "@/lib/seo";
@@ -121,41 +121,24 @@ const productImage: string | undefined = productImages[0];
 // settings and linked as the offer's seller by @id, so the brand + social data
 // is present on product pages too.
 const storeOrg = buildStoreOrganization(settingsData, siteOrigin);
-const offerPrice = schemaOfferPrice(productData);
 // Shipping (S1): exactly what the store API built (StorePolicies), only when complete and valid (src/lib/store-policies.ts).
 const shippingDetails = productShippingDetails(settingsResponse?.shipping);
 const shippingPolicyTexts = shippingTexts(settingsResponse?.shipping, "ar");
-const productSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: productData?.name,
-    description: productData?.description?.replace(/<[^>]*>/g, ""),
-    image: productImages.length ? productImages : undefined,
-    brand: {
-        "@type": "Brand",
-        name: settingsData?.name || "Store",
-    },
-    // No offer when the price is 0 ("price on request"): Google refuses or flags a free offer, and the
-    // page shows "اطلب السعر" instead (src/lib/price-display.ts). The price is what the customer pays
-    // (after the product's discount).
-    ...(offerPrice !== null
-        ? {
-              offers: {
-                  "@type": "Offer",
-                  url: canonicalUrl,
-                  priceCurrency: "EGP",
-                  price: offerPrice,
-                  // Made from a recipe and an item ran out (API in_stock): tell search engines too.
-                  availability: productData?.in_stock === false ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-                  seller: { "@id": storeOrganizationId(siteOrigin) },
-                  ...(shippingDetails ? { shippingDetails } : {}),
-              },
-          }
-        : {}),
-    // No `category`: Google Merchant listings wants a Google product taxonomy value there and flags the
-    // store's own category name ("Invalid value in field category", Search Console 2026-11-26).
-};
-const schema = JSON.stringify([productSchema, storeOrg]);
+// Product JSON-LD only for a product with a real price (src/lib/product-schema.ts, owner decision 2026-11-28):
+// a "price on request" product sends just the Organization; the page itself stays indexable.
+const schema = JSON.stringify(
+    productPageJsonLd(
+        {
+            product: productData,
+            canonicalUrl,
+            images: productImages,
+            brandName: settingsData?.name,
+            sellerId: storeOrganizationId(siteOrigin),
+            shippingDetails,
+        },
+        storeOrg,
+    ),
+);
 
 // Rendered on demand — product ids/slugs are unknown at build time
 export const prerender = false;
